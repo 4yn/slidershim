@@ -4,8 +4,20 @@
 )]
 
 use tauri::{
-  CustomMenuItem, Event, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
+  AppHandle, CustomMenuItem, Event, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
+
+fn show_window<R: Runtime>(handle: &AppHandle<R>) {
+  handle.get_window("main").unwrap().show().ok();
+}
+
+fn hide_window<R: Runtime>(handle: &AppHandle<R>) {
+  handle.get_window("main").unwrap().hide().ok();
+}
+
+fn quit_app() {
+  std::process::exit(0);
+}
 
 fn main() {
   tauri::Builder::default()
@@ -17,26 +29,20 @@ fn main() {
           .add_item(CustomMenuItem::new("quit".to_string(), "Quit")),
       ),
     )
-    .on_system_tray_event(|app, event| match event {
+    .on_system_tray_event(|app_handle, event| match event {
       SystemTrayEvent::LeftClick {
         position: _,
         size: _,
         ..
       } => {
-        app
-            .get_window("main")
-            .unwrap()
-            .show().ok();
+        show_window(app_handle);
       }
       SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
         "show" => {
-          app
-            .get_window("main")
-            .unwrap()
-            .show().ok();
+          show_window(app_handle);
         }
         "quit" => {
-          std::process::exit(0);
+          quit_app();
         }
         _ => {
           panic!("Unexpected menu item click {}", id.as_str());
@@ -44,15 +50,28 @@ fn main() {
       },
       _ => {}
     })
+    .setup(|app| {
+      app.listen_global("setConfig", |event| {
+        println!("Setting config to {}", event.payload().unwrap());
+      });
+
+      let handle = app.handle();
+      app.listen_global("hide", move |_| {
+        hide_window(&handle);
+      });
+
+      app.listen_global("quit", |_| {
+        quit_app();
+      });
+
+      Ok(())
+    })
     .build(tauri::generate_context!())
     .expect("error while running tauri application")
     .run(|app_handle, event| match event {
       Event::CloseRequested { label, api, .. } if label.as_str() == "main" => {
         api.prevent_close();
-        app_handle
-          .get_window("main")
-          .unwrap()
-          .hide().ok();
+        hide_window(app_handle);
       }
       _ => {}
     });

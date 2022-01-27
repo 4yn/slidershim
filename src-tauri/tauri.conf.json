@@ -54,8 +54,8 @@
     "windows": [
       {
         "title": "slidershim",
-        "width": 800,
-        "height": 600,
+        "width": 500,
+        "height": 400,
         "resizable": false,
         "fullscreen": false
       }

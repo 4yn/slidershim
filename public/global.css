@@ -1,63 +1,132 @@
 html, body {
-	position: relative;
-	width: 100%;
-	height: 100%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  font-size: 16px;
+  background-color: #222;
+}
+
+* {
+  box-sizing: border-box;
+  color: #ddd;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-size: 1rem;
+  user-select: none;
 }
 
 body {
-	color: #333;
-	margin: 0;
-	padding: 8px;
-	box-sizing: border-box;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  margin: 0;
+  padding: 1rem;
 }
 
-a {
-	color: rgb(0,100,200);
-	text-decoration: none;
+.main {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
-a:hover {
-	text-decoration: underline;
+.header {
+  font-size: 2rem;
+  font-weight: 500;
 }
 
-a:visited {
-	color: rgb(0,80,160);
+.row, .row-2 {
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  justify-content: stretch;
 }
 
-label {
-	display: block;
+.row .label {
+  flex: 1 1 0;
 }
 
-input, button, select, textarea {
-	font-family: inherit;
-	font-size: inherit;
-	-webkit-padding: 0.4em 0;
-	padding: 0.4em;
-	margin: 0 0 0.5em 0;
-	box-sizing: border-box;
-	border: 1px solid #ccc;
-	border-radius: 2px;
+.row .input {
+  flex: 2 2 0;
 }
 
-input:disabled {
-	color: #ccc;
+input, select {
+  width: 100%;
+  background-color: #444;
+  color: #ddd;
+  border: none;
 }
 
 button {
-	color: #333;
-	background-color: #f4f4f4;
-	outline: none;
+  font-size: 1rem;
+  margin: 0.25rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  border: none;
+  background-color: #444;
 }
 
-button:disabled {
-	color: #999;
+button:hover {
+  background: #555;
 }
 
-button:not(:disabled):active {
-	background-color: #ddd;
+button:active {
+  background: #777;
 }
 
-button:focus {
-	border-color: #666;
+.preview {
+  width: 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.ground {
+  position: relative;
+  height: 3rem;
+}
+
+.ground-btn, .ground-led {
+  height: 3rem;
+  position:absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.ground-row {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.ground-btn > .ground-row > div {
+  text-align: center;
+  flex: 1 0 0;
+}
+
+.ground-led-0 {
+  flex: 1 0 0;
+}
+
+.ground-led-1 {
+  flex: 0.4rem 0 0;
+}
+
+.ground-led-2 {
+  flex: 0.2rem 0 0;
+}
+
+.ground-btn {
+  background-color: #0008;
+}
+
+.ground-data {
+  padding: 0.1rem 0;
+  font-size: 0.8rem;
 }
