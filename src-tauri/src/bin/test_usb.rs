@@ -2,7 +2,7 @@ extern crate slidershim;
 
 use std::io;
 
-use slidershim::slider_io::{config::Config, manager::Manager};
+use slidershim::slider_io::{Config, Manager};
 
 fn main() {
   let config = Config::from_str(
@@ -12,7 +12,8 @@ fn main() {
         "ledMode": "reactive-8",
         "keyboardSensitivity": 50
     }"#,
-  );
+  )
+  .unwrap();
 
   let manager = Manager::new(config);
 

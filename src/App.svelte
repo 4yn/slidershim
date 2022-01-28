@@ -13,9 +13,14 @@
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
 
+  let debugstr = "";
+
   onMount(async () => {
+    // console.log(emit, listen);
     await listen("showConfig", (event) => {
-      const payload: any = event.payload;
+      console.log("heartbeat", event);
+      debugstr = event.payload;
+      const payload: any = JSON.parse(event.payload as any);
       deviceMode = payload.deviceMode;
       outputMode = payload.outputMode;
       ledMode = payload.ledMode;
@@ -24,6 +29,7 @@
       ledSensitivity = payload.ledSensitivity;
       ledWebsocketUrl = payload.ledWebsocketUrl;
     });
+    await emit("heartbeat", "");
   });
 
   async function setConfig() {
@@ -59,6 +65,9 @@
       slidershim
     </div>
   </div>
+  <!-- <div>
+    {debugstr}
+  </div> -->
   <div class="row">
     <Preview />
   </div>
@@ -145,7 +154,7 @@
           min="1"
           max="255"
           step="1"
-          bind:value={keyboardSensitivity}
+          bind:value={ledSensitivity}
         />
       </div>
     </div>
@@ -157,7 +166,7 @@
           min="1"
           max="255"
           step="1"
-          bind:value={keyboardSensitivity}
+          bind:value={ledSensitivity}
         />
       </div>
     </div>

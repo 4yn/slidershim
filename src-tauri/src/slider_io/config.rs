@@ -1,5 +1,7 @@
+use directories::ProjectDirs;
+use std::{convert::TryFrom, fs, path::PathBuf};
+
 use serde_json::Value;
-use std::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub enum DeviceMode {
@@ -59,12 +61,12 @@ pub struct Config {
 }
 
 impl Config {
-  pub fn from_str(s: &str) -> Config {
-    let v: Value = serde_json::from_str(s).unwrap();
+  pub fn from_str(s: &str) -> Option<Config> {
+    let v: Value = serde_json::from_str(s).ok()?;
 
-    Config {
+    Some(Config {
       raw: s.to_string(),
-      device_mode: match v["deviceMode"].as_str().unwrap() {
+      device_mode: match v["deviceMode"].as_str()? {
         "none" => DeviceMode::None,
         "tasoller-one" => DeviceMode::TasollerOne,
         "tasoller-two" => DeviceMode::TasollerTwo,
@@ -77,34 +79,34 @@ impl Config {
         "none" => OutputMode::None,
         "kb-32-tasoller" => OutputMode::Keyboard {
           layout: KeyboardLayout::Tasoller,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64().unwrap()).unwrap(),
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-32-yuancon" => OutputMode::Keyboard {
           layout: KeyboardLayout::Yuancon,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64().unwrap()).unwrap(),
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-6-deemo" => OutputMode::Keyboard {
           layout: KeyboardLayout::Deemo,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64().unwrap()).unwrap(),
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "websocket" => OutputMode::Websocket {
           url: v["outputWebsocketUrl"].to_string(),
         },
         _ => panic!("Invalid output mode"),
       },
-      led_mode: match v["ledMode"].as_str().unwrap() {
+      led_mode: match v["ledMode"].as_str()? {
         "none" => LedMode::None,
         "reactive-4" => LedMode::Reactive {
           layout: ReactiveLayout::Four,
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64().unwrap()).unwrap(),
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         },
         "reactive-8" => LedMode::Reactive {
           layout: ReactiveLayout::Eight,
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64().unwrap()).unwrap(),
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         },
         "reactive-16" => LedMode::Reactive {
           layout: ReactiveLayout::Sixteen,
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64().unwrap()).unwrap(),
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         },
         "attract" => LedMode::Attract,
         "test" => LedMode::Test,
@@ -113,6 +115,56 @@ impl Config {
         },
         _ => panic!("Invalid led mode"),
       },
+    })
+  }
+
+  fn factory() -> Self {
+    Self::from_str(
+      r#"{
+      "deviceMode": "none",
+      "outputMode": "none",
+      "ledMode": "none",
+      "keyboardSensitivity": 20,
+      "outputWebsocketUrl": "localhost:3000",
+      "ledSensitivity": 20,
+      "ledWebsocketUrl": "localhost:3001"
+    }"#,
+    )
+    .unwrap()
+  }
+
+  fn get_saved_path() -> Option<Box<PathBuf>> {
+    let project_dir = ProjectDirs::from("me", "imp.ress", "slidershim").unwrap();
+    let config_dir = project_dir.config_dir();
+    fs::create_dir_all(config_dir);
+
+    let config_path = config_dir.join("config.json");
+
+    return Some(Box::new(config_path));
+  }
+
+  fn load_saved() -> Option<Self> {
+    let config_path = Self::get_saved_path()?;
+    if !config_path.exists() {
+      return None;
     }
+    println!("Found saved");
+    let mut saved_data = fs::read_to_string(config_path.as_path()).ok()?;
+    println!("Loaded saved {}", saved_data);
+    return Self::from_str(saved_data.as_str());
+  }
+
+  pub fn default() -> Self {
+    Self::load_saved()
+      .or_else(|| Some(Self::factory()))
+      .unwrap()
+  }
+
+  pub fn save(&self) -> Option<()> {
+    let config_path = Self::get_saved_path()?;
+    println!("Saving to {:?}", config_path);
+    fs::write(config_path.as_path(), self.raw.as_str()).unwrap();
+
+    Some(())
   }
 }

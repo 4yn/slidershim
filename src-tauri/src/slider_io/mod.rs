@@ -1,4 +1,4 @@
-pub mod config;
+mod config;
 
 mod controller_state;
 mod worker;
@@ -9,4 +9,7 @@ mod device;
 mod led;
 mod output;
 
-pub mod manager;
+mod manager;
+
+pub use config::Config;
+pub use manager::Manager;
