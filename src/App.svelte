@@ -6,21 +6,21 @@
 
   let deviceMode = "none";
   let outputMode = "none";
-  let lightingMode = "none";
+  let ledMode = "none";
 
   let keyboardSensitivity = 20;
-  let websocketOutputUrl = "http://localhost:3000";
-  let websocketLedUrl = "http://localhost:3001";
+  let outputWebsocketUrl = "http://localhost:3000";
+  let ledWebsocketUrl = "http://localhost:3001";
 
   onMount(async () => {
     await listen("showConfig", (event) => {
       const payload: any = event.payload;
       deviceMode = payload.deviceMode;
       outputMode = payload.outputMode;
-      lightingMode = payload.lightingMode;
+      ledMode = payload.ledMode;
       keyboardSensitivity = payload.keyboardSensitivity;
-      websocketOutputUrl = payload.websocketOutputUrl;
-      websocketLedUrl = payload.websocketLedUrl;
+      outputWebsocketUrl = payload.outputWebsocketUrl;
+      ledWebsocketUrl = payload.ledWebsocketUrl;
     });
   });
 
@@ -29,10 +29,10 @@
     await emit("setConfig", JSON.stringify({
       deviceMode,
       outputMode,
-      lightingMode,
+      ledMode,
       keyboardSensitivity,
-      websocketOutputUrl,
-      websocketLedUrl
+      outputWebsocketUrl,
+      ledWebsocketUrl
     }));
     console.log("Done");
   }
@@ -49,8 +49,8 @@
 <main class="main">
   <div class="row">
     <div class="header">
-      slidershim
       <!-- slidershim by @4yn -->
+      slidershim
     </div>
   </div>
   <div class="row">
@@ -61,7 +61,8 @@
     <div class="input">
       <select bind:value={deviceMode}>
         <option value="none">None</option>
-        <option value="tasoller">GAMO2 Tasoller, HID Firmware</option>
+        <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
+        <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
         <option value="yuancon">Yuancon Laverita, HID Firmware</option>
         <option value="brokenithm">Brokenithm</option>
         <option value="brokenithm-ground">Brokenithm, Ground only</option>
@@ -111,14 +112,14 @@
     <div class="row">
       <div class="label">Output URL</div>
       <div class="input">
-        <input placeholder="URL" bind:value={websocketOutputUrl} />
+        <input placeholder="URL" bind:value={outputWebsocketUrl} />
       </div>
     </div>
   {/if}
   <div class="row">
     <div class="label">LED Mode</div>
     <div class="input">
-      <select bind:value={lightingMode}>
+      <select bind:value={ledMode}>
         <option value="none">None</option>
         <option value="reactive-4">Reactive, 4-Zone</option>
         <option value="reactive-8">Reactive, 8-Zone</option>
@@ -129,11 +130,11 @@
       </select>
     </div>
   </div>
-  {#if lightingMode === "websocket"}
+  {#if ledMode === "websocket"}
     <div class="row">
       <div class="label">LED URL</div>
       <div class="input">
-        <input placeholder="URL" bind:value={websocketLedUrl} />
+        <input placeholder="URL" bind:value={ledWebsocketUrl} />
       </div>
     </div>
   {/if}

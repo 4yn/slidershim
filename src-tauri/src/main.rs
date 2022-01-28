@@ -2,6 +2,9 @@
   all(not(debug_assertions), target_os = "windows"),
   windows_subsystem = "windows"
 )]
+#![feature(div_duration)]
+
+mod slider_io;
 
 use tauri::{
   AppHandle, CustomMenuItem, Event, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
