@@ -20,7 +20,7 @@ fn update_reactive(
   controller_state: &ControllerState,
   led_state: &mut LedState,
   reactive_layout: &ReactiveLayout,
-  sensitivity: u8,
+  sensitivity: &u8,
 ) {
   let splits = match reactive_layout {
     ReactiveLayout::Four => 4,
@@ -30,10 +30,17 @@ fn update_reactive(
   let buttons_per_split = 32 / splits;
 
   let banks: Vec<bool> = controller_state
-    .ground_state
+    .flat(sensitivity)
     .chunks(buttons_per_split)
-    .map(|x| x.iter().max().unwrap() > &sensitivity)
+    .take(splits)
+    .map(|x| x.iter().any(|x| *x))
     .collect();
+
+  // controller_state
+  // .ground_state
+  // .chunks(buttons_per_split)
+  // .map(|x| x.iter().max().unwrap() > &sensitivity)
+  // .collect();
 
   // (0..splits)
   //   .map(|i| {
@@ -120,7 +127,7 @@ impl LedThread {
               controller_state_handle.deref(),
               led_state_handle.deref_mut(),
               layout,
-              20,
+              &20,
             )
           }
           LedMode::Attract => {

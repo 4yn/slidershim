@@ -17,6 +17,21 @@ impl ControllerState {
       extra_state: [0; 3],
     }
   }
+
+  pub fn flat(&self, sensitivity: &u8) -> Vec<bool> {
+    self
+      .ground_state
+      .iter()
+      .map(|x| x > sensitivity)
+      .chain(
+        self
+          .air_state
+          .iter()
+          .chain(self.extra_state.iter())
+          .map(|x| x > &0),
+      )
+      .collect()
+  }
 }
 
 pub struct LedState {
