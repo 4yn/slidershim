@@ -125,7 +125,7 @@ impl HidDeviceJob {
   }
 }
 
-const timeout: Duration = Duration::from_millis(20);
+const TIMEOUT: Duration = Duration::from_millis(20);
 
 impl Job for HidDeviceJob {
   fn setup(&mut self) {
@@ -138,7 +138,7 @@ impl Job for HidDeviceJob {
 
     {
       let res = handle
-        .read_interrupt(self.read_endpoint, &mut self.read_buf.data, timeout)
+        .read_interrupt(self.read_endpoint, &mut self.read_buf.data, TIMEOUT)
         .unwrap_or(0);
       self.read_buf.len = res;
       if self.read_buf.len != 0 {
@@ -153,7 +153,7 @@ impl Job for HidDeviceJob {
       (self.led_callback)(&mut self.led_buf, led_state_handle.deref_mut());
       if self.led_buf.len != 0 {
         let res = handle
-          .write_interrupt(self.led_endpoint, &self.led_buf.data, timeout)
+          .write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
           .unwrap_or(0);
         if res == self.led_buf.len + 1 {
           self.led_buf.len = 0;

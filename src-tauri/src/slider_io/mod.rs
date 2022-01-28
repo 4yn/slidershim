@@ -1,11 +1,12 @@
 pub mod config;
-pub mod controller_state;
-pub mod worker;
 
-pub mod keyboard;
+mod controller_state;
+mod worker;
 
-pub mod device;
-pub mod led;
-pub mod output;
+mod keyboard;
+
+mod device;
+mod led;
+mod output;
 
 pub mod manager;

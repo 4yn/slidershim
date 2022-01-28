@@ -56,7 +56,9 @@ fn main() {
     })
     .setup(|app| {
       app.listen_global("setConfig", |event| {
-        println!("Setting config to {}", event.payload().unwrap());
+        let payload = event.payload().unwrap();
+        println!("Setting config to {}", payload);
+        
       });
 
       let handle = app.handle();

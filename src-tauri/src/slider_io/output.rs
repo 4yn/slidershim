@@ -1,13 +1,7 @@
-use std::{
-  thread,
-  time::{Duration, Instant},
-};
+use std::{thread, time::Duration};
 
 use crate::slider_io::{
-  config::{KeyboardLayout, OutputMode},
-  controller_state::FullState,
-  keyboard::KeyboardOutput,
-  worker::Job,
+  config::OutputMode, controller_state::FullState, keyboard::KeyboardOutput, worker::Job,
 };
 
 pub struct KeyboardOutputJob {

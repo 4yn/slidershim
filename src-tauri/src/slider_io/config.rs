@@ -39,10 +39,15 @@ pub enum ReactiveLayout {
 #[derive(Debug, Clone)]
 pub enum LedMode {
   None,
-  Reactive { layout: ReactiveLayout },
+  Reactive {
+    layout: ReactiveLayout,
+    sensitivity: u8,
+  },
   Attract,
   Test,
-  Websocket { url: String },
+  Websocket {
+    url: String,
+  },
 }
 
 #[derive(Debug, Clone)]
@@ -91,12 +96,15 @@ impl Config {
         "none" => LedMode::None,
         "reactive-4" => LedMode::Reactive {
           layout: ReactiveLayout::Four,
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64().unwrap()).unwrap(),
         },
         "reactive-8" => LedMode::Reactive {
           layout: ReactiveLayout::Eight,
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64().unwrap()).unwrap(),
         },
         "reactive-16" => LedMode::Reactive {
           layout: ReactiveLayout::Sixteen,
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64().unwrap()).unwrap(),
         },
         "attract" => LedMode::Attract,
         "test" => LedMode::Test,

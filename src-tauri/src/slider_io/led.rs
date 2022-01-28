@@ -12,8 +12,6 @@ use crate::slider_io::{
   worker::Job,
 };
 
-type LedCallback = fn(&Vec<bool>, &mut LedState) -> ();
-
 pub struct LedJob {
   state: FullState,
   mode: LedMode,
@@ -25,19 +23,28 @@ pub struct LedJob {
 
 impl LedJob {
   pub fn new(state: &FullState, mode: &LedMode) -> Self {
-    let splits = match mode {
-      LedMode::Reactive { layout } => match layout {
-        ReactiveLayout::Four => 4,
-        ReactiveLayout::Eight => 8,
-        ReactiveLayout::Sixteen => 16,
-      },
-      _ => 16,
+    let mut splits = 16;
+    let mut sensitivity = 20;
+
+    match mode {
+      LedMode::Reactive {
+        layout,
+        sensitivity: sensitivity_ref,
+      } => {
+        sensitivity = *sensitivity_ref;
+        splits = match layout {
+          ReactiveLayout::Four => 4,
+          ReactiveLayout::Eight => 8,
+          ReactiveLayout::Sixteen => 16,
+        }
+      }
+      _ => {}
     };
 
     Self {
       state: state.clone(),
       mode: mode.clone(),
-      sensitivity: 20,
+      sensitivity,
 
       splits,
       buttons_per_split: 32 / splits,

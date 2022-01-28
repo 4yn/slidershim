@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { emit, listen } from "@tauri-apps/api/event";
 
-  import Preview from "./Preview.svelte"
+  import Preview from "./Preview.svelte";
 
   let deviceMode = "none";
   let outputMode = "none";
@@ -10,6 +10,7 @@
 
   let keyboardSensitivity = 20;
   let outputWebsocketUrl = "http://localhost:3000";
+  let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
 
   onMount(async () => {
@@ -20,29 +21,34 @@
       ledMode = payload.ledMode;
       keyboardSensitivity = payload.keyboardSensitivity;
       outputWebsocketUrl = payload.outputWebsocketUrl;
+      ledSensitivity = payload.ledSensitivity;
       ledWebsocketUrl = payload.ledWebsocketUrl;
     });
   });
 
   async function setConfig() {
     console.log("Updating config");
-    await emit("setConfig", JSON.stringify({
-      deviceMode,
-      outputMode,
-      ledMode,
-      keyboardSensitivity,
-      outputWebsocketUrl,
-      ledWebsocketUrl
-    }));
+    await emit(
+      "setConfig",
+      JSON.stringify({
+        deviceMode,
+        outputMode,
+        ledMode,
+        keyboardSensitivity,
+        outputWebsocketUrl,
+        ledSensitivity,
+        ledWebsocketUrl,
+      })
+    );
     console.log("Done");
   }
 
   async function hide() {
-    await emit("hide", "")
+    await emit("hide", "");
   }
 
   async function quit() {
-    await emit("quit", "")
+    await emit("quit", "");
   }
 </script>
 
@@ -96,7 +102,7 @@
       </div>
     </div>
     <div class="row">
-      <div class="label"></div>
+      <div class="label" />
       <div class="input">
         <input
           type="range"
@@ -130,6 +136,32 @@
       </select>
     </div>
   </div>
+  {#if ledMode.slice(0, 8) === "reactive"}
+    <div class="row">
+      <div class="label">Sensitivity</div>
+      <div class="input">
+        <input
+          type="number"
+          min="1"
+          max="255"
+          step="1"
+          bind:value={keyboardSensitivity}
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="label" />
+      <div class="input">
+        <input
+          type="range"
+          min="1"
+          max="255"
+          step="1"
+          bind:value={keyboardSensitivity}
+        />
+      </div>
+    </div>
+  {/if}
   {#if ledMode === "websocket"}
     <div class="row">
       <div class="label">LED URL</div>
