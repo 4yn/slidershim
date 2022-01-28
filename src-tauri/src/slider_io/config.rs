@@ -4,7 +4,8 @@ use std::convert::TryFrom;
 #[derive(Debug, Clone)]
 pub enum DeviceMode {
   None,
-  Tasoller { version: i64 },
+  TasollerOne,
+  TasollerTwo,
   Yuancon,
   Brokenithm { ground_only: bool },
 }
@@ -60,8 +61,8 @@ impl Config {
       raw: s.to_string(),
       device_mode: match v["deviceMode"].as_str().unwrap() {
         "none" => DeviceMode::None,
-        "tasoller-one" => DeviceMode::Tasoller { version: 1 },
-        "tasoller-two" => DeviceMode::Tasoller { version: 2 },
+        "tasoller-one" => DeviceMode::TasollerOne,
+        "tasoller-two" => DeviceMode::TasollerTwo,
         "yuancon" => DeviceMode::Yuancon,
         "brokenithm" => DeviceMode::Brokenithm { ground_only: false },
         "brokenithm-ground" => DeviceMode::Brokenithm { ground_only: true },

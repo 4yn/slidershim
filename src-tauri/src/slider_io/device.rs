@@ -23,7 +23,8 @@ impl DeviceThread {
     Self {
       thread: Some(match mode {
         DeviceMode::None => thread::spawn(|| {}),
-        DeviceMode::Tasoller { .. } => thread::spawn(|| {}),
+        DeviceMode::TasollerOne => thread::spawn(|| {}),
+        DeviceMode::TasollerTwo => thread::spawn(|| {}),
         DeviceMode::Yuancon => thread::spawn(move || {
           hid::poll_controller(
             0x1973,
