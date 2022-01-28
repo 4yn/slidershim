@@ -1,6 +1,5 @@
 use crate::slider_io::{
-  config::Config, controller_state::FullState, device::DeviceThread, device_job::HidDeviceJob,
-  led::LedThread, worker::Worker,
+  config::Config, controller_state::FullState, device::HidDeviceJob, led::LedThread, worker::Worker,
 };
 
 pub struct Manager {
