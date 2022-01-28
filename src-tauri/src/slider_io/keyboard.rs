@@ -90,14 +90,15 @@ impl KeyboardOutput {
     }
   }
 
-  pub fn tick(&mut self, controller_state: &ControllerState, sensitivity: &u8) {
+  pub fn tick(&mut self, flat_controller_state: &Vec<bool>) {
     self
       .next_keys
       .iter_mut()
-      .zip(controller_state.flat(sensitivity))
+      .zip(flat_controller_state)
       .for_each(|(a, b)| {
-        *a = b;
+        *a = *b;
       });
+    // println!("{:?}", self.next_keys);
     self.send();
   }
 
@@ -109,7 +110,12 @@ impl KeyboardOutput {
   fn send(&mut self) {
     self.n_kb_buf = 0;
 
-    for (i, (n, l)) in self.next_keys.iter().zip(self.last_keys.iter()).enumerate() {
+    for (i, (n, l)) in self
+      .next_keys
+      .iter_mut()
+      .zip(self.last_keys.iter_mut())
+      .enumerate()
+    {
       match (*n, *l) {
         (false, true) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
@@ -125,6 +131,7 @@ impl KeyboardOutput {
         }
         _ => {}
       }
+      *l = *n;
     }
 
     if self.n_kb_buf != 0 {

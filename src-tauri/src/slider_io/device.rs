@@ -69,7 +69,7 @@ impl HidDeviceJob {
     }
   }
 
-  pub fn from_config(mode: &DeviceMode, state: &FullState) -> Self {
+  pub fn from_config(state: &FullState, mode: &DeviceMode) -> Self {
     match mode {
       DeviceMode::Yuancon => Self::new(
         state.clone(),

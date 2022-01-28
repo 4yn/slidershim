@@ -3,6 +3,7 @@
   windows_subsystem = "windows"
 )]
 #![feature(div_duration)]
+#![feature(more_qualified_paths)]
 
 mod slider_io;
 

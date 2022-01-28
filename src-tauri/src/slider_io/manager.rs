@@ -1,30 +1,31 @@
 use crate::slider_io::{
-  config::Config, controller_state::FullState, device::HidDeviceJob, led::LedThread, worker::Worker,
+  config::Config, controller_state::FullState, device::HidDeviceJob, led::LedJob,
+  output::KeyboardOutputJob, worker::Worker,
 };
 
 pub struct Manager {
   state: FullState,
   config: Config,
-  // device_thread: DeviceThread,
   device_worker: Worker,
-  led_thread: LedThread,
+  output_worker: Worker,
+  led_worker: Worker,
 }
 
 impl Manager {
   pub fn new(config: Config) -> Self {
     let state = FullState::new();
-    // let device_thread = DeviceThread::new(&state, config.device_mode.clone());
-    let device_worker = Worker::new(HidDeviceJob::from_config(&config.device_mode, &state));
-    let led_thread = LedThread::new(&state, config.led_mode.clone());
+    let device_worker = Worker::new(HidDeviceJob::from_config(&state, &config.device_mode));
+    let output_worker = Worker::new(KeyboardOutputJob::new(&state, &config.output_mode));
+    let led_worker = Worker::new(LedJob::new(&state, &config.led_mode));
 
     println!("Starting manager with config: {:?}", config);
 
     Self {
       state,
       config,
-      // device_thread,
       device_worker,
-      led_thread,
+      output_worker,
+      led_worker,
     }
   }
 }

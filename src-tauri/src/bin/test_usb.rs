@@ -8,8 +8,9 @@ fn main() {
   let config = Config::from_str(
     r#"{
         "deviceMode": "yuancon",
-        "outputMode": "none",
-        "ledMode": "reactive-8"
+        "outputMode": "kb-32-tasoller",
+        "ledMode": "reactive-8",
+        "keyboardSensitivity": 50
     }"#,
   );
 
