@@ -1,8 +1,11 @@
 use std::{
   error,
   ops::{Deref, DerefMut},
+  thread,
   time::Duration,
 };
+
+use log::{error, info};
 
 use rusb::{self, DeviceHandle, GlobalContext};
 
@@ -182,11 +185,21 @@ impl HidDeviceJob {
   }
 
   fn setup_impl(&mut self) -> Result<(), Box<dyn error::Error>> {
-    let mut handle = rusb::open_device_with_vid_pid(self.vid, self.pid).unwrap();
+    info!("Device finding vid {} pid {}", self.vid, self.pid);
+    let handle = rusb::open_device_with_vid_pid(self.vid, self.pid);
+    if handle.is_none() {
+      error!("Could not find device");
+    }
+    let mut handle = handle.unwrap();
+    info!("Device found {:?}", handle);
+
     if handle.kernel_driver_active(0).unwrap_or(false) {
+      info!("Device detaching kernel driver");
       handle.detach_kernel_driver(0)?;
     }
+    info!("Device setting configuration");
     handle.set_active_configuration(1)?;
+    info!("Device claiming interface");
     handle.claim_interface(0)?;
     self.handle = Some(handle);
     Ok(())
@@ -217,24 +230,29 @@ impl Job for HidDeviceJob {
 
     // Led loop
     {
-      let mut led_state_handle = self.state.led_state.lock().unwrap();
-      if led_state_handle.dirty {
-        (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
-        led_state_handle.dirty = false;
-        if self.led_buf.len != 0 {
-          let res = (match self.led_write_type {
-            WriteType::Bulk => handle.write_bulk(self.led_endpoint, &self.led_buf.data, TIMEOUT),
-            WriteType::Interrupt => {
-              handle.write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
-            }
-          })
-          .unwrap_or(0);
-          if res == self.led_buf.len + 1 {
-            self.led_buf.len = 0;
+      {
+        let mut led_state_handle = self.state.led_state.lock().unwrap();
+        if led_state_handle.dirty {
+          (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
+          led_state_handle.dirty = false;
+        }
+      }
+
+      if self.led_buf.len != 0 {
+        let res = (match self.led_write_type {
+          WriteType::Bulk => handle.write_bulk(self.led_endpoint, &self.led_buf.data, TIMEOUT),
+          WriteType::Interrupt => {
+            handle.write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
           }
+        })
+        .unwrap_or(0);
+        if res == self.led_buf.len + 1 {
+          self.led_buf.len = 0;
         }
       }
     }
+
+    // thread::sleep(Duration::from_millis(10));
   }
 
   fn teardown(&mut self) {

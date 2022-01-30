@@ -1,3 +1,5 @@
+use log::info;
+
 use crate::slider_io::{
   config::Config, controller_state::FullState, device::HidDeviceJob, led::LedJob,
   output::KeyboardOutputJob, worker::Worker,
@@ -18,7 +20,7 @@ impl Manager {
     let output_worker = Worker::new(KeyboardOutputJob::new(&state, &config.output_mode));
     let led_worker = Worker::new(LedJob::new(&state, &config.led_mode));
 
-    println!("Starting manager with config: {:?}", config);
+    info!("Starting manager with config: {:?}", config);
 
     Self {
       state,

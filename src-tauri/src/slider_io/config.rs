@@ -1,6 +1,8 @@
-use directories::ProjectDirs;
 use std::{convert::TryFrom, fs, path::PathBuf};
 
+use log::info;
+
+use directories::ProjectDirs;
 use serde_json::Value;
 
 #[derive(Debug, Clone)]
@@ -148,9 +150,8 @@ impl Config {
     if !config_path.exists() {
       return None;
     }
-    println!("Found saved");
+    info!("Config file found at {:?}", config_path);
     let mut saved_data = fs::read_to_string(config_path.as_path()).ok()?;
-    println!("Loaded saved {}", saved_data);
     return Self::from_str(saved_data.as_str());
   }
 
@@ -161,10 +162,12 @@ impl Config {
   }
 
   pub fn save(&self) -> Option<()> {
+    info!("Config saving...");
     let config_path = Self::get_saved_path()?;
-    println!("Saving to {:?}", config_path);
+    info!("Config saving to {:?}", config_path);
     fs::write(config_path.as_path(), self.raw.as_str()).unwrap();
 
+    info!("Config saved");
     Some(())
   }
 }

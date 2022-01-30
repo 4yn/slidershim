@@ -9,6 +9,9 @@ mod slider_io;
 
 use std::sync::{Arc, Mutex};
 
+use env_logger;
+use log::info;
+
 use tauri::{
   AppHandle, CustomMenuItem, Event, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
@@ -26,9 +29,10 @@ fn quit_app() {
 }
 
 fn main() {
+  env_logger::init();
+
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
   {
-    println!("Saving");
     config.lock().unwrap().as_ref().unwrap().save();
   }
 
@@ -67,7 +71,7 @@ fn main() {
       let config_clone = Arc::clone(&config);
       app.listen_global("heartbeat", move |e| {
         let config_handle = config_clone.lock().unwrap();
-        println!("Heartbeat {}", config_handle.as_ref().unwrap().raw.as_str());
+        info!("Heartbeat received");
         app_handle
           .emit_all(
             "showConfig",
@@ -79,7 +83,7 @@ fn main() {
       let config_clone = Arc::clone(&config);
       app.listen_global("setConfig", move |event| {
         let payload = event.payload().unwrap();
-        println!("Setting config to {}", payload);
+        info!("Config applied {}", payload);
         if let Some(new_config) = slider_io::Config::from_str(payload) {
           let mut config_handle = config_clone.lock().unwrap();
           config_handle.replace(new_config);

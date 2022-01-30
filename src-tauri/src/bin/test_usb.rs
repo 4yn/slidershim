@@ -5,6 +5,10 @@ use std::io;
 use slidershim::slider_io::{Config, Manager};
 
 fn main() {
+  env_logger::Builder::new()
+    .filter_level(log::LevelFilter::Debug)
+    .init();
+
   // let config = Config::from_str(
   //   r#"{
   //       "deviceMode": "yuancon",
@@ -17,7 +21,7 @@ fn main() {
 
   let config = Config::from_str(
     r#"{
-        "deviceMode": "yuancon",
+        "deviceMode": "tasoller-two",
         "outputMode": "kb-32-tasoller",
         "keyboardSensitivity": 50,
         "ledMode": "reactive-8",
