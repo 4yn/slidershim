@@ -1,13 +1,14 @@
 use std::{
   error,
   ops::{Deref, DerefMut},
+  sync::mpsc,
   thread,
   time::Duration,
 };
 
 use log::{error, info};
 
-use rusb::{self, DeviceHandle, GlobalContext};
+use rusb::{self, Device, DeviceHandle, GlobalContext, Hotplug, HotplugBuilder, Registration};
 
 use crate::slider_io::{
   config::DeviceMode,
@@ -41,6 +42,36 @@ enum WriteType {
   Interrupt,
 }
 
+type HandleOption = Option<DeviceHandle<GlobalContext>>;
+type HandleSender = mpsc::SyncSender<HandleOption>;
+type HandleReceiver = mpsc::Receiver<HandleOption>;
+
+struct HidDeviceHotplug {
+  sender: HandleSender,
+}
+
+impl HidDeviceHotplug {
+  fn build() -> (HandleSender, HandleReceiver) {
+    return mpsc::sync_channel::<HandleOption>(10);
+  }
+
+  fn new(sender: HandleSender) -> Self {
+    Self { sender }
+  }
+}
+
+impl Hotplug<GlobalContext> for HidDeviceHotplug {
+  fn device_arrived(&mut self, device: Device<GlobalContext>) {
+    info!("Hotplug arrived {:?}", device);
+    self.sender.send(device.open().ok());
+  }
+
+  fn device_left(&mut self, device: Device<GlobalContext>) {
+    info!("Hotplug left {:?}", device);
+    self.sender.send(None);
+  }
+}
+
 pub struct HidDeviceJob {
   state: FullState,
   vid: u16,
@@ -55,7 +86,9 @@ pub struct HidDeviceJob {
   led_callback: HidLedCallback,
   led_buf: Buffer,
 
-  handle: Option<DeviceHandle<GlobalContext>>,
+  registration: Option<Registration<GlobalContext>>,
+  handle_rx: Option<HandleReceiver>,
+  handle: HandleOption,
 }
 
 impl HidDeviceJob {
@@ -80,6 +113,9 @@ impl HidDeviceJob {
       led_write_type: led_type,
       led_callback,
       led_buf: Buffer::new(),
+
+      registration: None,
+      handle_rx: None,
       handle: None,
     }
   }
@@ -203,13 +239,30 @@ impl HidDeviceJob {
     }
   }
 
-  fn setup_impl(&mut self) -> Result<(), Box<dyn error::Error>> {
-    info!("Device finding vid {} pid {}", self.vid, self.pid);
-    let handle = rusb::open_device_with_vid_pid(self.vid, self.pid);
-    if handle.is_none() {
+  fn setup_impl(&mut self) {
+    let (tx, rx) = HidDeviceHotplug::build();
+    info!("Registering hotplug");
+    let registration_result = HotplugBuilder::new()
+      .vendor_id(self.vid)
+      .product_id(self.pid)
+      .enumerate(true)
+      .register(GlobalContext {}, Box::new(HidDeviceHotplug::new(tx)));
+
+    if registration_result.is_ok() {
+      self.registration = registration_result.ok();
+      info!("Registering OK");
+    } else {
+      error!("Registering error {:?}", registration_result.err().unwrap());
+    }
+
+    self.handle_rx = Some(rx);
+  }
+
+  fn init_handle(&mut self) -> Result<(), Box<dyn error::Error>> {
+    if self.handle.is_none() {
       error!("Could not find device");
     }
-    let mut handle = handle.unwrap();
+    let mut handle = self.handle.as_mut().unwrap();
     info!("Device found {:?}", handle);
 
     if handle.kernel_driver_active(0).unwrap_or(false) {
@@ -220,7 +273,7 @@ impl HidDeviceJob {
     handle.set_active_configuration(1)?;
     info!("Device claiming interface");
     handle.claim_interface(0)?;
-    self.handle = Some(handle);
+
     Ok(())
   }
 }
@@ -229,53 +282,60 @@ const TIMEOUT: Duration = Duration::from_millis(20);
 
 impl Job for HidDeviceJob {
   fn setup(&mut self) {
-    self.setup_impl().unwrap();
+    self.setup_impl();
   }
 
   fn tick(&mut self) {
-    // Input loop
-    let handle = self.handle.as_mut().unwrap();
-
-    {
-      let res = handle
-        .read_interrupt(self.read_endpoint, &mut self.read_buf.data, TIMEOUT)
-        .unwrap_or(0);
-      self.read_buf.len = res;
-      if self.read_buf.len != 0 {
-        let mut controller_state_handle = self.state.controller_state.lock().unwrap();
-        (self.read_callback)(&self.read_buf, controller_state_handle.deref_mut());
-      }
-    }
-
-    // Led loop
-    {
+    if let Some(handle) = self.handle.as_mut() {
+      // Input loop
       {
-        let mut led_state_handle = self.state.led_state.lock().unwrap();
-        if led_state_handle.dirty {
-          (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
-          led_state_handle.dirty = false;
+        let res = handle
+          .read_interrupt(self.read_endpoint, &mut self.read_buf.data, TIMEOUT)
+          .unwrap_or(0);
+        self.read_buf.len = res;
+        if self.read_buf.len != 0 {
+          let mut controller_state_handle = self.state.controller_state.lock().unwrap();
+          (self.read_callback)(&self.read_buf, controller_state_handle.deref_mut());
         }
       }
 
-      if self.led_buf.len != 0 {
-        let res = (match self.led_write_type {
-          WriteType::Bulk => handle.write_bulk(self.led_endpoint, &self.led_buf.data, TIMEOUT),
-          WriteType::Interrupt => {
-            handle.write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
+      // Led loop
+      {
+        {
+          let mut led_state_handle = self.state.led_state.lock().unwrap();
+          if led_state_handle.dirty {
+            (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
+            led_state_handle.dirty = false;
           }
-        })
-        .unwrap_or(0);
-        if res == self.led_buf.len + 1 {
-          self.led_buf.len = 0;
+        }
+
+        if self.led_buf.len != 0 {
+          let res = (match self.led_write_type {
+            WriteType::Bulk => handle.write_bulk(self.led_endpoint, &self.led_buf.data, TIMEOUT),
+            WriteType::Interrupt => {
+              handle.write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
+            }
+          })
+          .unwrap_or(0);
+          if res == self.led_buf.len + 1 {
+            self.led_buf.len = 0;
+          }
         }
       }
+    } else {
+      // Stall a while, wait for hotplug
+      thread::sleep(Duration::from_millis(1000));
     }
 
-    // thread::sleep(Duration::from_millis(10));
+    // Hotplug recieved
+    if let Some(handle_msg) = self.handle_rx.as_ref().unwrap().try_recv().ok() {
+      self.handle = handle_msg;
+    }
   }
 
   fn teardown(&mut self) {
-    let handle = self.handle.as_mut().unwrap();
-    handle.release_interface(0).ok();
+    if let Some(mut handle) = self.handle.take() {
+      handle.release_interface(0).ok();
+    }
   }
 }
