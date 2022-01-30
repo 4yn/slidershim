@@ -1,4 +1,8 @@
-use std::{error, ops::DerefMut, time::Duration};
+use std::{
+  error,
+  ops::{Deref, DerefMut},
+  time::Duration,
+};
 
 use rusb::{self, DeviceHandle, GlobalContext};
 
@@ -9,14 +13,14 @@ use crate::slider_io::{
 };
 
 pub struct Buffer {
-  pub data: [u8; 128],
+  pub data: [u8; 256],
   pub len: usize,
 }
 
 impl Buffer {
   pub fn new() -> Self {
     Buffer {
-      data: [0; 128],
+      data: [0; 256],
       len: 0,
     }
   }
@@ -27,7 +31,12 @@ impl Buffer {
 }
 
 type HidReadCallback = fn(&Buffer, &mut ControllerState) -> ();
-type HidLedCallback = fn(&mut Buffer, &mut LedState) -> ();
+type HidLedCallback = fn(&mut Buffer, &LedState) -> ();
+
+enum WriteType {
+  Bulk,
+  Interrupt,
+}
 
 pub struct HidDeviceJob {
   state: FullState,
@@ -39,6 +48,7 @@ pub struct HidDeviceJob {
   read_callback: HidReadCallback,
   read_buf: Buffer,
 
+  led_write_type: WriteType,
   led_callback: HidLedCallback,
   led_buf: Buffer,
 
@@ -53,6 +63,7 @@ impl HidDeviceJob {
     read_endpoint: u8,
     led_endpoint: u8,
     read_callback: HidReadCallback,
+    led_type: WriteType,
     led_callback: HidLedCallback,
   ) -> Self {
     Self {
@@ -63,6 +74,7 @@ impl HidDeviceJob {
       led_endpoint,
       read_callback,
       read_buf: Buffer::new(),
+      led_write_type: led_type,
       led_callback,
       led_buf: Buffer::new(),
       handle: None,
@@ -71,6 +83,65 @@ impl HidDeviceJob {
 
   pub fn from_config(state: &FullState, mode: &DeviceMode) -> Self {
     match mode {
+      DeviceMode::TasollerOne => Self::new(
+        state.clone(),
+        0x1ccf,
+        0x2333,
+        0x84,
+        0x03,
+        |buf, controller_state| {
+          if buf.len != 11 {
+            return;
+          }
+
+          let bits: Vec<u8> = buf
+            .data
+            .iter()
+            .flat_map(|x| (0..8).map(move |i| ((x) >> i) & 1))
+            .collect();
+          for i in 0..32 {
+            controller_state.ground_state[i] = bits[34 + i] * 255;
+          }
+          controller_state.air_state.copy_from_slice(&bits[28..34]);
+        },
+        WriteType::Bulk,
+        |buf, led_state| {
+          buf.len = 240;
+          buf.data[0] = 'B' as u8;
+          buf.data[1] = 'L' as u8;
+          buf.data[2] = '\x00' as u8;
+          buf.data[3..96].copy_from_slice(&led_state.led_state[..3 * 31]);
+          buf.data[96..240].fill(0);
+        },
+      ),
+      DeviceMode::TasollerTwo => Self::new(
+        state.clone(),
+        0x1ccf,
+        0x2333,
+        0x84,
+        0x03,
+        |buf, controller_state| {
+          if buf.len != 36 {
+            return;
+          }
+
+          controller_state
+            .ground_state
+            .copy_from_slice(&buf.data[4..36]);
+          for i in 0..6 {
+            controller_state.air_state[i] = (buf.data[3] >> (i + 2)) & 1;
+          }
+        },
+        WriteType::Bulk,
+        |buf, led_state| {
+          buf.len = 240;
+          buf.data[0] = 'B' as u8;
+          buf.data[1] = 'L' as u8;
+          buf.data[2] = '\x00' as u8;
+          buf.data[3..96].copy_from_slice(&led_state.led_state[..3 * 31]);
+          buf.data[96..240].fill(0);
+        },
+      ),
       DeviceMode::Yuancon => Self::new(
         state.clone(),
         0x1973,
@@ -84,7 +155,7 @@ impl HidDeviceJob {
 
           controller_state
             .ground_state
-            .clone_from_slice(&buf.data[2..34]);
+            .copy_from_slice(&buf.data[2..34]);
           for i in 0..6 {
             controller_state.air_state[i ^ 1] = if buf.data[0] & (1 << i) == 0 { 1 } else { 0 };
           }
@@ -92,21 +163,18 @@ impl HidDeviceJob {
             controller_state.extra_state[i] = if buf.data[1] & (1 << i) == 0 { 1 } else { 0 };
           }
         },
+        WriteType::Interrupt,
         |buf, led_state| {
-          if !led_state.dirty {
-            return;
-          }
           buf.len = 31 * 2;
-          buf
+          for (buf_chunk, state_chunk) in buf
             .data
             .chunks_mut(2)
             .take(31)
             .zip(led_state.led_state.chunks(3).rev())
-            .for_each(|(buf_chunk, state_chunk)| {
-              buf_chunk[0] = (state_chunk[0] << 3 & 0xe0) | (state_chunk[2] >> 3);
-              buf_chunk[1] = (state_chunk[1] & 0xf8) | (state_chunk[0] >> 5);
-            });
-          led_state.dirty = false;
+          {
+            buf_chunk[0] = (state_chunk[0] << 3 & 0xe0) | (state_chunk[2] >> 3);
+            buf_chunk[1] = (state_chunk[1] & 0xf8) | (state_chunk[0] >> 5);
+          }
         },
       ),
       _ => panic!("Not implemented"),
@@ -150,13 +218,20 @@ impl Job for HidDeviceJob {
     // Led loop
     {
       let mut led_state_handle = self.state.led_state.lock().unwrap();
-      (self.led_callback)(&mut self.led_buf, led_state_handle.deref_mut());
-      if self.led_buf.len != 0 {
-        let res = handle
-          .write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
+      if led_state_handle.dirty {
+        (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
+        led_state_handle.dirty = false;
+        if self.led_buf.len != 0 {
+          let res = (match self.led_write_type {
+            WriteType::Bulk => handle.write_bulk(self.led_endpoint, &self.led_buf.data, TIMEOUT),
+            WriteType::Interrupt => {
+              handle.write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
+            }
+          })
           .unwrap_or(0);
-        if res == self.led_buf.len + 1 {
-          self.led_buf.len = 0;
+          if res == self.led_buf.len + 1 {
+            self.led_buf.len = 0;
+          }
         }
       }
     }
