@@ -105,7 +105,9 @@ impl HidDeviceJob {
           for i in 0..32 {
             controller_state.ground_state[i] = bits[34 + i] * 255;
           }
+
           controller_state.air_state.copy_from_slice(&bits[28..34]);
+          controller_state.extra_state.copy_from_slice(&bits[26..28]);
         },
         WriteType::Bulk,
         |buf, led_state| {
@@ -113,7 +115,15 @@ impl HidDeviceJob {
           buf.data[0] = 'B' as u8;
           buf.data[1] = 'L' as u8;
           buf.data[2] = '\x00' as u8;
-          buf.data[3..96].copy_from_slice(&led_state.led_state[..3 * 31]);
+          for (buf_chunk, state_chunk) in buf.data[3..96]
+            .chunks_mut(3)
+            .take(31)
+            .zip(led_state.led_state.chunks(3).rev())
+          {
+            buf_chunk[0] = state_chunk[2];
+            buf_chunk[1] = state_chunk[1];
+            buf_chunk[2] = state_chunk[0];
+          }
           buf.data[96..240].fill(0);
         },
       ),
@@ -131,9 +141,10 @@ impl HidDeviceJob {
           controller_state
             .ground_state
             .copy_from_slice(&buf.data[4..36]);
-          for i in 0..6 {
-            controller_state.air_state[i] = (buf.data[3] >> (i + 2)) & 1;
-          }
+
+          let bits: Vec<u8> = (0..8).map(|x| (buf.data[3] >> x) & 1).collect();
+          controller_state.air_state.copy_from_slice(&bits[2..8]);
+          controller_state.extra_state.copy_from_slice(&bits[2..8]);
         },
         WriteType::Bulk,
         |buf, led_state| {
@@ -141,7 +152,15 @@ impl HidDeviceJob {
           buf.data[0] = 'B' as u8;
           buf.data[1] = 'L' as u8;
           buf.data[2] = '\x00' as u8;
-          buf.data[3..96].copy_from_slice(&led_state.led_state[..3 * 31]);
+          for (buf_chunk, state_chunk) in buf.data[3..96]
+            .chunks_mut(3)
+            .take(31)
+            .zip(led_state.led_state.chunks(3).rev())
+          {
+            buf_chunk[0] = state_chunk[2];
+            buf_chunk[1] = state_chunk[1];
+            buf_chunk[2] = state_chunk[0];
+          }
           buf.data[96..240].fill(0);
         },
       ),
