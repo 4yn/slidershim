@@ -92,7 +92,8 @@
         <option value="kb-32-tasoller">Keyboard 32-zone, Tasoller Layout</option
         >
         <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option>
-        <option value="kb-6-deemo">Keyboard 6-zone, Deemo Layout</option>
+        <option value="kb-8-deemo">Keyboard 8-zone, Deemo Layout</option>
+        <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
         <option value="websocket">Websocket</option>
       </select>
     </div>
@@ -139,6 +140,7 @@
         <option value="reactive-4">Reactive, 4-Zone</option>
         <option value="reactive-8">Reactive, 8-Zone</option>
         <option value="reactive-16">Reactive, 16-Zone</option>
+        <option value="reactive-voltex">Reactive, Voltex Layout</option>
         <option value="attract">Rainbow Attract Mode</option>
         <option value="test">LED Test</option>
         <option value="websocket">Websocket</option>

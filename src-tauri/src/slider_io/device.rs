@@ -179,10 +179,11 @@ impl HidDeviceJob {
             .ground_state
             .copy_from_slice(&buf.data[2..34]);
           for i in 0..6 {
-            controller_state.air_state[i ^ 1] = if buf.data[0] & (1 << i) == 0 { 1 } else { 0 };
+            controller_state.air_state[i ^ 1] = 0;
+            // controller_state.air_state[i ^ 1] = (buf.data[0] >> i) & 1;
           }
           for i in 0..3 {
-            controller_state.extra_state[i] = if buf.data[1] & (1 << i) == 0 { 1 } else { 0 };
+            controller_state.extra_state[i] = (buf.data[1] >> i) & 1;
           }
         },
         WriteType::Interrupt,

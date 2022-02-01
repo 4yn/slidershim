@@ -48,6 +48,10 @@ impl LedState {
       start: Instant::now(),
     }
   }
+
+  pub fn paint(&mut self, idx: usize, color: &[u8; 3]) {
+    self.led_state[3 * idx..3 * (idx + 1)].copy_from_slice(color);
+  }
 }
 
 pub struct FullState {

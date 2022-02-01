@@ -19,6 +19,7 @@ pub enum KeyboardLayout {
   Tasoller,
   Yuancon,
   Deemo,
+  Voltex,
 }
 
 #[derive(Debug, Clone)]
@@ -35,9 +36,8 @@ pub enum OutputMode {
 
 #[derive(Debug, Clone, Copy)]
 pub enum ReactiveLayout {
-  Four,
-  Eight,
-  Sixteen,
+  Even { splits: usize },
+  Voltex,
 }
 
 #[derive(Debug, Clone)]
@@ -87,8 +87,12 @@ impl Config {
           layout: KeyboardLayout::Yuancon,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
-        "kb-6-deemo" => OutputMode::Keyboard {
+        "kb-8-deemo" => OutputMode::Keyboard {
           layout: KeyboardLayout::Deemo,
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        },
+        "kb-voltex" => OutputMode::Keyboard {
+          layout: KeyboardLayout::Voltex,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "websocket" => OutputMode::Websocket {
@@ -99,15 +103,19 @@ impl Config {
       led_mode: match v["ledMode"].as_str()? {
         "none" => LedMode::None,
         "reactive-4" => LedMode::Reactive {
-          layout: ReactiveLayout::Four,
+          layout: ReactiveLayout::Even { splits: 4 },
           sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         },
         "reactive-8" => LedMode::Reactive {
-          layout: ReactiveLayout::Eight,
+          layout: ReactiveLayout::Even { splits: 8 },
           sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         },
         "reactive-16" => LedMode::Reactive {
-          layout: ReactiveLayout::Sixteen,
+          layout: ReactiveLayout::Even { splits: 16 },
+          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
+        },
+        "reactive-voltex" => LedMode::Reactive {
+          layout: ReactiveLayout::Voltex,
           sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         },
         "attract" => LedMode::Attract,

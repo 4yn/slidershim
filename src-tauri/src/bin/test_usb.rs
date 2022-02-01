@@ -13,22 +13,34 @@ fn main() {
   //   r#"{
   //       "deviceMode": "yuancon",
   //       "outputMode": "kb-32-tasoller",
+  //       "keyboardSensitivity": 50,fdwdfp1
   //       "ledMode": "reactive-8",
-  //       "keyboardSensitivity": 50
+  //       "ledSensitivity": 50
   //   }"#,
   // )
   // .unwrap();
 
   let config = Config::from_str(
     r#"{
-        "deviceMode": "tasoller-two",
-        "outputMode": "kb-32-tasoller",
+        "deviceMode": "yuancon",
+        "outputMode": "kb-voltex",
         "keyboardSensitivity": 50,
-        "ledMode": "reactive-8",
+        "ledMode": "reactive-voltex",
         "ledSensitivity": 50
     }"#,
   )
   .unwrap();
+
+  // let config = Config::from_str(
+  //   r#"{
+  //       "deviceMode": "tasoller-two",
+  //       "outputMode": "kb-32-tasoller",
+  //       "keyboardSensitivity": 50,
+  //       "ledMode": "reactive-8",
+  //       "ledSensitivity": 50
+  //   }"#,
+  // )
+  // .unwrap();
 
   let manager = Manager::new(config);
 
