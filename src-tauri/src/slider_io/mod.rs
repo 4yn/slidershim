@@ -1,8 +1,11 @@
 mod config;
-
-mod controller_state;
+mod utils;
 mod worker;
 
+mod controller_state;
+mod voltex;
+
+mod gamepad;
 mod keyboard;
 
 mod device;

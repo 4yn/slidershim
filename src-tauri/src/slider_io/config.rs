@@ -20,6 +20,7 @@ pub enum KeyboardLayout {
   Yuancon,
   Deemo,
   Voltex,
+  GamepadVoltex,
 }
 
 #[derive(Debug, Clone)]
@@ -51,6 +52,9 @@ pub enum LedMode {
   Test,
   Websocket {
     url: String,
+  },
+  Serial {
+    port: String,
   },
 }
 
@@ -95,8 +99,12 @@ impl Config {
           layout: KeyboardLayout::Voltex,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
+        "gamepad-voltex" => OutputMode::Keyboard {
+          layout: KeyboardLayout::GamepadVoltex,
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        },
         "websocket" => OutputMode::Websocket {
-          url: v["outputWebsocketUrl"].to_string(),
+          url: v["outputWebsocketUrl"].as_str()?.to_string(),
         },
         _ => panic!("Invalid output mode"),
       },
@@ -121,7 +129,10 @@ impl Config {
         "attract" => LedMode::Attract,
         "test" => LedMode::Test,
         "websocket" => LedMode::Websocket {
-          url: v["ledWebsocketUrl"].to_string(),
+          url: v["ledWebsocketUrl"].as_str()?.to_string(),
+        },
+        "serial" => LedMode::Serial {
+          port: v["ledSerialPort"].as_str()?.to_string(),
         },
         _ => panic!("Invalid led mode"),
       },
@@ -137,7 +148,8 @@ impl Config {
       "keyboardSensitivity": 20,
       "outputWebsocketUrl": "localhost:3000",
       "ledSensitivity": 20,
-      "ledWebsocketUrl": "localhost:3001"
+      "ledWebsocketUrl": "localhost:3001",
+      "ledSerialPort": "COM5"
     }"#,
     )
     .unwrap()

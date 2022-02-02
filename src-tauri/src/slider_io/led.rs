@@ -4,17 +4,23 @@ use std::{
   time::{Duration, Instant},
 };
 
+use log::{error, info};
+
 use palette::{FromColor, Hsv, Srgb};
+use serialport::{ClearBuffer, SerialPort, StopBits};
 
 use crate::slider_io::{
   config::{LedMode, ReactiveLayout},
   controller_state::{FullState, LedState},
+  utils::Buffer,
+  voltex::VoltexState,
   worker::Job,
 };
 
 pub struct LedJob {
   state: FullState,
   mode: LedMode,
+  serial_port: Option<Box<dyn SerialPort>>,
 }
 
 impl LedJob {
@@ -22,10 +28,16 @@ impl LedJob {
     Self {
       state: state.clone(),
       mode: mode.clone(),
+      serial_port: None,
     }
   }
 
-  fn calc_lights(&self, flat_controller_state: Option<&Vec<bool>>, led_state: &mut LedState) {
+  fn calc_lights(
+    &self,
+    flat_controller_state: Option<&Vec<bool>>,
+    serial_buffer: Option<&Buffer>,
+    led_state: &mut LedState,
+  ) {
     match self.mode {
       LedMode::Reactive { layout, .. } => {
         let flat_controller_state = flat_controller_state.unwrap();
@@ -63,47 +75,40 @@ impl LedJob {
             }
             led_state.paint(27, &[64, 0, 0]);
 
-            // Left laser left
-            if flat_controller_state[0..4].contains(&true) {
-              for idx in 0..3 {
-                led_state.paint(idx, &[0, 0, 255]);
-              }
-            };
+            let voltex_state = VoltexState::from_flat(flat_controller_state);
 
-            // Left laser right
-            if flat_controller_state[4..8].contains(&true) {
-              for idx in 4..7 {
-                led_state.paint(idx, &[0, 0, 255]);
+            // Left laser
+            for (idx, state) in voltex_state.laser[0..2].iter().enumerate() {
+              if *state {
+                led_state.paint(0 + idx * 4, &[0, 0, 255]);
+                led_state.paint(1 + idx * 4, &[0, 0, 255]);
+                led_state.paint(2 + idx * 4, &[0, 0, 255]);
               }
-            };
+            }
 
-            // Right laser left
-            if flat_controller_state[24..28].contains(&true) {
-              for idx in 24..27 {
-                led_state.paint(idx, &[255, 0, 0]);
+            // Right laser
+            for (idx, state) in voltex_state.laser[2..4].iter().enumerate() {
+              if *state {
+                led_state.paint(24 + idx * 4, &[255, 0, 0]);
+                led_state.paint(25 + idx * 4, &[255, 0, 0]);
+                led_state.paint(26 + idx * 4, &[255, 0, 0]);
               }
-            };
-            // Right laser right
-            if flat_controller_state[28..32].contains(&true) {
-              for idx in 28..31 {
-                led_state.paint(idx, &[255, 0, 0]);
-              }
-            };
+            }
 
             // Buttons
-            for (btn_idx, btn_banks) in flat_controller_state[8..24].chunks(4).enumerate() {
-              if btn_banks.iter().skip(1).step_by(2).any(|x| *x) {
-                led_state.paint(8 + btn_idx * 4, &[255, 255, 255]);
-                led_state.paint(10 + btn_idx * 4, &[255, 255, 255]);
+            for (idx, state) in voltex_state.bt.iter().enumerate() {
+              if *state {
+                led_state.paint(8 + idx * 4, &[255, 255, 255]);
+                led_state.paint(10 + idx * 4, &[255, 255, 255]);
               }
             }
 
             // Fx
-            for (fx_idx, fx_banks) in flat_controller_state[8..24].chunks(8).enumerate() {
-              if fx_banks.iter().step_by(2).any(|x| *x) {
-                led_state.paint(9 + fx_idx * 8, &[255, 0, 0]);
-                led_state.paint(11 + fx_idx * 8, &[255, 0, 0]);
-                led_state.paint(13 + fx_idx * 8, &[255, 0, 0]);
+            for (idx, state) in voltex_state.fx.iter().enumerate() {
+              if *state {
+                led_state.paint(9 + idx * 8, &[255, 0, 0]);
+                led_state.paint(11 + idx * 8, &[255, 0, 0]);
+                led_state.paint(13 + idx * 8, &[255, 0, 0]);
               }
             }
           }
@@ -118,6 +123,26 @@ impl LedJob {
           led_state.paint(idx, &[color.red, color.green, color.blue]);
         }
       }
+      LedMode::Serial { .. } => {
+        // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialProcessor.h
+        // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialProcessor.cpp
+        // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialLeds.h
+        // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialLeds.cpp
+        if let Some(serial_buffer) = serial_buffer {
+          // println!("buffer {:?}", serial_buffer.data);
+          if serial_buffer.data[0] == 0xaa && serial_buffer.data[1] == 0xaa {
+            for (idx, buf_chunk) in serial_buffer.data[2..95]
+              .chunks(3)
+              .take(31)
+              .rev()
+              .enumerate()
+            {
+              led_state.paint(idx, &[(*buf_chunk)[1], (*buf_chunk)[2], (*buf_chunk)[0]]);
+            }
+            println!("leds {:?}", led_state.led_state);
+          }
+        }
+      }
       _ => panic!("Not implemented"),
     }
 
@@ -126,22 +151,77 @@ impl LedJob {
 }
 
 impl Job for LedJob {
-  fn setup(&mut self) {}
+  fn setup(&mut self) -> bool {
+    match &self.mode {
+      LedMode::Serial { port } => {
+        info!(
+          "Serial port for led opening at {} {:?}",
+          port.as_str(),
+          115200
+        );
+        self.serial_port = match serialport::new(port, 115200).open() {
+          Ok(s) => {
+            info!("Serial port opened");
+            Some(s)
+          }
+          Err(e) => {
+            error!("Serial port could not open, exiting thread early");
+            None
+          }
+        };
+
+        self.serial_port.is_some()
+      }
+      _ => true,
+    }
+  }
 
   fn tick(&mut self) {
-    let flat_controller_state: Option<Vec<bool>> = match self.mode {
+    let mut flat_controller_state: Option<Vec<bool>> = None;
+    let mut serial_buffer: Option<Buffer> = None;
+
+    // Do the IO here
+    match self.mode {
       LedMode::Reactive { sensitivity, .. } => {
         let controller_state_handle = self.state.controller_state.lock().unwrap();
-        Some(controller_state_handle.flat(&sensitivity))
+        flat_controller_state = Some(controller_state_handle.flat(&sensitivity));
       }
-      _ => None,
-    };
+      LedMode::Serial { .. } => {
+        if let Some(serial_port) = self.serial_port.as_mut() {
+          let mut serial_data_avail = serial_port.bytes_to_read().unwrap_or(0);
+          if serial_data_avail < 100 {
+            return;
+          }
 
+          if serial_data_avail % 100 == 0 {
+            let mut serial_buffer_working = Buffer::new();
+            serial_port
+              .as_mut()
+              .read_exact(&mut serial_buffer_working.data[..100])
+              .ok()
+              .unwrap();
+            serial_data_avail -= 100;
+            serial_buffer = Some(serial_buffer_working);
+          }
+
+          if serial_data_avail > 0 {
+            serial_port.clear(ClearBuffer::All);
+          }
+        }
+      }
+      _ => {}
+    }
+
+    // Then calculate and transfer
     {
       let mut led_state_handle = self.state.led_state.lock().unwrap();
-      self.calc_lights(flat_controller_state.as_ref(), led_state_handle.deref_mut());
+      self.calc_lights(
+        flat_controller_state.as_ref(),
+        serial_buffer.as_ref(),
+        led_state_handle.deref_mut(),
+      );
     }
-    thread::sleep(Duration::from_millis(33));
+    thread::sleep(Duration::from_millis(30));
   }
 
   fn teardown(&mut self) {}

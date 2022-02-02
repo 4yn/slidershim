@@ -7,7 +7,7 @@ use std::{
 };
 
 pub trait Job: Send {
-  fn setup(&mut self);
+  fn setup(&mut self) -> bool;
   fn tick(&mut self);
   fn teardown(&mut self);
 }
@@ -24,12 +24,14 @@ impl Worker {
     let stop_signal_clone = Arc::clone(&stop_signal);
     Self {
       thread: Some(thread::spawn(move || {
-        job.setup();
+        let setup_res = job.setup();
+        stop_signal_clone.store(!setup_res, Ordering::SeqCst);
+
         loop {
-          job.tick();
           if stop_signal_clone.load(Ordering::SeqCst) {
             break;
           }
+          job.tick();
         }
         job.teardown();
       })),
@@ -40,7 +42,7 @@ impl Worker {
 
 impl Drop for Worker {
   fn drop(&mut self) {
-    self.stop_signal.swap(true, Ordering::SeqCst);
+    self.stop_signal.store(true, Ordering::SeqCst);
     if self.thread.is_some() {
       self.thread.take().unwrap().join().ok();
     }

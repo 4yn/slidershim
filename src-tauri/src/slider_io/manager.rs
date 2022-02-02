@@ -2,7 +2,7 @@ use log::info;
 
 use crate::slider_io::{
   config::Config, controller_state::FullState, device::HidDeviceJob, led::LedJob,
-  output::KeyboardOutputJob, worker::Worker,
+  output::OutputJob, worker::Worker,
 };
 
 pub struct Manager {
@@ -15,12 +15,15 @@ pub struct Manager {
 
 impl Manager {
   pub fn new(config: Config) -> Self {
+    info!("Starting manager");
+    info!("Device config {:?}", config.device_mode);
+    info!("Output config {:?}", config.output_mode);
+    info!("LED config {:?}", config.led_mode);
+
     let state = FullState::new();
     let device_worker = Worker::new(HidDeviceJob::from_config(&state, &config.device_mode));
-    let output_worker = Worker::new(KeyboardOutputJob::new(&state, &config.output_mode));
+    let output_worker = Worker::new(OutputJob::new(&state, &config.output_mode));
     let led_worker = Worker::new(LedJob::new(&state, &config.led_mode));
-
-    info!("Starting manager with config: {:?}", config);
 
     Self {
       state,

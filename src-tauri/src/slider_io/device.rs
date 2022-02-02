@@ -1,5 +1,5 @@
 use std::{
-  error,
+  error::Error,
   ops::{Deref, DerefMut},
   thread,
   time::Duration,
@@ -12,26 +12,9 @@ use rusb::{self, DeviceHandle, GlobalContext};
 use crate::slider_io::{
   config::DeviceMode,
   controller_state::{ControllerState, FullState, LedState},
+  utils::{Buffer, ShimError},
   worker::Job,
 };
-
-pub struct Buffer {
-  pub data: [u8; 256],
-  pub len: usize,
-}
-
-impl Buffer {
-  pub fn new() -> Self {
-    Buffer {
-      data: [0; 256],
-      len: 0,
-    }
-  }
-
-  fn slice(&self) -> &[u8] {
-    &self.data[0..self.len]
-  }
-}
 
 type HidReadCallback = fn(&Buffer, &mut ControllerState) -> ();
 type HidLedCallback = fn(&mut Buffer, &LedState) -> ();
@@ -204,11 +187,12 @@ impl HidDeviceJob {
     }
   }
 
-  fn setup_impl(&mut self) -> Result<(), Box<dyn error::Error>> {
+  fn setup_impl(&mut self) -> Result<(), Box<dyn Error>> {
     info!("Device finding vid {} pid {}", self.vid, self.pid);
     let handle = rusb::open_device_with_vid_pid(self.vid, self.pid);
     if handle.is_none() {
-      error!("Could not find device");
+      error!("Device not found");
+      return Err(Box::new(ShimError));
     }
     let mut handle = handle.unwrap();
     info!("Device found {:?}", handle);
@@ -229,8 +213,17 @@ impl HidDeviceJob {
 const TIMEOUT: Duration = Duration::from_millis(20);
 
 impl Job for HidDeviceJob {
-  fn setup(&mut self) {
-    self.setup_impl().unwrap();
+  fn setup(&mut self) -> bool {
+    match self.setup_impl() {
+      Ok(r) => {
+        info!("Device OK");
+        true
+      }
+      Err(e) => {
+        error!("Device setup failed, exiting thread early");
+        false
+      }
+    }
   }
 
   fn tick(&mut self) {
@@ -276,7 +269,9 @@ impl Job for HidDeviceJob {
   }
 
   fn teardown(&mut self) {
-    let handle = self.handle.as_mut().unwrap();
-    handle.release_interface(0).ok();
+    if self.handle.is_some() {
+      let handle = self.handle.as_mut().unwrap();
+      handle.release_interface(0).ok();
+    }
   }
 }

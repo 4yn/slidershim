@@ -5,7 +5,7 @@ use winapi::{
   um::winuser::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP},
 };
 
-use crate::slider_io::config::KeyboardLayout;
+use crate::slider_io::{config::KeyboardLayout, output::OutputHandler};
 
 #[rustfmt::skip]
 const TASOLLER_KB_MAP: [usize; 41] = [
@@ -80,6 +80,7 @@ impl KeyboardOutput {
       KeyboardLayout::Yuancon => &YUANCON_KB_MAP,
       KeyboardLayout::Deemo => &DEEMO_KB_MAP,
       KeyboardLayout::Voltex => &VOLTEX_KB_MAP,
+      _ => panic!("Not implemented"),
     };
 
     let mut ground_to_idx = [0 as usize; 41];
@@ -119,21 +120,6 @@ impl KeyboardOutput {
       kb_buf,
       n_kb_buf: 0,
     }
-  }
-
-  pub fn tick(&mut self, flat_controller_state: &Vec<bool>) {
-    self.next_keys.fill(false);
-    for (idx, x) in flat_controller_state.iter().enumerate() {
-      if *x {
-        self.next_keys[self.ground_to_idx[idx]] = true;
-      }
-    }
-    self.send();
-  }
-
-  pub fn reset(&mut self) {
-    self.next_keys.fill(false);
-    self.send();
   }
 
   fn send(&mut self) {
@@ -176,5 +162,28 @@ impl KeyboardOutput {
         );
       }
     }
+  }
+}
+
+impl OutputHandler for KeyboardOutput {
+  fn tick(&mut self, flat_controller_state: &Vec<bool>) {
+    self.next_keys.fill(false);
+    for (idx, x) in flat_controller_state.iter().enumerate() {
+      if *x {
+        self.next_keys[self.ground_to_idx[idx]] = true;
+      }
+    }
+    self.send();
+  }
+
+  fn reset(&mut self) {
+    self.next_keys.fill(false);
+    self.send();
+  }
+}
+
+impl Drop for KeyboardOutput {
+  fn drop(&mut self) {
+    self.reset();
   }
 }

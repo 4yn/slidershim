@@ -12,6 +12,7 @@
   let outputWebsocketUrl = "http://localhost:3000";
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
+  let ledSerialPort = "COM5";
 
   let debugstr = "";
 
@@ -21,13 +22,15 @@
       console.log("heartbeat", event);
       debugstr = event.payload;
       const payload: any = JSON.parse(event.payload as any);
-      deviceMode = payload.deviceMode;
-      outputMode = payload.outputMode;
-      ledMode = payload.ledMode;
-      keyboardSensitivity = payload.keyboardSensitivity;
-      outputWebsocketUrl = payload.outputWebsocketUrl;
-      ledSensitivity = payload.ledSensitivity;
-      ledWebsocketUrl = payload.ledWebsocketUrl;
+      deviceMode = payload.deviceMode || "none";
+      outputMode = payload.outputMode || "none";
+      ledMode = payload.ledMode || "none";
+      keyboardSensitivity = payload.keyboardSensitivity || 20;
+      outputWebsocketUrl =
+        payload.outputWebsocketUrl || "http://localhost:3000/";
+      ledSensitivity = payload.ledSensitivity || 20;
+      ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
+      ledSerialPort = payload.ledSerialPort || "COM5";
     });
     await emit("heartbeat", "");
   });
@@ -44,6 +47,7 @@
         outputWebsocketUrl,
         ledSensitivity,
         ledWebsocketUrl,
+        ledSerialPort,
       })
     );
     console.log("Done");
@@ -144,6 +148,7 @@
         <option value="attract">Rainbow Attract Mode</option>
         <option value="test">LED Test</option>
         <option value="websocket">Websocket</option>
+        <option value="serial">Serial</option>
       </select>
     </div>
   </div>
@@ -178,6 +183,24 @@
       <div class="label">LED URL</div>
       <div class="input">
         <input placeholder="URL" bind:value={ledWebsocketUrl} />
+      </div>
+    </div>
+  {/if}
+  {#if ledMode === "serial"}
+    <div class="row">
+      <div class="label">LED Serial Port</div>
+      <div class="input">
+        <select bind:value={ledSerialPort}>
+          <option value="COM1">COM1</option>
+          <option value="COM2">COM2</option>
+          <option value="COM3">COM3</option>
+          <option value="COM4">COM4</option>
+          <option value="COM5">COM5</option>
+          <option value="COM6">COM6</option>
+          <option value="COM7">COM7</option>
+          <option value="COM8">COM8</option>
+          <option value="COM9">COM9</option>
+        </select>
       </div>
     </div>
   {/if}
