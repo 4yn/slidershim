@@ -5,7 +5,7 @@ use crate::slider_io::{
   controller_state::FullState,
   gamepad::GamepadOutput,
   keyboard::KeyboardOutput,
-  worker::Job,
+  worker::ThreadJob,
 };
 
 pub trait OutputHandler: Send + Drop {
@@ -38,7 +38,7 @@ impl OutputJob {
   }
 }
 
-impl Job for OutputJob {
+impl ThreadJob for OutputJob {
   fn setup(&mut self) -> bool {
     true
   }

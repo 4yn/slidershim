@@ -14,7 +14,7 @@ use crate::slider_io::{
   controller_state::{FullState, LedState},
   utils::Buffer,
   voltex::VoltexState,
-  worker::Job,
+  worker::ThreadJob,
 };
 
 pub struct LedJob {
@@ -150,7 +150,7 @@ impl LedJob {
   }
 }
 
-impl Job for LedJob {
+impl ThreadJob for LedJob {
   fn setup(&mut self) -> bool {
     match &self.mode {
       LedMode::Serial { port } => {

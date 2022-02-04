@@ -13,7 +13,7 @@ use crate::slider_io::{
   config::DeviceMode,
   controller_state::{ControllerState, FullState, LedState},
   utils::{Buffer, ShimError},
-  worker::Job,
+  worker::ThreadJob,
 };
 
 type HidReadCallback = fn(&Buffer, &mut ControllerState) -> ();
@@ -212,7 +212,7 @@ impl HidDeviceJob {
 
 const TIMEOUT: Duration = Duration::from_millis(20);
 
-impl Job for HidDeviceJob {
+impl ThreadJob for HidDeviceJob {
   fn setup(&mut self) -> bool {
     match self.setup_impl() {
       Ok(r) => {

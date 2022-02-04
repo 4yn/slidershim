@@ -69,7 +69,7 @@ fn main() {
     .setup(move |app| {
       let app_handle = app.handle();
       let config_clone = Arc::clone(&config);
-      app.listen_global("heartbeat", move |e| {
+      app.listen_global("heartbeat", move |_| {
         let config_handle = config_clone.lock().unwrap();
         info!("Heartbeat received");
         app_handle
