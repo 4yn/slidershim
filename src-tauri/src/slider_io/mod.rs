@@ -2,10 +2,10 @@ mod config;
 mod utils;
 pub mod worker;
 
-mod controller_state;
+pub mod controller_state;
 mod voltex;
 
-mod brokenithm;
+pub mod brokenithm;
 mod gamepad;
 mod keyboard;
 

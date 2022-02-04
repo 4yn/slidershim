@@ -32,8 +32,12 @@ fn main() {
   env_logger::init();
 
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
+  let manager: slider_io::Manager;
   {
-    config.lock().unwrap().as_ref().unwrap().save();
+    let c = config.lock().unwrap();
+    let cr = c.as_ref().unwrap();
+    cr.save();
+    manager = slider_io::Manager::new(cr.clone());
   }
 
   tauri::Builder::default()

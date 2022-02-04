@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>brokenithm-kb</title>
+    <meta charset="utf8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="favicon.ico" />
+    <style>
+      #fullscreen {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+
+        background: #000000;
+        color: hotpink;
+      }
+
+      .container {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+
+        display: flex;
+        flex-flow: column nowrap;
+        touch-action: none;
+        align-items: stretch;
+      }
+
+      .air-container {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        flex: 1;
+      }
+
+      .touch-container {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+        flex: 1;
+      }
+
+      .grow > * {
+        flex: 1;
+      }
+
+      .key {
+        flex: 1;
+        border: 1px solid green;
+      }
+
+      .key[data-active] {
+        background-color: hotpink;
+      }
+
+      .key.air[data-active] {
+        background-color: skyblue;
+      }
+
+      canvas {
+        touch-action: none;
+        margin: 0px -1.5625vw;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="fullscreen">
+      <!-- Offset for LED display -->
+      <div class="container">
+        <div class="air-container grow"></div>
+        <div class="touch-container grow">
+          <canvas id="canvas" width="33" height="1"></canvas>
+        </div>
+      </div>
+      <!-- Hitbox Divs -->
+      <div class="container" id="main">
+        <div class="air-container grow">
+          <div class="air key" data-air="1" data-kflag="5"></div>
+          <div class="air key" data-air="1" data-kflag="4"></div>
+          <div class="air key" data-air="1" data-kflag="3"></div>
+          <div class="air key" data-air="1" data-kflag="2"></div>
+          <div class="air key" data-air="1" data-kflag="1"></div>
+          <div class="air key" data-air="1" data-kflag="0"></div>
+        </div>
+        <div class="touch-container grow">
+          <div class="key" data-kflag="0"></div>
+          <div class="key" data-kflag="2"></div>
+          <div class="key" data-kflag="4"></div>
+          <div class="key" data-kflag="6"></div>
+          <div class="key" data-kflag="8"></div>
+          <div class="key" data-kflag="10"></div>
+          <div class="key" data-kflag="12"></div>
+          <div class="key" data-kflag="14"></div>
+          <div class="key" data-kflag="16"></div>
+          <div class="key" data-kflag="18"></div>
+          <div class="key" data-kflag="20"></div>
+          <div class="key" data-kflag="22"></div>
+          <div class="key" data-kflag="24"></div>
+          <div class="key" data-kflag="26"></div>
+          <div class="key" data-kflag="28"></div>
+          <div class="key" data-kflag="30"></div>
+        </div>
+      </div>
+    </div>
+    <script src="/config.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -68,7 +68,7 @@ impl Drop for ThreadWorker {
 
 #[async_trait]
 pub trait AsyncJob: Send + 'static {
-  async fn do_work<F: Future<Output = ()> + Send>(self, stop_signal: F);
+  async fn run<F: Future<Output = ()> + Send>(self, stop_signal: F);
 }
 
 pub struct AsyncWorker {
@@ -94,7 +94,7 @@ impl AsyncWorker {
 
     let task = runtime.spawn(async move {
       job
-        .do_work(async move {
+        .run(async move {
           recv_stop.await;
         })
         .await;
