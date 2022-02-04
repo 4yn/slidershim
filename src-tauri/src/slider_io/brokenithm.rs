@@ -9,6 +9,8 @@ use hyper::{
   Body, Request, Response, Server,
 };
 
+// use crate::slider_io::worker::{AsyncJob, AsyncJobFut, AsyncJobRecvStop};
+
 async fn handle_request(
   request: Request<Body>,
   remote_addr: SocketAddr,
@@ -19,7 +21,7 @@ async fn handle_request(
   ))))
 }
 
-pub async fn brokenithm_server() {
+async fn brokenithm_server() {
   let addr = SocketAddr::from(([0, 0, 0, 0], 1666));
 
   info!("Brokenithm opening on {:?}", addr);
@@ -38,3 +40,11 @@ pub async fn brokenithm_server() {
     eprintln!("Server error: {}", e);
   }
 }
+
+// struct BrokenithmJob;
+
+// impl AsyncJob {
+//   fn job(self, mut recv_stop: AsyncJobRecvStop) -> AsyncJobFut {
+//     return Box::pin()
+//   }
+// }

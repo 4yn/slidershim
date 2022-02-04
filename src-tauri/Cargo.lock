@@ -106,6 +106,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "async-trait"
+version = "0.1.52"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "061a7acccaa286c011ddc30970520b98fa40e00c9d644633fb26b5fc63a265e3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "atk"
 version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3041,6 +3052,7 @@ checksum = "9def91fd1e018fe007022791f865d0ccc9b3a0d5001e01aabb8b40e46000afb5"
 name = "slidershim"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "directories",
  "env_logger",
  "futures",

@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+use log::info;
 use std::{
   future::Future,
   pin::Pin,
@@ -7,8 +9,6 @@ use std::{
   },
   thread,
 };
-
-use log::info;
 
 use tokio::{
   runtime::Runtime,
@@ -66,10 +66,9 @@ impl Drop for ThreadWorker {
   }
 }
 
-pub type AsyncJobRecvStop = oneshot::Receiver<()>;
-pub type AsyncJobFut = Pin<Box<dyn Future<Output = ()> + Send + 'static>>;
-pub trait AsyncJob {
-  fn job(self, recv_stop: AsyncJobRecvStop) -> AsyncJobFut;
+#[async_trait]
+pub trait AsyncJob: Send + 'static {
+  async fn do_work<F: Future<Output = ()> + Send>(self, stop_signal: F);
 }
 
 pub struct AsyncWorker {
@@ -80,7 +79,10 @@ pub struct AsyncWorker {
 }
 
 impl AsyncWorker {
-  pub fn new<T: 'static + AsyncJob + Send>(name: &'static str, job: T) -> AsyncWorker {
+  pub fn new<T>(name: &'static str, job: T) -> AsyncWorker
+  where
+    T: AsyncJob,
+  {
     info!("Async worker starting {}", name);
 
     let (send_stop, recv_stop) = oneshot::channel::<()>();
@@ -91,8 +93,11 @@ impl AsyncWorker {
       .unwrap();
 
     let task = runtime.spawn(async move {
-      let fut = job.job(recv_stop);
-      fut.await;
+      job
+        .do_work(async move {
+          recv_stop.await;
+        })
+        .await;
     });
 
     AsyncWorker {
