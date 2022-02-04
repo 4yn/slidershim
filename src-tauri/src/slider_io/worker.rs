@@ -115,19 +115,20 @@ impl Drop for AsyncWorker {
 
     if self.stop_signal.is_some() {
       let send_stop = self.stop_signal.take().unwrap();
-      self.runtime.block_on(async move {
-        send_stop.send(()).unwrap();
-      });
+      send_stop.send(()).unwrap();
+      // self.runtime.block_on(async move {
+      //   send_stop.send(()).unwrap();
+      // });
     }
 
     let name = self.name;
 
     if self.task.is_some() {
-      let task = self.task.take().unwrap();
-      self.runtime.block_on(async move {
-        task.await;
-        info!("Async worker stopping internal {}", name);
-      });
+      // let task = self.task.take().unwrap();
+      // self.runtime.block_on(async move {
+      //   task.await;
+      //   info!("Async worker stopping internal {}", name);
+      // });
     }
   }
 }

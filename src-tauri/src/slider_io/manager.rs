@@ -1,14 +1,20 @@
 use log::info;
 
 use crate::slider_io::{
-  config::Config, controller_state::FullState, device::HidDeviceJob, led::LedJob,
-  output::OutputJob, worker::ThreadWorker,
+  brokenithm::BrokenithmJob,
+  config::{Config, DeviceMode},
+  controller_state::FullState,
+  device::HidDeviceJob,
+  led::LedJob,
+  output::OutputJob,
+  worker::{AsyncWorker, ThreadWorker},
 };
 
 pub struct Manager {
   state: FullState,
   config: Config,
-  device_worker: ThreadWorker,
+  device_worker: Option<ThreadWorker>,
+  brokenithm_worker: Option<AsyncWorker>,
   output_worker: ThreadWorker,
   led_worker: ThreadWorker,
 }
@@ -21,10 +27,20 @@ impl Manager {
     info!("LED config {:?}", config.led_mode);
 
     let state = FullState::new();
-    let device_worker = ThreadWorker::new(
-      "device",
-      HidDeviceJob::from_config(&state, &config.device_mode),
-    );
+
+    let (device_worker, brokenithm_worker) = match &config.device_mode {
+      DeviceMode::Brokenithm { .. } => (
+        None,
+        Some(AsyncWorker::new("brokenithm", BrokenithmJob::new(&state))),
+      ),
+      other => (
+        Some(ThreadWorker::new(
+          "device",
+          HidDeviceJob::from_config(&state, other),
+        )),
+        None,
+      ),
+    };
     let output_worker = ThreadWorker::new("output", OutputJob::new(&state, &config.output_mode));
     let led_worker = ThreadWorker::new("led", LedJob::new(&state, &config.led_mode));
 
@@ -32,6 +48,7 @@ impl Manager {
       state,
       config,
       device_worker,
+      brokenithm_worker,
       output_worker,
       led_worker,
     }

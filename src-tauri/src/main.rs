@@ -29,15 +29,19 @@ fn quit_app() {
 }
 
 fn main() {
-  env_logger::init();
+  env_logger::Builder::new()
+    .filter_level(log::LevelFilter::Debug)
+    .init();
 
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
-  let manager: slider_io::Manager;
+  let manager: Arc<Mutex<Option<slider_io::Manager>>> = Arc::new(Mutex::new(None));
   {
-    let c = config.lock().unwrap();
-    let cr = c.as_ref().unwrap();
-    cr.save();
-    manager = slider_io::Manager::new(cr.clone());
+    let config_handle = config.lock().unwrap();
+    let config_handle_ref = config_handle.as_ref().unwrap();
+    config_handle_ref.save();
+    let mut manager_handle = manager.lock().unwrap();
+    manager_handle.take();
+    manager_handle.replace(slider_io::Manager::new(config_handle_ref.clone()));
   }
 
   tauri::Builder::default()
@@ -85,13 +89,19 @@ fn main() {
       });
 
       let config_clone = Arc::clone(&config);
+      let manager_clone = Arc::clone(&manager);
       app.listen_global("setConfig", move |event| {
         let payload = event.payload().unwrap();
         info!("Config applied {}", payload);
         if let Some(new_config) = slider_io::Config::from_str(payload) {
           let mut config_handle = config_clone.lock().unwrap();
+          config_handle.take();
           config_handle.replace(new_config);
-          config_handle.as_ref().unwrap().save();
+          let config_handle_ref = config_handle.as_ref().unwrap();
+          config_handle_ref.save();
+          let mut manager_handle = manager_clone.lock().unwrap();
+          manager_handle.take();
+          manager_handle.replace(slider_io::Manager::new(config_handle_ref.clone()));
         }
       });
 

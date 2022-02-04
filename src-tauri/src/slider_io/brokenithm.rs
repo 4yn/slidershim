@@ -176,8 +176,10 @@ pub struct BrokenithmJob {
 }
 
 impl BrokenithmJob {
-  pub fn new(state: FullState) -> Self {
-    Self { state }
+  pub fn new(state: &FullState) -> Self {
+    Self {
+      state: state.clone(),
+    }
   }
 }
 
