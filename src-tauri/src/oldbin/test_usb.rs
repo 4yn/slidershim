@@ -2,7 +2,7 @@ extern crate slidershim;
 
 use std::io;
 
-use slidershim::slider_io::{Config, Context};
+// use slidershim::slider_io::{Config, Context};
 
 fn main() {
   env_logger::Builder::new()
@@ -10,16 +10,16 @@ fn main() {
     .init();
 
   // voltex?
-  let config = Config::from_str(
-    r#"{
-        "deviceMode": "yuancon",
-        "outputMode": "gamepad-voltex",
-        "keyboardSensitivity": 50,
-        "ledMode": "reactive-voltex",
-        "ledSensitivity": 50
-    }"#,
-  )
-  .unwrap();
+  // let config = Config::from_str(
+  //   r#"{
+  //       "deviceMode": "yuancon",
+  //       "outputMode": "gamepad-voltex",
+  //       "keyboardSensitivity": 50,
+  //       "ledMode": "reactive-voltex",
+  //       "ledSensitivity": 50
+  //   }"#,
+  // )
+  // .unwrap();
 
   // serial?
   // let config = Config::from_str(
@@ -57,7 +57,7 @@ fn main() {
   // )
   // .unwrap();
 
-  let manager = Context::new(config);
+  // let manager = Context::new(config);
 
   let mut input = String::new();
   let string = io::stdin().read_line(&mut input).unwrap();
