@@ -25,10 +25,10 @@
         "res/*"
       ],
       "externalBin": [],
-      "copyright": "",
+      "copyright": "© 4yn 2022",
       "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
+      "shortDescription": "slidershim",
+      "longDescription": "slidershim",
       "deb": {
         "depends": [],
         "useBootstrapper": false

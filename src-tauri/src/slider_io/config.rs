@@ -154,7 +154,7 @@ impl Config {
   }
 
   pub fn get_log_file_path() -> Option<Box<PathBuf>> {
-    let project_dir = ProjectDirs::from("me", "ress.imp", "slidershim").unwrap();
+    let project_dir = ProjectDirs::from("me", "impress labs", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
     fs::create_dir_all(config_dir).unwrap();
 
@@ -164,7 +164,7 @@ impl Config {
   }
 
   fn get_saved_path() -> Option<Box<PathBuf>> {
-    let project_dir = ProjectDirs::from("me", "ress.imp", "slidershim").unwrap();
+    let project_dir = ProjectDirs::from("me", "impress labs", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
     fs::create_dir_all(config_dir).unwrap();
 
