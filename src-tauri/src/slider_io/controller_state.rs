@@ -74,6 +74,21 @@ impl FullState {
   pub fn clone_led(&self) -> Arc<Mutex<LedState>> {
     Arc::clone(&self.led_state)
   }
+
+  pub fn snapshot(&self) -> Vec<u8> {
+    let mut buf: Vec<u8> = vec![];
+    {
+      let controller_state_handle = self.controller_state.lock().unwrap();
+      buf.extend(controller_state_handle.ground_state);
+      buf.extend(controller_state_handle.air_state);
+    };
+    {
+      let led_state_handle = self.led_state.lock().unwrap();
+      buf.extend(led_state_handle.led_state);
+    };
+
+    buf
+  }
 }
 
 impl Clone for FullState {

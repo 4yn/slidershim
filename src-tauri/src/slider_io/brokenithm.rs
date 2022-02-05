@@ -9,7 +9,7 @@ use hyper::{
 };
 use log::{error, info};
 use path_clean::PathClean;
-use std::{convert::Infallible, future::Future, net::SocketAddr, path::PathBuf};
+use std::{convert::Infallible, env::current_exe, future::Future, net::SocketAddr};
 use tokio::fs::File;
 use tokio_tungstenite::WebSocketStream;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -29,15 +29,17 @@ async fn error_response() -> Result<Response<Body>, Infallible> {
 }
 
 async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
-  let mut pb = PathBuf::from("res/www/");
+  let mut pb = current_exe().unwrap();
+  pb.pop();
+  pb.push("res/www");
   pb.push(path);
   pb.clean();
 
   // println!("CWD {:?}", std::env::current_dir());
-  // println!("Serving file {:?}", pb);
 
-  match File::open(pb).await {
+  match File::open(&pb).await {
     Ok(f) => {
+      info!("Serving file {:?}", pb);
       let stream = FramedRead::new(f, BytesCodec::new());
       let body = Body::wrap_stream(stream);
       Ok(Response::new(body))
@@ -154,6 +156,7 @@ async fn handle_request(
   request: Request<Body>,
   remote_addr: SocketAddr,
   state: FullState,
+  ground_only: bool,
 ) -> Result<Response<Body>, Infallible> {
   let method = request.method();
   let path = request.uri().path();
@@ -170,7 +173,10 @@ async fn handle_request(
     request.uri().path(),
     request.headers().contains_key(header::UPGRADE),
   ) {
-    ("/", false) | ("/index.html", false) => serve_file("index.html").await,
+    ("/", false) | ("/index.html", false) => match ground_only {
+      false => serve_file("index.html").await,
+      true => serve_file("index-go.html").await,
+    },
     (filename, false) => serve_file(&filename[1..]).await,
     ("/ws", true) => handle_websocket(request, state).await,
     _ => error_response().await,
@@ -179,12 +185,14 @@ async fn handle_request(
 
 pub struct BrokenithmJob {
   state: FullState,
+  ground_only: bool,
 }
 
 impl BrokenithmJob {
-  pub fn new(state: &FullState) -> Self {
+  pub fn new(state: &FullState, ground_only: &bool) -> Self {
     Self {
       state: state.clone(),
+      ground_only: *ground_only,
     }
   }
 }
@@ -193,13 +201,14 @@ impl BrokenithmJob {
 impl AsyncJob for BrokenithmJob {
   async fn run<F: Future<Output = ()> + Send>(self, stop_signal: F) {
     let state = self.state.clone();
+    let ground_only = self.ground_only;
     let make_svc = make_service_fn(|conn: &AddrStream| {
       let remote_addr = conn.remote_addr();
       let make_svc_state = state.clone();
       async move {
         Ok::<_, Infallible>(service_fn(move |request: Request<Body>| {
           let svc_state = make_svc_state.clone();
-          handle_request(request, remote_addr, svc_state)
+          handle_request(request, remote_addr, svc_state, ground_only)
         }))
       }
     });

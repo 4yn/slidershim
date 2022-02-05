@@ -13,6 +13,7 @@ mod device;
 mod led;
 mod output;
 
+mod context;
 mod manager;
 
 pub use config::Config;

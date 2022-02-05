@@ -2,7 +2,7 @@ extern crate slidershim;
 
 use std::io;
 
-use slidershim::slider_io::{Config, Manager};
+use slidershim::slider_io::{Config, Context};
 
 fn main() {
   env_logger::Builder::new()
@@ -57,7 +57,7 @@ fn main() {
   // )
   // .unwrap();
 
-  let manager = Manager::new(config);
+  let manager = Context::new(config);
 
   let mut input = String::new();
   let string = io::stdin().read_line(&mut input).unwrap();

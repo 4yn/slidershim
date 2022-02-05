@@ -9,7 +9,7 @@ use std::{
   thread,
 };
 
-use tokio::{runtime::Runtime, sync::oneshot, task};
+use tokio::{sync::oneshot, task};
 
 pub trait ThreadJob: Send {
   fn setup(&mut self) -> bool;
@@ -68,7 +68,6 @@ pub trait AsyncJob: Send + 'static {
 
 pub struct AsyncWorker {
   name: &'static str,
-  runtime: Runtime,
   task: Option<task::JoinHandle<()>>,
   stop_signal: Option<oneshot::Sender<()>>,
 }
@@ -81,13 +80,8 @@ impl AsyncWorker {
     info!("Async worker starting {}", name);
 
     let (send_stop, recv_stop) = oneshot::channel::<()>();
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-      .worker_threads(1)
-      .enable_all()
-      .build()
-      .unwrap();
 
-    let task = runtime.spawn(async move {
+    let task = tokio::spawn(async move {
       job
         .run(async move {
           recv_stop.await.unwrap();
@@ -97,7 +91,6 @@ impl AsyncWorker {
 
     AsyncWorker {
       name,
-      runtime,
       task: Some(task),
       stop_signal: Some(send_stop),
     }
@@ -108,20 +101,7 @@ impl Drop for AsyncWorker {
   fn drop(&mut self) {
     info!("Async worker stopping {}", self.name);
 
-    if self.stop_signal.is_some() {
-      let send_stop = self.stop_signal.take().unwrap();
-      send_stop.send(()).unwrap();
-      // self.runtime.block_on(async move {
-      //   send_stop.send(()).unwrap();
-      // });
-    }
-
-    if self.task.is_some() {
-      // let task = self.task.take().unwrap();
-      // self.runtime.block_on(async move {
-      //   task.await;
-      //   info!("Async worker stopping internal {}", name);
-      // });
-    }
+    self.stop_signal.take().unwrap().send(()).unwrap();
+    self.task.take();
   }
 }

@@ -1,57 +1,94 @@
 use log::info;
-
-use crate::slider_io::{
-  brokenithm::BrokenithmJob,
-  config::{Config, DeviceMode},
-  controller_state::FullState,
-  device::HidDeviceJob,
-  led::LedJob,
-  output::OutputJob,
-  worker::{AsyncWorker, ThreadWorker},
+use std::{
+  sync::{Arc, Mutex},
+  thread::{self, JoinHandle},
+};
+use tokio::{
+  select,
+  sync::{mpsc, oneshot},
 };
 
-#[allow(dead_code)]
+use crate::slider_io::{config::Config, context::Context};
+
+use super::controller_state::FullState;
+
 pub struct Manager {
-  state: FullState,
-  config: Config,
-  device_worker: Option<ThreadWorker>,
-  brokenithm_worker: Option<AsyncWorker>,
-  output_worker: ThreadWorker,
-  led_worker: ThreadWorker,
+  state: Arc<Mutex<Option<FullState>>>,
+  join_handle: Option<JoinHandle<()>>,
+  tx_config: mpsc::UnboundedSender<Config>,
+  tx_stop: Option<oneshot::Sender<()>>,
 }
 
 impl Manager {
-  pub fn new(config: Config) -> Self {
-    info!("Starting manager");
-    info!("Device config {:?}", config.device_mode);
-    info!("Output config {:?}", config.output_mode);
-    info!("LED config {:?}", config.led_mode);
+  pub fn new() -> Self {
+    let state = Arc::new(Mutex::new(None));
+    let (tx_config, mut rx_config) = mpsc::unbounded_channel::<Config>();
+    let (tx_stop, rx_stop) = oneshot::channel::<()>();
 
-    let state = FullState::new();
+    let context: Arc<Mutex<Option<Context>>> = Arc::new(Mutex::new(None));
 
-    let (device_worker, brokenithm_worker) = match &config.device_mode {
-      DeviceMode::Brokenithm { .. } => (
-        None,
-        Some(AsyncWorker::new("brokenithm", BrokenithmJob::new(&state))),
-      ),
-      other => (
-        Some(ThreadWorker::new(
-          "device",
-          HidDeviceJob::from_config(&state, other),
-        )),
-        None,
-      ),
-    };
-    let output_worker = ThreadWorker::new("output", OutputJob::new(&state, &config.output_mode));
-    let led_worker = ThreadWorker::new("led", LedJob::new(&state, &config.led_mode));
+    let state_cloned = Arc::clone(&state);
+    let context_cloned = Arc::clone(&context);
+
+    let join_handle = thread::spawn(move || {
+      info!("Manager thread started");
+      let runtime = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(1)
+        .enable_all()
+        .build()
+        .unwrap();
+      runtime.block_on(async move {
+        info!("Manager runtime started");
+
+        select! {
+          _ = async {
+            loop {
+              match rx_config.recv().await {
+                Some(config) => {
+                  info!("Rebuilding context");
+                  let mut context_handle = context_cloned.lock().unwrap();
+                  context_handle.take();
+
+                  let new_context = Context::new(config);
+                  let new_state = new_context.clone_state();
+                  context_handle.replace(new_context);
+
+                  let mut state_handle = state_cloned.lock().unwrap();
+                  state_handle.replace(new_state);
+                },
+                None => {
+                  let mut context_handle = context_cloned.lock().unwrap();
+                  context_handle.take();
+                }
+              }
+            }
+          } => {},
+          _ = rx_stop => {}
+        }
+      });
+    });
 
     Self {
       state,
-      config,
-      device_worker,
-      brokenithm_worker,
-      output_worker,
-      led_worker,
+      join_handle: Some(join_handle),
+      tx_config,
+      tx_stop: Some(tx_stop),
     }
+  }
+
+  pub fn update_config(&self, config: Config) {
+    self.tx_config.send(config).unwrap();
+  }
+
+  pub fn try_get_state(&self) -> Option<FullState> {
+    let state_handle = self.state.lock().unwrap();
+    state_handle.as_ref().map(|x| x.clone())
+  }
+}
+
+impl Drop for Manager {
+  fn drop(&mut self) {
+    self.tx_stop.take().unwrap().send(()).unwrap();
+    self.join_handle.take().unwrap().join().unwrap();
   }
 }

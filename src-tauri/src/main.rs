@@ -18,10 +18,12 @@ use tauri::{
 };
 
 fn show_window<R: Runtime>(handle: &AppHandle<R>) {
+  handle.emit_all("ackShow", "");
   handle.get_window("main").unwrap().show().ok();
 }
 
 fn hide_window<R: Runtime>(handle: &AppHandle<R>) {
+  handle.emit_all("ackHide", "");
   handle.get_window("main").unwrap().hide().ok();
 }
 
@@ -36,14 +38,13 @@ fn main() {
     .init();
 
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
-  let manager: Arc<Mutex<Option<slider_io::Manager>>> = Arc::new(Mutex::new(None));
+  let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
   {
     let config_handle = config.lock().unwrap();
     let config_handle_ref = config_handle.as_ref().unwrap();
     config_handle_ref.save();
-    // let mut manager_handle = manager.lock().unwrap();
-    // manager_handle.take();
-    // manager_handle.replace(slider_io::Manager::new(config_handle_ref.clone()));
+    let manager_handle = manager.lock().unwrap();
+    manager_handle.update_config(config_handle_ref.clone());
   }
 
   tauri::Builder::default()
@@ -95,18 +96,32 @@ fn main() {
       // UI ready event
       let app_handle = app.handle();
       let config_clone = Arc::clone(&config);
-      app.listen_global("heartbeat", move |_| {
-        let handle = AsyncHandle::try_current();
-        println!("handle, {:?}", handle);
-
+      app.listen_global("ready", move |_| {
         let config_handle = config_clone.lock().unwrap();
-        info!("Heartbeat received");
+        info!("Start signal received");
         app_handle
           .emit_all(
             "showConfig",
             Some(config_handle.as_ref().unwrap().raw.as_str().to_string()),
           )
           .unwrap();
+      });
+
+      // UI update event
+      let app_handle = app.handle();
+      let manager_clone = Arc::clone(&manager);
+      app.listen_global("queryState", move |event| {
+        // app_handle.emit_all("showState", "@@@");
+        let snapshot = {
+          let manager_handle = manager_clone.lock().unwrap();
+          manager_handle.try_get_state().map(|x| x.snapshot())
+        };
+        match snapshot {
+          Some(snapshot) => {
+            app_handle.emit_all("showState", snapshot);
+          }
+          _ => {}
+        }
       });
 
       // Config set event
@@ -121,9 +136,8 @@ fn main() {
           config_handle.replace(new_config);
           let config_handle_ref = config_handle.as_ref().unwrap();
           config_handle_ref.save();
-          let mut manager_handle = manager_clone.lock().unwrap();
-          manager_handle.take();
-          manager_handle.replace(slider_io::Manager::new(config_handle_ref.clone()));
+          let manager_handle = manager_clone.lock().unwrap();
+          manager_handle.update_config(config_handle_ref.clone());
         }
       });
 

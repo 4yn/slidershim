@@ -16,10 +16,27 @@
 
   let debugstr = "";
 
+  let polling = null;
+  let tick = 0;
+  let previewData = Array(131).fill(0);
+
+  function updatePolling(enabled) {
+    if (!!polling) {
+      clearInterval(polling);
+      polling = null;
+    }
+    if (enabled) {
+      polling = setInterval(async () => {
+        tick += 1;
+        await emit("queryState", "");
+      }, 50);
+    }
+    // console.log(enabled, polling, tick);
+  }
+
   onMount(async () => {
     // console.log(emit, listen);
     await listen("showConfig", (event) => {
-      console.log("heartbeat", event);
       debugstr = event.payload;
       const payload: any = JSON.parse(event.payload as any);
       deviceMode = payload.deviceMode || "none";
@@ -32,7 +49,22 @@
       ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
       ledSerialPort = payload.ledSerialPort || "COM5";
     });
-    await emit("heartbeat", "");
+
+    await listen("showState", (event) => {
+      previewData = event.payload;
+    });
+
+    await emit("ready", "");
+
+    updatePolling(true);
+    await listen("ackShow", (event) => {
+      console.log("ackShow");
+      updatePolling(true);
+    });
+    await listen("ackHide", (event) => {
+      console.log("ackHide");
+      updatePolling(false);
+    });
   });
 
   async function setConfig() {
@@ -73,7 +105,7 @@
     {debugstr}
   </div> -->
   <div class="row">
-    <Preview />
+    <Preview data={previewData} />
   </div>
   <div class="row">
     <div class="label">Input Device</div>
@@ -84,7 +116,7 @@
         <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
         <option value="yuancon">Yuancon Laverita, HID Firmware</option>
         <option value="brokenithm">Brokenithm</option>
-        <option value="brokenithm-ground">Brokenithm, Ground only</option>
+        <option value="brokenithm-ground">Brokenithm, Ground only (WIP)</option>
       </select>
     </div>
   </div>
