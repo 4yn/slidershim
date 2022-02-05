@@ -1,5 +1,4 @@
 use std::mem;
-
 use winapi::{
   ctypes::c_int,
   um::winuser::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP},
@@ -64,8 +63,7 @@ const VOLTEX_KB_MAP: [usize; 41] = [
 pub struct KeyboardOutput {
   ground_to_idx: [usize; 41],
   idx_to_keycode: [u16; 41],
-  keycode_to_idx: [usize; 256],
-
+  // keycode_to_idx: [usize; 256],
   next_keys: [bool; 41],
   last_keys: [bool; 41],
 
@@ -114,7 +112,7 @@ impl KeyboardOutput {
     Self {
       ground_to_idx,
       idx_to_keycode,
-      keycode_to_idx,
+      // keycode_to_idx,
       next_keys: [false; 41],
       last_keys: [false; 41],
       kb_buf,
@@ -131,20 +129,20 @@ impl KeyboardOutput {
       .zip(self.last_keys.iter_mut())
       .enumerate()
     {
-      let wVk = self.idx_to_keycode[i];
-      if wVk == 0 {
+      let keycode = self.idx_to_keycode[i];
+      if keycode == 0 {
         continue;
       }
       match (*n, *l) {
         (false, true) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
-          inner.wVk = self.idx_to_keycode[i];
+          inner.wVk = keycode;
           inner.dwFlags = 0;
           self.n_kb_buf += 1;
         }
         (true, false) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
-          inner.wVk = self.idx_to_keycode[i];
+          inner.wVk = keycode;
           inner.dwFlags = KEYEVENTF_KEYUP;
           self.n_kb_buf += 1;
         }

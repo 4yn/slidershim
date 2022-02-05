@@ -79,8 +79,8 @@ impl FullState {
 impl Clone for FullState {
   fn clone(&self) -> Self {
     Self {
-      controller_state: Arc::clone(&self.controller_state),
-      led_state: Arc::clone(&self.led_state),
+      controller_state: self.clone_controller(),
+      led_state: self.clone_led(),
     }
   }
 }

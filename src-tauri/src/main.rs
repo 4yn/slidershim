@@ -13,7 +13,8 @@ use env_logger;
 use log::info;
 
 use tauri::{
-  AppHandle, CustomMenuItem, Event, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
+  async_runtime::Handle as AsyncHandle, AppHandle, CustomMenuItem, Event, Manager, Runtime,
+  SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
 
 fn show_window<R: Runtime>(handle: &AppHandle<R>) {
@@ -29,6 +30,7 @@ fn quit_app() {
 }
 
 fn main() {
+  // Setup logger
   env_logger::Builder::new()
     .filter_level(log::LevelFilter::Debug)
     .init();
@@ -39,13 +41,14 @@ fn main() {
     let config_handle = config.lock().unwrap();
     let config_handle_ref = config_handle.as_ref().unwrap();
     config_handle_ref.save();
-    let mut manager_handle = manager.lock().unwrap();
-    manager_handle.take();
-    manager_handle.replace(slider_io::Manager::new(config_handle_ref.clone()));
+    // let mut manager_handle = manager.lock().unwrap();
+    // manager_handle.take();
+    // manager_handle.replace(slider_io::Manager::new(config_handle_ref.clone()));
   }
 
   tauri::Builder::default()
     .system_tray(
+      // System tray content
       SystemTray::new().with_menu(
         SystemTrayMenu::new()
           .add_item(CustomMenuItem::new("slidershim".to_string(), "slidershim").disabled())
@@ -54,6 +57,7 @@ fn main() {
       ),
     )
     .on_system_tray_event(|app_handle, event| match event {
+      // System tray events
       SystemTrayEvent::LeftClick {
         position: _,
         size: _,
@@ -75,9 +79,26 @@ fn main() {
       _ => {}
     })
     .setup(move |app| {
+      // Before app starts
+
+      // Hide event
+      let app_handle = app.handle();
+      app.listen_global("hide", move |_| {
+        hide_window(&app_handle);
+      });
+
+      // Quit event
+      app.listen_global("quit", |_| {
+        quit_app();
+      });
+
+      // UI ready event
       let app_handle = app.handle();
       let config_clone = Arc::clone(&config);
       app.listen_global("heartbeat", move |_| {
+        let handle = AsyncHandle::try_current();
+        println!("handle, {:?}", handle);
+
         let config_handle = config_clone.lock().unwrap();
         info!("Heartbeat received");
         app_handle
@@ -88,6 +109,7 @@ fn main() {
           .unwrap();
       });
 
+      // Config set event
       let config_clone = Arc::clone(&config);
       let manager_clone = Arc::clone(&manager);
       app.listen_global("setConfig", move |event| {
@@ -105,20 +127,12 @@ fn main() {
         }
       });
 
-      let app_handle = app.handle();
-      app.listen_global("hide", move |_| {
-        hide_window(&app_handle);
-      });
-
-      app.listen_global("quit", |_| {
-        quit_app();
-      });
-
       Ok(())
     })
     .build(tauri::generate_context!())
     .expect("error while running tauri application")
     .run(|app_handle, event| match event {
+      // After app starts
       Event::CloseRequested { label, api, .. } if label.as_str() == "main" => {
         api.prevent_close();
         hide_window(app_handle);

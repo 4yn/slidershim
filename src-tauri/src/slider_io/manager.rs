@@ -10,6 +10,7 @@ use crate::slider_io::{
   worker::{AsyncWorker, ThreadWorker},
 };
 
+#[allow(dead_code)]
 pub struct Manager {
   state: FullState,
   config: Config,

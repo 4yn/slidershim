@@ -8,7 +8,7 @@ use crate::slider_io::{
   worker::ThreadJob,
 };
 
-pub trait OutputHandler: Send + Drop {
+pub trait OutputHandler: Send {
   fn tick(&mut self, flat_controller_state: &Vec<bool>);
   fn reset(&mut self);
 }

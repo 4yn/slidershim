@@ -5,6 +5,7 @@ pub struct Buffer {
   pub len: usize,
 }
 
+#[allow(dead_code)]
 impl Buffer {
   pub fn new() -> Self {
     Buffer {

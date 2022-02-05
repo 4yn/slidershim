@@ -1,9 +1,7 @@
-use std::{convert::TryFrom, fs, path::PathBuf};
-
-use log::info;
-
 use directories::ProjectDirs;
+use log::info;
 use serde_json::Value;
+use std::{convert::TryFrom, fs, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub enum DeviceMode {
@@ -158,7 +156,7 @@ impl Config {
   fn get_saved_path() -> Option<Box<PathBuf>> {
     let project_dir = ProjectDirs::from("me", "imp.ress", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
-    fs::create_dir_all(config_dir);
+    fs::create_dir_all(config_dir).unwrap();
 
     let config_path = config_dir.join("config.json");
 
@@ -171,7 +169,7 @@ impl Config {
       return None;
     }
     info!("Config file found at {:?}", config_path);
-    let mut saved_data = fs::read_to_string(config_path.as_path()).ok()?;
+    let saved_data = fs::read_to_string(config_path.as_path()).ok()?;
     return Self::from_str(saved_data.as_str());
   }
 

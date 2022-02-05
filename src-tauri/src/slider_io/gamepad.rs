@@ -1,5 +1,3 @@
-use std::sync::{Arc, Mutex};
-
 use vigem_client::{Client, TargetId, XButtons, XGamepad, Xbox360Wired};
 
 use crate::slider_io::{output::OutputHandler, voltex::VoltexState};

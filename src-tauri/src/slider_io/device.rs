@@ -1,13 +1,10 @@
+use log::{error, info};
+use rusb::{self, DeviceHandle, GlobalContext};
 use std::{
   error::Error,
   ops::{Deref, DerefMut},
-  thread,
   time::Duration,
 };
-
-use log::{error, info};
-
-use rusb::{self, DeviceHandle, GlobalContext};
 
 use crate::slider_io::{
   config::DeviceMode,
@@ -215,12 +212,12 @@ const TIMEOUT: Duration = Duration::from_millis(20);
 impl ThreadJob for HidDeviceJob {
   fn setup(&mut self) -> bool {
     match self.setup_impl() {
-      Ok(r) => {
+      Ok(_) => {
         info!("Device OK");
         true
       }
       Err(e) => {
-        error!("Device setup failed, exiting thread early");
+        error!("Device setup failed: {}", e);
         false
       }
     }

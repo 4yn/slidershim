@@ -2,7 +2,6 @@ use async_trait::async_trait;
 use log::info;
 use std::{
   future::Future,
-  pin::Pin,
   sync::{
     atomic::{AtomicBool, Ordering},
     Arc,
@@ -10,11 +9,7 @@ use std::{
   thread,
 };
 
-use tokio::{
-  runtime::Runtime,
-  sync::oneshot::{self, Receiver},
-  task,
-};
+use tokio::{runtime::Runtime, sync::oneshot, task};
 
 pub trait ThreadJob: Send {
   fn setup(&mut self) -> bool;
@@ -95,7 +90,7 @@ impl AsyncWorker {
     let task = runtime.spawn(async move {
       job
         .run(async move {
-          recv_stop.await;
+          recv_stop.await.unwrap();
         })
         .await;
     });
@@ -120,8 +115,6 @@ impl Drop for AsyncWorker {
       //   send_stop.send(()).unwrap();
       // });
     }
-
-    let name = self.name;
 
     if self.task.is_some() {
       // let task = self.task.take().unwrap();

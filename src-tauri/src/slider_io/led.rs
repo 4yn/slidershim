@@ -1,13 +1,11 @@
+use log::{error, info};
+use palette::{FromColor, Hsv, Srgb};
+use serialport::{ClearBuffer, SerialPort};
 use std::{
   ops::DerefMut,
   thread,
   time::{Duration, Instant},
 };
-
-use log::{error, info};
-
-use palette::{FromColor, Hsv, Srgb};
-use serialport::{ClearBuffer, SerialPort, StopBits};
 
 use crate::slider_io::{
   config::{LedMode, ReactiveLayout},
@@ -165,7 +163,7 @@ impl ThreadJob for LedJob {
             Some(s)
           }
           Err(e) => {
-            error!("Serial port could not open, exiting thread early");
+            error!("Serial port could not open: {}", e);
             None
           }
         };
@@ -205,7 +203,7 @@ impl ThreadJob for LedJob {
           }
 
           if serial_data_avail > 0 {
-            serial_port.clear(ClearBuffer::All);
+            serial_port.clear(ClearBuffer::All).unwrap();
           }
         }
       }

@@ -10,10 +10,10 @@ use hyper::{
 use log::{error, info};
 use path_clean::PathClean;
 use std::{convert::Infallible, future::Future, net::SocketAddr, path::PathBuf};
-use tokio::{fs::File, select};
+use tokio::fs::File;
 use tokio_tungstenite::WebSocketStream;
 use tokio_util::codec::{BytesCodec, FramedRead};
-use tungstenite::{handshake, Error, Message};
+use tungstenite::{handshake, Message};
 
 use crate::slider_io::{controller_state::FullState, worker::AsyncJob};
 
@@ -58,7 +58,10 @@ async fn handle_brokenithm(ws_stream: WebSocketStream<Upgraded>, state: FullStat
             let head = chars.next().unwrap();
             match head {
               'a' => {
-                ws_write.send(Message::Text("alive".to_string())).await;
+                ws_write
+                  .send(Message::Text("alive".to_string()))
+                  .await
+                  .unwrap();
               }
               'b' => {
                 let flat_state: Vec<bool> = chars
@@ -155,10 +158,13 @@ async fn handle_request(
   let method = request.method();
   let path = request.uri().path();
   if method != Method::GET {
-    error!("Server unknown method {} {}", method, path);
+    error!(
+      "Server unknown method {} -> {} {}",
+      remote_addr, method, path
+    );
     return error_response().await;
   }
-  info!("Server {} {}", method, path);
+  info!("Server {} -> {} {}", remote_addr, method, path);
 
   match (
     request.uri().path(),
