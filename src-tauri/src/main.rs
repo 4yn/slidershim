@@ -9,21 +9,20 @@ mod slider_io;
 
 use std::sync::{Arc, Mutex};
 
-use env_logger;
+// use env_logger;
 use log::info;
 
 use tauri::{
-  async_runtime::Handle as AsyncHandle, AppHandle, CustomMenuItem, Event, Manager, Runtime,
-  SystemTray, SystemTrayEvent, SystemTrayMenu,
+  AppHandle, CustomMenuItem, Event, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
 };
 
 fn show_window<R: Runtime>(handle: &AppHandle<R>) {
-  handle.emit_all("ackShow", "");
+  handle.emit_all("ackShow", "").ok();
   handle.get_window("main").unwrap().show().ok();
 }
 
 fn hide_window<R: Runtime>(handle: &AppHandle<R>) {
-  handle.emit_all("ackHide", "");
+  handle.emit_all("ackHide", "").ok();
   handle.get_window("main").unwrap().hide().ok();
 }
 
@@ -33,9 +32,14 @@ fn quit_app() {
 
 fn main() {
   // Setup logger
-  env_logger::Builder::new()
-    .filter_level(log::LevelFilter::Debug)
-    .init();
+  // env_logger::Builder::new()
+  //   .filter_level(log::LevelFilter::Debug)
+  //   .init();
+  simple_logging::log_to_file(
+    slider_io::Config::get_log_file_path().unwrap().as_path(),
+    log::LevelFilter::Debug,
+  )
+  .unwrap();
 
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
   let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
@@ -105,12 +109,17 @@ fn main() {
             Some(config_handle.as_ref().unwrap().raw.as_str().to_string()),
           )
           .unwrap();
+
+        let ips = slider_io::list_ips();
+        if let Ok(ips) = ips {
+          app_handle.emit_all("listIps", &ips).unwrap();
+        }
       });
 
       // UI update event
       let app_handle = app.handle();
       let manager_clone = Arc::clone(&manager);
-      app.listen_global("queryState", move |event| {
+      app.listen_global("queryState", move |_| {
         // app_handle.emit_all("showState", "@@@");
         let snapshot = {
           let manager_handle = manager_clone.lock().unwrap();
@@ -118,7 +127,7 @@ fn main() {
         };
         match snapshot {
           Some(snapshot) => {
-            app_handle.emit_all("showState", snapshot);
+            app_handle.emit_all("showState", snapshot).ok();
           }
           _ => {}
         }

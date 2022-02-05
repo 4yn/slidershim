@@ -153,8 +153,18 @@ impl Config {
     .unwrap()
   }
 
+  pub fn get_log_file_path() -> Option<Box<PathBuf>> {
+    let project_dir = ProjectDirs::from("me", "ress.imp", "slidershim").unwrap();
+    let config_dir = project_dir.config_dir();
+    fs::create_dir_all(config_dir).unwrap();
+
+    let log_path = config_dir.join("log.txt");
+
+    return Some(Box::new(log_path));
+  }
+
   fn get_saved_path() -> Option<Box<PathBuf>> {
-    let project_dir = ProjectDirs::from("me", "imp.ress", "slidershim").unwrap();
+    let project_dir = ProjectDirs::from("me", "ress.imp", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
     fs::create_dir_all(config_dir).unwrap();
 

@@ -33,3 +33,14 @@ impl Error for ShimError {
     "shimError"
   }
 }
+
+pub fn list_ips() -> Result<Vec<String>, Box<dyn Error>> {
+  let mut ips = vec![];
+  for adapter in ipconfig::get_adapters()? {
+    for ip_address in adapter.ip_addresses() {
+      ips.push(format!("{}", ip_address));
+    }
+  }
+
+  Ok(ips)
+}

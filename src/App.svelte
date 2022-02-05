@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { emit, listen } from "@tauri-apps/api/event";
 
+  import Link from "./Link.svelte";
   import Preview from "./Preview.svelte";
 
   let deviceMode = "none";
@@ -14,8 +15,15 @@
   let ledWebsocketUrl = "http://localhost:3001";
   let ledSerialPort = "COM5";
 
-  let debugstr = "";
+  let dirty = false;
 
+  function markDirty() {
+    dirty = true;
+  }
+
+  // let debugstr = "";
+
+  let ips: Array<string> = [];
   let polling = null;
   let tick = 0;
   let previewData = Array(131).fill(0);
@@ -37,7 +45,6 @@
   onMount(async () => {
     // console.log(emit, listen);
     await listen("showConfig", (event) => {
-      debugstr = event.payload;
       const payload: any = JSON.parse(event.payload as any);
       deviceMode = payload.deviceMode || "none";
       outputMode = payload.outputMode || "none";
@@ -51,7 +58,13 @@
     });
 
     await listen("showState", (event) => {
-      previewData = event.payload;
+      previewData = event.payload as any;
+    });
+
+    await listen("listIps", (event) => {
+      ips = (event.payload as Array<string>).filter(
+        (x) => x.split(".").length == 4
+      );
     });
 
     await emit("ready", "");
@@ -82,6 +95,7 @@
         ledSerialPort,
       })
     );
+    dirty = false;
     console.log("Done");
   }
 
@@ -110,31 +124,53 @@
   <div class="row">
     <div class="label">Input Device</div>
     <div class="input">
-      <select bind:value={deviceMode}>
+      <select bind:value={deviceMode} on:change={markDirty}>
         <option value="none">None</option>
         <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
         <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
         <option value="yuancon">Yuancon Laverita, HID Firmware</option>
         <option value="brokenithm">Brokenithm</option>
-        <option value="brokenithm-ground">Brokenithm, Ground only (WIP)</option>
+        <option value="brokenithm-ground">Brokenithm, Ground only</option>
       </select>
     </div>
   </div>
+  {#if deviceMode.slice(0, 10) === "brokenithm"}
+    <div class="row">
+      <div class="label" />
+      <div class="input">
+        Brokenithm open at:
+        <pre>
+          {ips.map((x) => `http://${x}:1606/`).join("\n")}
+        </pre>
+      </div>
+    </div>
+  {/if}
   <div class="row">
     <div class="label">Output Mode</div>
     <div class="input">
-      <select bind:value={outputMode}>
+      <select bind:value={outputMode} on:change={markDirty}>
         <option value="none">None</option>
         <option value="kb-32-tasoller">Keyboard 32-zone, Tasoller Layout</option
         >
         <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option>
         <option value="kb-8-deemo">Keyboard 8-zone, Deemo Layout</option>
         <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
-        <option value="websocket">Websocket</option>
+        <option value="gamepad-voltex">XBOX 360 Gamepad, Voltex Layout</option>
+        <!-- <option value="websocket">Websocket</option> -->
       </select>
     </div>
   </div>
-  {#if outputMode.slice(0, 2) === "kb"}
+  {#if outputMode === "gamepad-voltex"}
+    <div class="row">
+      <div class="label" />
+      <div class="input">
+        Gamepad emulation requires <Link
+          href="https://github.com/ViGEm/ViGEmBus/releases">ViGEMBus</Link
+        >
+      </div>
+    </div>
+  {/if}
+  {#if outputMode.slice(0, 2) === "kb" && deviceMode.slice(0, 10) !== "brokenithm"}
     <div class="row">
       <div class="label">Sensitivity</div>
       <div class="input">
@@ -144,6 +180,7 @@
           max="255"
           step="1"
           bind:value={keyboardSensitivity}
+          on:change={markDirty}
         />
       </div>
     </div>
@@ -156,6 +193,7 @@
           max="255"
           step="1"
           bind:value={keyboardSensitivity}
+          on:change={markDirty}
         />
       </div>
     </div>
@@ -164,27 +202,30 @@
     <div class="row">
       <div class="label">Output URL</div>
       <div class="input">
-        <input placeholder="URL" bind:value={outputWebsocketUrl} />
+        <input
+          placeholder="URL"
+          bind:value={outputWebsocketUrl}
+          on:change={markDirty}
+        />
       </div>
     </div>
   {/if}
   <div class="row">
     <div class="label">LED Mode</div>
     <div class="input">
-      <select bind:value={ledMode}>
+      <select bind:value={ledMode} on:change={markDirty}>
         <option value="none">None</option>
         <option value="reactive-4">Reactive, 4-Zone</option>
         <option value="reactive-8">Reactive, 8-Zone</option>
         <option value="reactive-16">Reactive, 16-Zone</option>
         <option value="reactive-voltex">Reactive, Voltex Layout</option>
         <option value="attract">Rainbow Attract Mode</option>
-        <option value="test">LED Test</option>
-        <option value="websocket">Websocket</option>
+        <!-- <option value="websocket">Websocket</option> -->
         <option value="serial">Serial</option>
       </select>
     </div>
   </div>
-  {#if ledMode.slice(0, 8) === "reactive"}
+  {#if ledMode.slice(0, 8) === "reactive" && deviceMode.slice(0, 10) !== "brokenithm"}
     <div class="row">
       <div class="label">Sensitivity</div>
       <div class="input">
@@ -194,6 +235,7 @@
           max="255"
           step="1"
           bind:value={ledSensitivity}
+          on:change={markDirty}
         />
       </div>
     </div>
@@ -206,6 +248,7 @@
           max="255"
           step="1"
           bind:value={ledSensitivity}
+          on:change={markDirty}
         />
       </div>
     </div>
@@ -214,15 +257,28 @@
     <div class="row">
       <div class="label">LED URL</div>
       <div class="input">
-        <input placeholder="URL" bind:value={ledWebsocketUrl} />
+        <input
+          placeholder="URL"
+          bind:value={ledWebsocketUrl}
+          on:change={markDirty}
+        />
       </div>
     </div>
   {/if}
   {#if ledMode === "serial"}
     <div class="row">
+      <div class="label" />
+      <div class="input">
+        Serial LED may require <Link
+          href="https://sourceforge.net/projects/com0com/files/com0com/2.2.2.0/com0com-2.2.2.0-x64-fre-signed.zip/download"
+          >com0com</Link
+        >
+      </div>
+    </div>
+    <div class="row">
       <div class="label">LED Serial Port</div>
       <div class="input">
-        <select bind:value={ledSerialPort}>
+        <select bind:value={ledSerialPort} on:change={markDirty}>
           <option value="COM1">COM1</option>
           <option value="COM2">COM2</option>
           <option value="COM3">COM3</option>
@@ -237,7 +293,10 @@
     </div>
   {/if}
   <div class="row">
-    <button on:click={async () => await setConfig()}>Apply</button>
+    <button
+      on:click={async () => await setConfig()}
+      class={`${dirty && "primary"}`}>Apply</button
+    >
     <button on:click={async () => await hide()}>Hide</button>
     <button on:click={async () => await quit()}>Quit</button>
   </div>

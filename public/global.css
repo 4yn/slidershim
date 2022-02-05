@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   position: relative;
   width: 100%;
   height: 100%;
@@ -9,9 +10,14 @@ html, body {
 * {
   box-sizing: border-box;
   color: #ddd;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
   font-size: 1rem;
   user-select: none;
+}
+
+pre {
+  font-family: monospace;
 }
 
 body {
@@ -31,7 +37,8 @@ body {
   font-weight: 500;
 }
 
-.row, .row-2 {
+.row,
+.row-2 {
   margin: 0 0 0.5rem 0;
   display: flex;
   flex-flow: row nowrap;
@@ -47,7 +54,8 @@ body {
   flex: 2 2 0;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   background-color: #444;
   color: #ddd;
@@ -71,6 +79,10 @@ button:active {
   background: #777;
 }
 
+button.primary {
+  background: rgb(35, 67, 211);
+}
+
 .preview {
   width: 100%;
   display: flex;
@@ -84,9 +96,10 @@ button:active {
   height: 3rem;
 }
 
-.ground-btn, .ground-led {
+.ground-btn,
+.ground-led {
   height: 3rem;
-  position:absolute;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;

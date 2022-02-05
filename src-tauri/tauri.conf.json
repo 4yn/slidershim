@@ -13,7 +13,7 @@
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "me.ress.imp.slidershim",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -51,13 +51,16 @@
       "active": false
     },
     "allowlist": {
-      "all": true
+      "all": false,
+      "shell": {
+        "open": true
+      }
     },
     "windows": [
       {
         "title": "slidershim",
         "width": 500,
-        "height": 400,
+        "height": 500,
         "resizable": false,
         "fullscreen": false
       }

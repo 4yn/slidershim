@@ -2,7 +2,7 @@ use log::info;
 
 use crate::slider_io::{
   brokenithm::BrokenithmJob,
-  config::{Config, DeviceMode},
+  config::{Config, DeviceMode, LedMode, OutputMode},
   controller_state::FullState,
   device::HidDeviceJob,
   led::LedJob,
@@ -16,8 +16,8 @@ pub struct Context {
   config: Config,
   device_worker: Option<ThreadWorker>,
   brokenithm_worker: Option<AsyncWorker>,
-  output_worker: ThreadWorker,
-  led_worker: ThreadWorker,
+  output_worker: Option<ThreadWorker>,
+  led_worker: Option<ThreadWorker>,
 }
 
 impl Context {
@@ -30,6 +30,7 @@ impl Context {
     let state = FullState::new();
 
     let (device_worker, brokenithm_worker) = match &config.device_mode {
+      DeviceMode::None => (None, None),
       DeviceMode::Brokenithm { ground_only } => (
         None,
         Some(AsyncWorker::new(
@@ -37,16 +38,28 @@ impl Context {
           BrokenithmJob::new(&state, ground_only),
         )),
       ),
-      other => (
+      _ => (
         Some(ThreadWorker::new(
           "device",
-          HidDeviceJob::from_config(&state, other),
+          HidDeviceJob::from_config(&state, &config.device_mode),
         )),
         None,
       ),
     };
-    let output_worker = ThreadWorker::new("output", OutputJob::new(&state, &config.output_mode));
-    let led_worker = ThreadWorker::new("led", LedJob::new(&state, &config.led_mode));
+    let output_worker = match &config.output_mode {
+      OutputMode::None => None,
+      _ => Some(ThreadWorker::new(
+        "output",
+        OutputJob::new(&state, &config.output_mode),
+      )),
+    };
+    let led_worker = match &config.led_mode {
+      LedMode::None => None,
+      _ => Some(ThreadWorker::new(
+        "led",
+        LedJob::new(&state, &config.led_mode),
+      )),
+    };
 
     Self {
       state,
