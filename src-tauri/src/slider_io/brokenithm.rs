@@ -53,7 +53,11 @@ async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
   }
 }
 
-async fn handle_brokenithm(ws_stream: WebSocketStream<Upgraded>, state: FullState) {
+async fn handle_brokenithm(
+  ws_stream: WebSocketStream<Upgraded>,
+  state: FullState,
+  led_enabled: bool,
+) {
   let (mut ws_write, mut ws_read) = ws_stream.split();
 
   let (msg_write, mut msg_read) = mpsc::unbounded_channel::<Message>();
@@ -139,33 +143,42 @@ async fn handle_brokenithm(ws_stream: WebSocketStream<Upgraded>, state: FullStat
     // info!("Websocket read task done");
   };
 
-  let msg_write_handle = msg_write.clone();
-  let state_handle = state.clone();
-  let led_task = async move {
-    loop {
-      let mut led_data = vec![0; 93];
-      {
-        let led_state_handle = state_handle.led_state.lock().unwrap();
-        (&mut led_data).copy_from_slice(&led_state_handle.led_state);
-      }
-      msg_write_handle.send(Message::Binary(led_data)).ok();
-
-      sleep(Duration::from_millis(50)).await;
+  match led_enabled {
+    false => {
+      select! {
+        _ = read_task => {}
+        _ = write_task => {}
+      };
     }
-  };
+    true => {
+      let msg_write_handle = msg_write.clone();
+      let state_handle = state.clone();
+      let led_task = async move {
+        loop {
+          let mut led_data = vec![0; 93];
+          {
+            let led_state_handle = state_handle.led_state.lock().unwrap();
+            (&mut led_data).copy_from_slice(&led_state_handle.led_state);
+          }
+          msg_write_handle.send(Message::Binary(led_data)).ok();
 
-  info!("Websocket handling");
-  select! {
-    _ = read_task => {}
-    _ = write_task => {}
-    _ = led_task => {}
-  };
-  info!("Websocket done");
+          sleep(Duration::from_millis(50)).await;
+        }
+      };
+
+      select! {
+        _ = read_task => {}
+        _ = write_task => {}
+        _ = led_task => {}
+      };
+    }
+  }
 }
 
 async fn handle_websocket(
   mut request: Request<Body>,
   state: FullState,
+  led_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
   let res = match handshake::server::create_response_with_body(&request, || Body::empty()) {
     Ok(res) => {
@@ -179,7 +192,7 @@ async fn handle_websocket(
             )
             .await;
 
-            handle_brokenithm(ws_stream, state).await;
+            handle_brokenithm(ws_stream, state, led_enabled).await;
           }
 
           Err(e) => {
@@ -206,6 +219,7 @@ async fn handle_request(
   remote_addr: SocketAddr,
   state: FullState,
   ground_only: bool,
+  led_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
   let method = request.method();
   let path = request.uri().path();
@@ -227,7 +241,7 @@ async fn handle_request(
       true => serve_file("index-go.html").await,
     },
     (filename, false) => serve_file(&filename[1..]).await,
-    ("/ws", true) => handle_websocket(request, state).await,
+    ("/ws", true) => handle_websocket(request, state, led_enabled).await,
     _ => error_response().await,
   }
 }
@@ -235,13 +249,15 @@ async fn handle_request(
 pub struct BrokenithmJob {
   state: FullState,
   ground_only: bool,
+  led_enabled: bool,
 }
 
 impl BrokenithmJob {
-  pub fn new(state: &FullState, ground_only: &bool) -> Self {
+  pub fn new(state: &FullState, ground_only: &bool, led_enabled: &bool) -> Self {
     Self {
       state: state.clone(),
       ground_only: *ground_only,
+      led_enabled: *led_enabled,
     }
   }
 }
@@ -251,13 +267,14 @@ impl AsyncJob for BrokenithmJob {
   async fn run<F: Future<Output = ()> + Send>(self, stop_signal: F) {
     let state = self.state.clone();
     let ground_only = self.ground_only;
+    let led_enabled = self.led_enabled;
     let make_svc = make_service_fn(|conn: &AddrStream| {
       let remote_addr = conn.remote_addr();
       let make_svc_state = state.clone();
       async move {
         Ok::<_, Infallible>(service_fn(move |request: Request<Body>| {
           let svc_state = make_svc_state.clone();
-          handle_request(request, remote_addr, svc_state, ground_only)
+          handle_request(request, remote_addr, svc_state, ground_only, led_enabled)
         }))
       }
     });

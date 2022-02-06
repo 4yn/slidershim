@@ -146,7 +146,9 @@
         <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
         <option value="yuancon">Yuancon Laverita, HID Firmware</option>
         <option value="brokenithm">Brokenithm</option>
+        <option value="brokenithm-led">Brokenithm + Led</option>
         <option value="brokenithm-ground">Brokenithm, Ground only</option>
+        <option value="brokenithm-ground-led">Brokenithm + Led, Ground only</option>
       </select>
     </div>
   </div>

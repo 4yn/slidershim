@@ -31,11 +31,14 @@ impl Context {
 
     let (device_worker, brokenithm_worker) = match &config.device_mode {
       DeviceMode::None => (None, None),
-      DeviceMode::Brokenithm { ground_only } => (
+      DeviceMode::Brokenithm {
+        ground_only,
+        led_enabled,
+      } => (
         None,
         Some(AsyncWorker::new(
           "brokenithm",
-          BrokenithmJob::new(&state, ground_only),
+          BrokenithmJob::new(&state, ground_only, led_enabled),
         )),
       ),
       _ => (

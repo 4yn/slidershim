@@ -13,7 +13,10 @@ pub enum DeviceMode {
   TasollerOne,
   TasollerTwo,
   Yuancon,
-  Brokenithm { ground_only: bool },
+  Brokenithm {
+    ground_only: bool,
+    led_enabled: bool,
+  },
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -123,8 +126,22 @@ impl Config {
         "tasoller-one" => DeviceMode::TasollerOne,
         "tasoller-two" => DeviceMode::TasollerTwo,
         "yuancon" => DeviceMode::Yuancon,
-        "brokenithm" => DeviceMode::Brokenithm { ground_only: false },
-        "brokenithm-ground" => DeviceMode::Brokenithm { ground_only: true },
+        "brokenithm" => DeviceMode::Brokenithm {
+          ground_only: false,
+          led_enabled: false,
+        },
+        "brokenithm-led" => DeviceMode::Brokenithm {
+          ground_only: false,
+          led_enabled: true,
+        },
+        "brokenithm-ground" => DeviceMode::Brokenithm {
+          ground_only: true,
+          led_enabled: false,
+        },
+        "brokenithm-ground-led" => DeviceMode::Brokenithm {
+          ground_only: true,
+          led_enabled: true,
+        },
         _ => panic!("Invalid device mode"),
       },
       output_mode: match v["outputMode"].as_str().unwrap() {
