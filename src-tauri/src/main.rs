@@ -9,7 +9,6 @@ mod slider_io;
 
 use std::sync::{Arc, Mutex};
 
-// use env_logger;
 use log::info;
 
 use tauri::{
@@ -32,9 +31,18 @@ fn quit_app() {
 
 fn main() {
   // Setup logger
-  let log_file_path = slider_io::Config::get_log_file_path().unwrap();
-  simple_logging::log_to_file(log_file_path.as_path(), log::LevelFilter::Debug).unwrap();
-  // simple_logging::log_to_file("./log.txt", log::LevelFilter::Debug).unwrap();
+
+  #[cfg(debug_assertions)]
+  env_logger::Builder::new()
+    .filter_level(log::LevelFilter::Debug)
+    .init();
+
+  #[cfg(not(debug_assertions))]
+  {
+    let log_file_path = slider_io::Config::get_log_file_path().unwrap();
+    simple_logging::log_to_file(log_file_path.as_path(), log::LevelFilter::Debug).unwrap();
+    // simple_logging::log_to_file("./log.txt", log::LevelFilter::Debug).unwrap();
+  }
 
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
   let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
@@ -92,6 +100,22 @@ fn main() {
         quit_app();
       });
 
+      // Show logs
+      app.listen_global("openLogfile", |_| {
+        let log_file_path = slider_io::Config::get_log_file_path();
+        if let Some(log_file_path) = log_file_path {
+          open::that(log_file_path.as_path()).ok();
+        }
+      });
+
+      // Show brokenithm qr
+      app.listen_global("openBrokenithmQr", |_| {
+        let brokenithm_qr_path = slider_io::Config::get_brokenithm_qr_path();
+        if let Some(brokenithm_qr_path) = brokenithm_qr_path {
+          open::that(brokenithm_qr_path.as_path()).ok();
+        }
+      });
+
       // UI ready event
       let app_handle = app.handle();
       let config_clone = Arc::clone(&config);
@@ -109,11 +133,6 @@ fn main() {
         if let Ok(ips) = ips {
           app_handle.emit_all("listIps", &ips).unwrap();
         }
-
-        let log_file_path = slider_io::Config::get_log_file_path().unwrap();
-        app_handle
-          .emit_all("updateLogPath", log_file_path.as_path().to_str().unwrap())
-          .unwrap();
       });
 
       // UI update event

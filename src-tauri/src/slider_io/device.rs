@@ -102,8 +102,8 @@ impl HidDeviceJob {
             .zip(led_state.led_state.chunks(3).rev())
           {
             buf_chunk[0] = state_chunk[2];
-            buf_chunk[1] = state_chunk[1];
-            buf_chunk[2] = state_chunk[0];
+            buf_chunk[1] = state_chunk[0];
+            buf_chunk[2] = state_chunk[1];
           }
           buf.data[96..240].fill(0);
         },
@@ -140,8 +140,8 @@ impl HidDeviceJob {
             .zip(led_state.led_state.chunks(3).rev())
           {
             buf_chunk[0] = state_chunk[2];
-            buf_chunk[1] = state_chunk[1];
-            buf_chunk[2] = state_chunk[0];
+            buf_chunk[1] = state_chunk[0];
+            buf_chunk[2] = state_chunk[1];
           }
           buf.data[96..240].fill(0);
         },

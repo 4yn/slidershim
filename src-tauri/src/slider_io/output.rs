@@ -12,6 +12,7 @@ pub trait OutputHandler: Send {
 
 pub struct OutputJob {
   state: FullState,
+  t: u64,
   sensitivity: u8,
   handler: Box<dyn OutputHandler>,
 }
@@ -21,17 +22,21 @@ impl OutputJob {
     match mode {
       OutputMode::Keyboard {
         layout,
+        polling,
         sensitivity,
       } => Self {
         state: state.clone(),
+        t: polling.to_t_u64(),
         sensitivity: *sensitivity,
         handler: Box::new(KeyboardOutput::new(layout.clone())),
       },
       OutputMode::Gamepad {
         layout,
+        polling,
         sensitivity,
       } => Self {
         state: state.clone(),
+        t: polling.to_t_u64(),
         sensitivity: *sensitivity,
         handler: Box::new(GamepadOutput::new(layout.clone())),
       },
@@ -53,7 +58,7 @@ impl ThreadJob for OutputJob {
     }
 
     self.handler.tick(&flat_controller_state);
-    thread::sleep(Duration::from_millis(10));
+    thread::sleep(Duration::from_millis(self.t));
   }
 
   fn teardown(&mut self) {

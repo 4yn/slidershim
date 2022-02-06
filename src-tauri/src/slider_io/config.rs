@@ -1,7 +1,11 @@
 use directories::ProjectDirs;
+use image::Luma;
 use log::{info, warn};
+use qrcode::QrCode;
 use serde_json::Value;
 use std::{convert::TryFrom, fs, path::PathBuf};
+
+use crate::slider_io::utils::list_ips;
 
 #[derive(Debug, Clone)]
 pub enum DeviceMode {
@@ -10,6 +14,38 @@ pub enum DeviceMode {
   TasollerTwo,
   Yuancon,
   Brokenithm { ground_only: bool },
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum OutputPolling {
+  Sixty,
+  Hundred,
+  ThreeHundred,
+  FiveHundred,
+  Thousand,
+}
+
+impl OutputPolling {
+  pub fn from_str(s: &str) -> Option<Self> {
+    match s {
+      "60" => Some(OutputPolling::Sixty),
+      "100" => Some(OutputPolling::Hundred),
+      "330" => Some(OutputPolling::ThreeHundred),
+      "500" => Some(OutputPolling::FiveHundred),
+      "1000" => Some(OutputPolling::Thousand),
+      _ => None,
+    }
+  }
+
+  pub fn to_t_u64(&self) -> u64 {
+    match self {
+      OutputPolling::Sixty => 16,
+      OutputPolling::Hundred => 10,
+      OutputPolling::ThreeHundred => 3,
+      OutputPolling::FiveHundred => 2,
+      OutputPolling::Thousand => 1,
+    }
+  }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -31,14 +67,17 @@ pub enum OutputMode {
   None,
   Keyboard {
     layout: KeyboardLayout,
+    polling: OutputPolling,
     sensitivity: u8,
   },
   Gamepad {
     layout: GamepadLayout,
+    polling: OutputPolling,
     sensitivity: u8,
   },
   Websocket {
     url: String,
+    polling: OutputPolling,
   },
 }
 
@@ -92,30 +131,37 @@ impl Config {
         "none" => OutputMode::None,
         "kb-32-tasoller" => OutputMode::Keyboard {
           layout: KeyboardLayout::Tasoller,
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-32-yuancon" => OutputMode::Keyboard {
           layout: KeyboardLayout::Yuancon,
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-8-deemo" => OutputMode::Keyboard {
           layout: KeyboardLayout::Deemo,
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-voltex" => OutputMode::Keyboard {
           layout: KeyboardLayout::Voltex,
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "gamepad-voltex" => OutputMode::Gamepad {
           layout: GamepadLayout::Voltex,
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "gamepad-neardayo" => OutputMode::Gamepad {
           layout: GamepadLayout::Neardayo,
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "websocket" => OutputMode::Websocket {
           url: v["outputWebsocketUrl"].as_str()?.to_string(),
+          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
         },
         _ => panic!("Invalid output mode"),
       },
@@ -158,6 +204,7 @@ impl Config {
       "ledMode": "none",
       "keyboardSensitivity": 20,
       "outputWebsocketUrl": "localhost:3000",
+      "outputPolling": "60",
       "ledSensitivity": 20,
       "ledWebsocketUrl": "localhost:3001",
       "ledSerialPort": "COM5"
@@ -174,6 +221,28 @@ impl Config {
     let log_path = config_dir.join("log.txt");
 
     return Some(Box::new(log_path));
+  }
+
+  pub fn get_brokenithm_qr_path() -> Option<Box<PathBuf>> {
+    let project_dir = ProjectDirs::from("me", "impress labs", "slidershim").unwrap();
+    let config_dir = project_dir.config_dir();
+    fs::create_dir_all(config_dir).unwrap();
+
+    let brokenithm_qr_path = config_dir.join("brokenithm.png");
+
+    let ips = list_ips().ok()?;
+    let link = "http://imp.ress.me/t/sshelper?d=".to_string()
+      + &ips
+        .into_iter()
+        .filter(|s| s.as_str().chars().filter(|x| *x == '.').count() == 3)
+        .map(|s| base64::encode_config(s, base64::URL_SAFE_NO_PAD))
+        .collect::<Vec<String>>()
+        .join(";");
+    let qr = QrCode::new(link).ok()?;
+    let image = qr.render::<Luma<u8>>().build();
+    image.save(brokenithm_qr_path.as_path()).ok()?;
+
+    return Some(Box::new(brokenithm_qr_path));
   }
 
   fn get_saved_path() -> Option<Box<PathBuf>> {

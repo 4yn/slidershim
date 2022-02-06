@@ -11,6 +11,7 @@
   let ledMode = "none";
 
   let keyboardSensitivity = 20;
+  let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
@@ -28,7 +29,6 @@
   let polling = null;
   let tick = 0;
   let previewData = Array(131).fill(0);
-  let logfile = "";
 
   function updatePolling(enabled) {
     if (!!polling) {
@@ -44,6 +44,7 @@
     // console.log(enabled, polling, tick);
   }
 
+  // Receive events
   onMount(async () => {
     // console.log(emit, listen);
     await listen("showConfig", (event) => {
@@ -51,7 +52,9 @@
       deviceMode = payload.deviceMode || "none";
       outputMode = payload.outputMode || "none";
       ledMode = payload.ledMode || "none";
+
       keyboardSensitivity = payload.keyboardSensitivity || 20;
+      outputPolling = payload.outputPolling || "100";
       outputWebsocketUrl =
         payload.outputWebsocketUrl || "http://localhost:3000/";
       ledSensitivity = payload.ledSensitivity || 20;
@@ -69,10 +72,6 @@
       );
     });
 
-    await listen("updateLogPath", (event) => {
-      logfile = event.payload as string;
-    });
-
     await emit("ready", "");
 
     updatePolling(true);
@@ -86,6 +85,8 @@
     });
   });
 
+  // Emit events
+
   async function setConfig() {
     console.log("Updating config");
     await emit(
@@ -95,6 +96,7 @@
         outputMode,
         ledMode,
         keyboardSensitivity,
+        outputPolling,
         outputWebsocketUrl,
         ledSensitivity,
         ledWebsocketUrl,
@@ -114,17 +116,21 @@
   }
 
   async function logs() {
-    await open(logfile);
+    await emit("openLogfile", "");
+  }
+
+  async function brokenithmQr() {
+    await emit("openBrokenithmQr");
   }
 </script>
 
 <main class="main">
-  <div class="row">
-    <div class="header">
-      <!-- slidershim by @4yn -->
-      slidershim
-    </div>
-  </div>
+  <!-- <div class="row titlebar" data-tauri-drag-region> -->
+  <!-- <div class="header"> -->
+  <!-- slidershim by @4yn -->
+  <!-- slidershim -->
+  <!-- </div> -->
+  <!-- </div> -->
   <!-- <div>
     {debugstr}
   </div> -->
@@ -149,7 +155,7 @@
       <div class="label" />
       <div class="input">
         <div class="serverlist">
-          Brokenithm open at:
+          Brokenithm server running, access at one of:
           <pre>
             {ips.map((x) => `http://${x}:1606/`).join("\n")}
           </pre>
@@ -175,7 +181,21 @@
       </select>
     </div>
   </div>
-  {#if outputMode === "gamepad-voltex"}
+  {#if outputMode !== "none"}
+    <div class="row">
+      <div class="label">Output Polling</div>
+      <div class="input">
+        <select bind:value={outputPolling} on:change={markDirty}>
+          <option value="60">60 Hz</option>
+          <option value="100">100 Hz</option>
+          <option value="330">330 Hz</option>
+          <option value="500">500 Hz</option>
+          <option value="1000">1000 Hz</option>
+        </select>
+      </div>
+    </div>
+  {/if}
+  {#if outputMode.slice(0, 7) === "gamepad"}
     <div class="row">
       <div class="label" />
       <div class="input">
@@ -187,7 +207,9 @@
   {/if}
   {#if outputMode.slice(0, 2) === "kb" && deviceMode.slice(0, 10) !== "brokenithm"}
     <div class="row">
-      <div class="label">Sensitivity</div>
+      <div class="label" title="Larger means harder to trigger">
+        Sensitivity
+      </div>
       <div class="input">
         <input
           type="number"
@@ -242,7 +264,9 @@
   </div>
   {#if ledMode.slice(0, 8) === "reactive" && deviceMode.slice(0, 10) !== "brokenithm"}
     <div class="row">
-      <div class="label">Sensitivity</div>
+      <div class="label" title="Larger means harder to trigger">
+        Sensitivity
+      </div>
       <div class="input">
         <input
           type="number"
@@ -314,8 +338,9 @@
     >
     <button on:click={async () => await hide()}>Hide</button>
     <button on:click={async () => await quit()}>Quit</button>
-    {#if !!logfile.length}
-      <button on:click={async () => await logs()}>Logs</button>
+    <button on:click={async () => await logs()}>Logs</button>
+    {#if deviceMode.slice(0, 10) === "brokenithm"}
+      <button on:click={async () => await brokenithmQr()}>Brokenithm QR</button>
     {/if}
   </div>
 </main>

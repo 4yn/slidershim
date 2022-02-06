@@ -236,15 +236,18 @@ const setupLed = () => {
 setupLed();
 const updateLed = (data) => {
   const buf = new Uint8Array(data);
-  for (var i = 0; i < 32; i++) {
-    canvasData.data[i * 4] = buf[(31 - i) * 3 + 1]; // r
-    canvasData.data[i * 4 + 1] = buf[(31 - i) * 3 + 2]; // g
-    canvasData.data[i * 4 + 2] = buf[(31 - i) * 3 + 0]; // b
+  for (var i = 0; i < 31; i++) {
+    canvasData.data[i * 4 + 4] = buf[i * 3]; // r
+    canvasData.data[i * 4 + 5] = buf[i * 3 + 1]; // g
+    canvasData.data[i * 4 + 6] = buf[i * 3 + 2]; // b
   }
-  // Copy from first led
-  canvasData.data[128] = buf[94];
-  canvasData.data[129] = buf[95];
-  canvasData.data[130] = buf[93];
+  canvasData.data[0] = buf[0]
+  canvasData.data[1] = buf[1]
+  canvasData.data[2] = buf[2]
+  canvasData.data[128] = buf[90];
+  canvasData.data[129] = buf[91];
+  canvasData.data[130] = buf[92];
+
   canvasCtx.putImageData(canvasData, 0, 0);
 };
 

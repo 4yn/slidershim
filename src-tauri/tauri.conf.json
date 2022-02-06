@@ -51,10 +51,7 @@
       "active": false
     },
     "allowlist": {
-      "all": false,
-      "shell": {
-        "open": true
-      }
+      "all": false
     },
     "windows": [
       {
@@ -62,7 +59,9 @@
         "width": 500,
         "height": 550,
         "resizable": false,
-        "fullscreen": false
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": true
       }
     ],
     "security": {

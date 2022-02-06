@@ -33,7 +33,7 @@ impl Manager {
     let join_handle = thread::spawn(move || {
       info!("Manager thread started");
       let runtime = tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(1)
+        .worker_threads(2)
         .enable_all()
         .build()
         .unwrap();

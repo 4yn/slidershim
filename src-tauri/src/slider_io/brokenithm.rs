@@ -10,7 +10,12 @@ use hyper::{
 use log::{error, info};
 use path_clean::PathClean;
 use std::{convert::Infallible, env::current_exe, future::Future, net::SocketAddr};
-use tokio::fs::File;
+use tokio::{
+  fs::File,
+  select,
+  sync::mpsc,
+  time::{sleep, Duration},
+};
 use tokio_tungstenite::WebSocketStream;
 use tokio_util::codec::{BytesCodec, FramedRead};
 use tungstenite::{handshake, Message};
@@ -51,67 +56,111 @@ async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
 async fn handle_brokenithm(ws_stream: WebSocketStream<Upgraded>, state: FullState) {
   let (mut ws_write, mut ws_read) = ws_stream.split();
 
-  loop {
-    match ws_read.next().await {
-      Some(msg) => match msg {
-        Ok(msg) => match msg {
-          Message::Text(msg) => {
-            let mut chars = msg.chars();
-            let head = chars.next().unwrap();
-            match head {
-              'a' => {
-                ws_write
-                  .send(Message::Text("alive".to_string()))
-                  .await
-                  .unwrap();
-              }
-              'b' => {
-                let flat_state: Vec<bool> = chars
-                  .map(|x| match x {
-                    '0' => false,
-                    '1' => true,
-                    _ => unreachable!(),
-                  })
-                  .collect();
-                let mut controller_state_handle = state.controller_state.lock().unwrap();
-                for (idx, c) in flat_state[0..32].iter().enumerate() {
-                  controller_state_handle.ground_state[idx] = match c {
-                    false => 0,
-                    true => 255,
-                  }
-                }
-                for (idx, c) in flat_state[32..38].iter().enumerate() {
-                  controller_state_handle.air_state[idx] = match c {
-                    false => 0,
-                    true => 1,
-                  }
-                }
-                // println!(
-                //   "{:?} {:?}",
-                //   controller_state_handle.ground_state, controller_state_handle.air_state
-                // );
-              }
-              _ => {
-                break;
-              }
-            }
-          }
-          Message::Close(_) => {
-            info!("Websocket connection closed");
+  let (msg_write, mut msg_read) = mpsc::unbounded_channel::<Message>();
+
+  let write_task = async move {
+    // info!("Websocket write task open");
+    loop {
+      match msg_read.recv().await {
+        Some(msg) => match ws_write.send(msg).await.ok() {
+          Some(_) => {}
+          None => {
             break;
           }
-          _ => {}
         },
-        Err(e) => {
-          error!("Websocket connection error: {}", e);
+        None => {
           break;
         }
-      },
-      None => {
-        break;
       }
     }
-  }
+    // info!("Websocket write task done");
+  };
+
+  let msg_write_handle = msg_write.clone();
+  let state_handle = state.clone();
+  let read_task = async move {
+    // info!("Websocket read task open");
+    loop {
+      match ws_read.next().await {
+        Some(msg) => match msg {
+          Ok(msg) => match msg {
+            Message::Text(msg) => {
+              let mut chars = msg.chars();
+              let head = chars.next().unwrap();
+              match head {
+                'a' => {
+                  msg_write_handle
+                    .send(Message::Text("alive".to_string()))
+                    .ok();
+                }
+                'b' => {
+                  let flat_state: Vec<bool> = chars
+                    .map(|x| match x {
+                      '0' => false,
+                      '1' => true,
+                      _ => unreachable!(),
+                    })
+                    .collect();
+                  let mut controller_state_handle = state_handle.controller_state.lock().unwrap();
+                  for (idx, c) in flat_state[0..32].iter().enumerate() {
+                    controller_state_handle.ground_state[idx] = match c {
+                      false => 0,
+                      true => 255,
+                    }
+                  }
+                  for (idx, c) in flat_state[32..38].iter().enumerate() {
+                    controller_state_handle.air_state[idx] = match c {
+                      false => 0,
+                      true => 1,
+                    }
+                  }
+                }
+                _ => {
+                  break;
+                }
+              }
+            }
+            Message::Close(_) => {
+              info!("Websocket connection closed");
+              break;
+            }
+            _ => {}
+          },
+          Err(e) => {
+            error!("Websocket connection error: {}", e);
+            break;
+          }
+        },
+        None => {
+          break;
+        }
+      }
+    }
+    // info!("Websocket read task done");
+  };
+
+  let msg_write_handle = msg_write.clone();
+  let state_handle = state.clone();
+  let led_task = async move {
+    loop {
+      let mut led_data = vec![0; 93];
+      {
+        let led_state_handle = state_handle.led_state.lock().unwrap();
+        (&mut led_data).copy_from_slice(&led_state_handle.led_state);
+      }
+      msg_write_handle.send(Message::Binary(led_data)).ok();
+
+      sleep(Duration::from_millis(50)).await;
+    }
+  };
+
+  info!("Websocket handling");
+  select! {
+    _ = read_task => {}
+    _ = write_task => {}
+    _ = led_task => {}
+  };
+  info!("Websocket done");
 }
 
 async fn handle_websocket(

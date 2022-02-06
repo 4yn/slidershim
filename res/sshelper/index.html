@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        max-width: 650px;
+        margin: 40px auto;
+        padding: 0 10px;
+        font: 18px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+          "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        color: #444;
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          color: #ccc;
+          background: black;
+        }
+        a:link {
+          color: #5bf;
+        }
+        a:visited {
+          color: #ccf;
+        }
+      }
+    </style>
+    <title>brokenithm-qr</title>
+  </head>
+  <body>
+    <h1>slidershim brokenithm helper</h1>
+    <ul class="links"></ul>
+    <script>
+      (function () {
+        const search = window.location.search;
+        if (search.slice(0, 3) !== "?d=" || search.length <= 3) {
+          return;
+        }
+        const ul = document.querySelector(".links");
+        search
+          .slice(3)
+          .split(";")
+          .map((x) => atob(x))
+          .forEach((ip) => {
+            const li = document.createElement("li");
+            const a = document.createElement("a");
+            a.innerText = ip;
+            a.setAttribute("target", "_blank");
+            a.setAttribute("rel", "noopener");
+            a.href = `http://${ip}:1606/`;
+            li.appendChild(a);
+            ul.appendChild(li);
+          });
+      })();
+    </script>
+  </body>
+</html>

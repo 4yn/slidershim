@@ -12,7 +12,7 @@ body {
   color: #ddd;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-  font-size: 1rem;
+  /* font-size: 1rem; */
   user-select: none;
 }
 
@@ -23,18 +23,47 @@ pre {
 body {
   margin: 0;
   padding: 1rem;
+  border: 0.125rem solid #333;
 }
 
+/* titlebar */
+
+.titlebar {
+  user-select: none;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+  height: 2rem;
+}
+
+.header-icon {
+  max-height: 100%;
+}
+
+.header-icon img {
+  max-height: 1.5rem;
+  pointer-events: none;
+}
+
+.header {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+/* main */
+
 .main {
+  margin-top: 2rem;
   display: flex;
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
-}
-
-.header {
-  font-size: 2rem;
-  font-weight: 500;
 }
 
 .row,
@@ -50,6 +79,14 @@ body {
   flex: 1 1 0;
 }
 
+.row .label[title] {
+  text-decoration: underline dotted;
+}
+
+.row .label[title]:hover {
+  text-decoration: underline;
+}
+
 .row .input {
   flex: 2 2 0;
 }
@@ -58,9 +95,7 @@ body {
   width: 100%;
   max-height: 5rem;
   overflow-x: auto;
-}
-.serverlist > pre {
-  font-size: 0.75em;
+  font-size: 0.75rem;
 }
 
 input,
@@ -69,6 +104,7 @@ select {
   background-color: #444;
   color: #ddd;
   border: none;
+  font-size: 1rem;
 }
 
 button {
@@ -92,6 +128,8 @@ button.primary {
   background: rgb(35, 67, 211);
 }
 
+/* Preview */
+
 .preview {
   width: 100%;
   display: flex;
@@ -107,6 +145,9 @@ button.primary {
   flex-flow: column-reverse nowrap;
   align-items: stretch;
   justify-content: flex-start;
+
+  border-radius: 0.5rem 0.5rem 0 0;
+  overflow: clip;
 }
 .air-data {
   flex: 1 0;
@@ -121,6 +162,9 @@ button.primary {
 .ground {
   position: relative;
   height: 3rem;
+
+  border-radius: 0 0 0.5rem 0.5rem;
+  overflow: clip;
 }
 
 .ground-btn,
@@ -176,7 +220,7 @@ button.primary {
   display: flex;
   flex-flow: row nowrap;
   align-items: stretch;
-  justify-content: flex-start;
+  justify-content: center;
 }
 .extra-data {
   width: 1rem;

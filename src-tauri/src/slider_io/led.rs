@@ -137,7 +137,7 @@ impl LedJob {
             {
               led_state.paint(idx, &[(*buf_chunk)[1], (*buf_chunk)[2], (*buf_chunk)[0]]);
             }
-            println!("leds {:?}", led_state.led_state);
+            // println!("leds {:?}", led_state.led_state);
           }
         }
       }
@@ -187,23 +187,21 @@ impl ThreadJob for LedJob {
       LedMode::Serial { .. } => {
         if let Some(serial_port) = self.serial_port.as_mut() {
           let mut serial_data_avail = serial_port.bytes_to_read().unwrap_or(0);
-          if serial_data_avail < 100 {
-            return;
-          }
+          if serial_data_avail >= 100 {
+            if serial_data_avail % 100 == 0 {
+              let mut serial_buffer_working = Buffer::new();
+              serial_port
+                .as_mut()
+                .read_exact(&mut serial_buffer_working.data[..100])
+                .ok()
+                .unwrap();
+              serial_data_avail -= 100;
+              serial_buffer = Some(serial_buffer_working);
+            }
 
-          if serial_data_avail % 100 == 0 {
-            let mut serial_buffer_working = Buffer::new();
-            serial_port
-              .as_mut()
-              .read_exact(&mut serial_buffer_working.data[..100])
-              .ok()
-              .unwrap();
-            serial_data_avail -= 100;
-            serial_buffer = Some(serial_buffer_working);
-          }
-
-          if serial_data_avail > 0 {
-            serial_port.clear(ClearBuffer::All).unwrap();
+            if serial_data_avail > 0 {
+              serial_port.clear(ClearBuffer::All).unwrap();
+            }
           }
         }
       }

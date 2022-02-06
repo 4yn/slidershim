@@ -5,12 +5,9 @@
   let botDatas = Array(16).fill(0);
   let airDatas = Array(6).fill(0);
   let extraDatas = Array(3).fill(0);
-  let ledDatas = Array(31)
-    .fill(0)
-    .map((_, idx) => ({
-      color: !!(idx % 2) ? "#f0f" : "#ff0",
-      spec: idx % 2,
-    }));
+
+  let ledDatas = Array(16).fill("#ff0");
+  let ledDividerDatas = Array(15).fill("#ff0");
 
   $: {
     if (data.length === 134) {
@@ -27,9 +24,14 @@
       }
 
       for (let i = 0; i < 31; i++) {
-        ledDatas[i].color = `rgb(${data[41 + i * 3]}, ${data[42 + i * 3]}, ${
+        let rgbstr = `rgb(${data[41 + i * 3]}, ${data[42 + i * 3]}, ${
           data[43 + i * 3]
         })`;
+        if (i % 2 == 0) {
+          ledDatas[i / 2] = rgbstr;
+        } else {
+          ledDividerDatas[(i - 1) / 2] = rgbstr;
+        }
       }
     }
   }
@@ -44,11 +46,18 @@
   <div class="ground">
     <div class="ground-led">
       <div class="ground-row">
+        {#each ledDatas as ledData, idx (idx)}
+          <div class={`ground-led-0`} style={`background-color: ${ledData}`} />
+        {/each}
+      </div>
+    </div>
+    <div class="ground-led">
+      <div class="ground-row ground-row-divider">
         <div class="ground-led-2" />
-        {#each ledDatas as { color, spec }, idx (idx)}
+        {#each ledDividerDatas as ledDividerData, idx (idx)}
           <div
-            class={`ground-led-${spec}`}
-            style={`background-color: ${color}`}
+            class="ground-led-1"
+            style={`background-color: ${ledDividerData}`}
           />
         {/each}
         <div class="ground-led-2" />
