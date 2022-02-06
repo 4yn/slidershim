@@ -32,6 +32,12 @@ impl ControllerState {
       )
       .collect()
   }
+
+  pub fn flip_vert(&mut self) {
+    for i in 0..16 {
+      self.ground_state.swap(i * 2, i * 2 + 1);
+    }
+  }
 }
 
 pub struct LedState {
@@ -81,6 +87,7 @@ impl FullState {
       let controller_state_handle = self.controller_state.lock().unwrap();
       buf.extend(controller_state_handle.ground_state);
       buf.extend(controller_state_handle.air_state);
+      buf.extend(controller_state_handle.extra_state);
     };
     {
       let led_state_handle = self.led_state.lock().unwrap();

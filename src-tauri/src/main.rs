@@ -32,14 +32,9 @@ fn quit_app() {
 
 fn main() {
   // Setup logger
-  // env_logger::Builder::new()
-  //   .filter_level(log::LevelFilter::Debug)
-  //   .init();
-  simple_logging::log_to_file(
-    slider_io::Config::get_log_file_path().unwrap().as_path(),
-    log::LevelFilter::Debug,
-  )
-  .unwrap();
+  let log_file_path = slider_io::Config::get_log_file_path().unwrap();
+  simple_logging::log_to_file(log_file_path.as_path(), log::LevelFilter::Debug).unwrap();
+  // simple_logging::log_to_file("./log.txt", log::LevelFilter::Debug).unwrap();
 
   let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
   let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
@@ -114,6 +109,11 @@ fn main() {
         if let Ok(ips) = ips {
           app_handle.emit_all("listIps", &ips).unwrap();
         }
+
+        let log_file_path = slider_io::Config::get_log_file_path().unwrap();
+        app_handle
+          .emit_all("updateLogPath", log_file_path.as_path().to_str().unwrap())
+          .unwrap();
       });
 
       // UI update event

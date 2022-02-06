@@ -85,9 +85,10 @@ impl HidDeviceJob {
           for i in 0..32 {
             controller_state.ground_state[i] = bits[34 + i] * 255;
           }
+          controller_state.flip_vert();
 
           controller_state.air_state.copy_from_slice(&bits[28..34]);
-          controller_state.extra_state.copy_from_slice(&bits[26..28]);
+          controller_state.extra_state[0..2].copy_from_slice(&bits[26..28]);
         },
         WriteType::Bulk,
         |buf, led_state| {
@@ -121,10 +122,11 @@ impl HidDeviceJob {
           controller_state
             .ground_state
             .copy_from_slice(&buf.data[4..36]);
+          controller_state.flip_vert();
 
           let bits: Vec<u8> = (0..8).map(|x| (buf.data[3] >> x) & 1).collect();
-          controller_state.air_state.copy_from_slice(&bits[2..8]);
-          controller_state.extra_state.copy_from_slice(&bits[2..8]);
+          controller_state.air_state.copy_from_slice(&bits[0..6]);
+          controller_state.extra_state[0..2].copy_from_slice(&bits[6..8]);
         },
         WriteType::Bulk,
         |buf, led_state| {
@@ -159,8 +161,7 @@ impl HidDeviceJob {
             .ground_state
             .copy_from_slice(&buf.data[2..34]);
           for i in 0..6 {
-            controller_state.air_state[i ^ 1] = 0;
-            // controller_state.air_state[i ^ 1] = (buf.data[0] >> i) & 1;
+            controller_state.air_state[i ^ 1] = (buf.data[0] >> i) & 1;
           }
           for i in 0..3 {
             controller_state.extra_state[i] = (buf.data[1] >> i) & 1;
@@ -230,8 +231,13 @@ impl ThreadJob for HidDeviceJob {
     {
       let res = handle
         .read_interrupt(self.read_endpoint, &mut self.read_buf.data, TIMEOUT)
+        .map_err(|e| {
+          // debug!("Device read error {}", &e);
+          e
+        })
         .unwrap_or(0);
       self.read_buf.len = res;
+      // debug!("{:?}", self.read_buf.slice());
       if self.read_buf.len != 0 {
         let mut controller_state_handle = self.state.controller_state.lock().unwrap();
         (self.read_callback)(&self.read_buf, controller_state_handle.deref_mut());
@@ -250,10 +256,14 @@ impl ThreadJob for HidDeviceJob {
 
       if self.led_buf.len != 0 {
         let res = (match self.led_write_type {
-          WriteType::Bulk => handle.write_bulk(self.led_endpoint, &self.led_buf.data, TIMEOUT),
+          WriteType::Bulk => handle.write_bulk(self.led_endpoint, self.led_buf.slice(), TIMEOUT),
           WriteType::Interrupt => {
-            handle.write_interrupt(self.led_endpoint, &self.led_buf.data, TIMEOUT)
+            handle.write_interrupt(self.led_endpoint, &self.led_buf.slice(), TIMEOUT)
           }
+        })
+        .map_err(|e| {
+          // debug!("Device write error {}", e);
+          e
         })
         .unwrap_or(0);
         if res == self.led_buf.len + 1 {

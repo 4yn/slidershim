@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { emit, listen } from "@tauri-apps/api/event";
+  import { open } from "@tauri-apps/api/shell";
 
   import Link from "./Link.svelte";
   import Preview from "./Preview.svelte";
@@ -27,6 +28,7 @@
   let polling = null;
   let tick = 0;
   let previewData = Array(131).fill(0);
+  let logfile = "";
 
   function updatePolling(enabled) {
     if (!!polling) {
@@ -65,6 +67,10 @@
       ips = (event.payload as Array<string>).filter(
         (x) => x.split(".").length == 4
       );
+    });
+
+    await listen("updateLogPath", (event) => {
+      logfile = event.payload as string;
     });
 
     await emit("ready", "");
@@ -106,6 +112,10 @@
   async function quit() {
     await emit("quit", "");
   }
+
+  async function logs() {
+    await open(logfile);
+  }
 </script>
 
 <main class="main">
@@ -138,10 +148,12 @@
     <div class="row">
       <div class="label" />
       <div class="input">
-        Brokenithm open at:
-        <pre>
-          {ips.map((x) => `http://${x}:1606/`).join("\n")}
-        </pre>
+        <div class="serverlist">
+          Brokenithm open at:
+          <pre>
+            {ips.map((x) => `http://${x}:1606/`).join("\n")}
+          </pre>
+        </div>
       </div>
     </div>
   {/if}
@@ -156,6 +168,9 @@
         <option value="kb-8-deemo">Keyboard 8-zone, Deemo Layout</option>
         <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
         <option value="gamepad-voltex">XBOX 360 Gamepad, Voltex Layout</option>
+        <option value="gamepad-neardayo"
+          >XBOX 360 Gamepad, Neardayo Layout</option
+        >
         <!-- <option value="websocket">Websocket</option> -->
       </select>
     </div>
@@ -299,6 +314,9 @@
     >
     <button on:click={async () => await hide()}>Hide</button>
     <button on:click={async () => await quit()}>Quit</button>
+    {#if !!logfile.length}
+      <button on:click={async () => await logs()}>Logs</button>
+    {/if}
   </div>
 </main>
 

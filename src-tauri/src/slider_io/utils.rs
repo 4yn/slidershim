@@ -14,7 +14,7 @@ impl Buffer {
     }
   }
 
-  fn slice(&self) -> &[u8] {
+  pub fn slice(&self) -> &[u8] {
     &self.data[0..self.len]
   }
 }

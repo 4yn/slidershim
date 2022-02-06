@@ -78,7 +78,6 @@ impl KeyboardOutput {
       KeyboardLayout::Yuancon => &YUANCON_KB_MAP,
       KeyboardLayout::Deemo => &DEEMO_KB_MAP,
       KeyboardLayout::Voltex => &VOLTEX_KB_MAP,
-      _ => panic!("Not implemented"),
     };
 
     let mut ground_to_idx = [0 as usize; 41];

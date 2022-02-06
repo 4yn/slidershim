@@ -3,6 +3,8 @@
 
   let topDatas = Array(16).fill(0);
   let botDatas = Array(16).fill(0);
+  let airDatas = Array(6).fill(0);
+  let extraDatas = Array(3).fill(0);
   let ledDatas = Array(31)
     .fill(0)
     .map((_, idx) => ({
@@ -11,15 +13,22 @@
     }));
 
   $: {
-    if (data.length === 131) {
+    if (data.length === 134) {
       // console.log(data);
       for (let i = 0; i < 16; i++) {
         topDatas[i] = data[i * 2 + 1];
         botDatas[i] = data[i * 2];
       }
+      for (let i = 0; i < 6; i++) {
+        airDatas[i] = data[32 + i];
+      }
+      for (let i = 0; i < 3; i++) {
+        extraDatas[i] = data[38 + i];
+      }
+
       for (let i = 0; i < 31; i++) {
-        ledDatas[i].color = `rgb(${data[38 + i * 3]}, ${data[39 + i * 3]}, ${
-          data[40 + i * 3]
+        ledDatas[i].color = `rgb(${data[41 + i * 3]}, ${data[42 + i * 3]}, ${
+          data[43 + i * 3]
         })`;
       }
     }
@@ -27,7 +36,11 @@
 </script>
 
 <main class="preview">
-  <div class="air" />
+  <div class="air">
+    {#each airDatas as airData, idx (idx)}
+      <div class={`air-data air-data-${airData}`} />
+    {/each}
+  </div>
   <div class="ground">
     <div class="ground-led">
       <div class="ground-row">
@@ -53,5 +66,10 @@
         {/each}
       </div>
     </div>
+  </div>
+  <div class="extra">
+    {#each extraDatas as extraData, idx (idx)}
+      <div class={`extra-data extra-data-${extraData}`} />
+    {/each}
   </div>
 </main>

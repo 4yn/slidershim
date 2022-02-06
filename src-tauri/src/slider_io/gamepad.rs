@@ -1,20 +1,26 @@
 use vigem_client::{Client, TargetId, XButtons, XGamepad, Xbox360Wired};
 
-use crate::slider_io::{output::OutputHandler, voltex::VoltexState};
+use crate::slider_io::{config::GamepadLayout, output::OutputHandler, voltex::VoltexState};
 
 pub struct GamepadOutput {
   target: Xbox360Wired<Client>,
+  use_air: bool,
   gamepad: XGamepad,
 }
 
 impl GamepadOutput {
-  pub fn new() -> Self {
+  pub fn new(layout: GamepadLayout) -> Self {
     let client = Client::connect().unwrap();
+    let use_air = match layout {
+      GamepadLayout::Neardayo => true,
+      _ => false,
+    };
     let mut target = Xbox360Wired::new(client, TargetId::XBOX360_WIRED);
     target.plugin().unwrap();
     target.wait_ready().unwrap();
     Self {
       target,
+      use_air,
       gamepad: XGamepad::default(),
     }
   }
@@ -48,18 +54,18 @@ impl OutputHandler for GamepadOutput {
           }
       });
 
-    let lx = (match voltex_state.laser[0] {
+    let lx = (match voltex_state.laser[0] || (self.use_air && flat_controller_state[34]) {
       true => -30000,
       false => 0,
-    } + match voltex_state.laser[1] {
+    } + match voltex_state.laser[1] || (self.use_air && flat_controller_state[35]) {
       true => 30000,
       false => 0,
     });
 
-    let rx = (match voltex_state.laser[2] {
+    let rx = (match voltex_state.laser[2] || (self.use_air && flat_controller_state[36]) {
       true => -30000,
       false => 0,
-    } + match voltex_state.laser[3] {
+    } + match voltex_state.laser[3] || (self.use_air && flat_controller_state[37]) {
       true => 30000,
       false => 0,
     });

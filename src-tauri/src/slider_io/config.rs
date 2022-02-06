@@ -1,5 +1,5 @@
 use directories::ProjectDirs;
-use log::info;
+use log::{info, warn};
 use serde_json::Value;
 use std::{convert::TryFrom, fs, path::PathBuf};
 
@@ -18,7 +18,12 @@ pub enum KeyboardLayout {
   Yuancon,
   Deemo,
   Voltex,
-  GamepadVoltex,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum GamepadLayout {
+  Voltex,
+  Neardayo,
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +31,10 @@ pub enum OutputMode {
   None,
   Keyboard {
     layout: KeyboardLayout,
+    sensitivity: u8,
+  },
+  Gamepad {
+    layout: GamepadLayout,
     sensitivity: u8,
   },
   Websocket {
@@ -97,8 +106,12 @@ impl Config {
           layout: KeyboardLayout::Voltex,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
-        "gamepad-voltex" => OutputMode::Keyboard {
-          layout: KeyboardLayout::GamepadVoltex,
+        "gamepad-voltex" => OutputMode::Gamepad {
+          layout: GamepadLayout::Voltex,
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        },
+        "gamepad-neardayo" => OutputMode::Gamepad {
+          layout: GamepadLayout::Neardayo,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "websocket" => OutputMode::Websocket {
@@ -185,7 +198,10 @@ impl Config {
 
   pub fn default() -> Self {
     Self::load_saved()
-      .or_else(|| Some(Self::factory()))
+      .or_else(|| {
+        warn!("Config loading from file failed, using default");
+        Some(Self::factory())
+      })
       .unwrap()
   }
 

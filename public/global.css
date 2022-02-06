@@ -54,6 +54,15 @@ body {
   flex: 2 2 0;
 }
 
+.serverlist {
+  width: 100%;
+  max-height: 5rem;
+  overflow-x: auto;
+}
+.serverlist > pre {
+  font-size: 0.75em;
+}
+
 input,
 select {
   width: 100%;
@@ -89,6 +98,24 @@ button.primary {
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
+  /* border: 0.125rem solid white; */
+}
+
+.air {
+  height: 2rem;
+  display: flex;
+  flex-flow: column-reverse nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.air-data {
+  flex: 1 0;
+}
+.air-data-0 {
+  background: #000;
+}
+.air-data-1 {
+  background: #0aa;
 }
 
 .ground {
@@ -142,4 +169,24 @@ button.primary {
 .ground-data {
   padding: 0.1rem 0;
   font-size: 0.8rem;
+}
+
+.extra {
+  height: 2rem;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+.extra-data {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 1rem;
+  margin: 0.5rem;
+}
+.extra-data-0 {
+  background: #000;
+}
+.extra-data-1 {
+  background: #aaa;
 }

@@ -5,6 +5,7 @@ mod worker;
 mod controller_state;
 mod voltex;
 
+mod acio;
 mod brokenithm;
 mod gamepad;
 mod keyboard;

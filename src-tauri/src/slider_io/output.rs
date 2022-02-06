@@ -1,11 +1,8 @@
 use std::{thread, time::Duration};
 
 use crate::slider_io::{
-  config::{KeyboardLayout, OutputMode},
-  controller_state::FullState,
-  gamepad::GamepadOutput,
-  keyboard::KeyboardOutput,
-  worker::ThreadJob,
+  config::OutputMode, controller_state::FullState, gamepad::GamepadOutput,
+  keyboard::KeyboardOutput, worker::ThreadJob,
 };
 
 pub trait OutputHandler: Send {
@@ -28,10 +25,15 @@ impl OutputJob {
       } => Self {
         state: state.clone(),
         sensitivity: *sensitivity,
-        handler: match layout {
-          KeyboardLayout::GamepadVoltex => Box::new(GamepadOutput::new()),
-          layout => Box::new(KeyboardOutput::new(layout.clone())),
-        },
+        handler: Box::new(KeyboardOutput::new(layout.clone())),
+      },
+      OutputMode::Gamepad {
+        layout,
+        sensitivity,
+      } => Self {
+        state: state.clone(),
+        sensitivity: *sensitivity,
+        handler: Box::new(GamepadOutput::new(layout.clone())),
       },
       _ => panic!("Not implemented"),
     }
