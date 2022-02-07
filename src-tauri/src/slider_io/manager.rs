@@ -14,6 +14,7 @@ use super::controller_state::FullState;
 
 pub struct Manager {
   state: Arc<Mutex<Option<FullState>>>,
+  context: Arc<Mutex<Option<Context>>>,
   join_handle: Option<JoinHandle<()>>,
   tx_config: mpsc::UnboundedSender<Config>,
   tx_stop: Option<oneshot::Sender<()>>,
@@ -70,6 +71,7 @@ impl Manager {
 
     Self {
       state,
+      context,
       join_handle: Some(join_handle),
       tx_config,
       tx_stop: Some(tx_stop),
@@ -83,6 +85,14 @@ impl Manager {
   pub fn try_get_state(&self) -> Option<FullState> {
     let state_handle = self.state.lock().unwrap();
     state_handle.as_ref().map(|x| x.clone())
+  }
+
+  pub fn get_timer_state(&self) -> String {
+    let context_handle = self.context.lock().unwrap();
+    context_handle
+      .as_ref()
+      .map(|context| context.timer_state())
+      .unwrap_or("".to_string())
   }
 }
 

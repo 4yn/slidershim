@@ -33,7 +33,7 @@ body {
   background: #333;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   position: fixed;
   top: 0;
   left: 0;
@@ -42,8 +42,13 @@ body {
   height: 2rem;
 }
 
+.titlebar-front {
+  background: #0000;
+}
+
 .header-icon {
   max-height: 100%;
+  flex: 0 0 auto;
 }
 
 .header-icon img {
@@ -54,6 +59,15 @@ body {
 .header {
   font-size: 1.5rem;
   font-weight: 500;
+  flex: 0 0 auto;
+}
+
+.header-space {
+  flex: 1 0 auto;
+}
+
+.header-timer {
+  flex: 0 0 auto;
 }
 
 /* main */

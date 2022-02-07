@@ -101,9 +101,9 @@ impl HidDeviceJob {
             .take(31)
             .zip(led_state.led_state.chunks(3).rev())
           {
-            buf_chunk[0] = state_chunk[2];
+            buf_chunk[0] = state_chunk[1];
             buf_chunk[1] = state_chunk[0];
-            buf_chunk[2] = state_chunk[1];
+            buf_chunk[2] = state_chunk[2];
           }
           buf.data[96..240].fill(0);
         },
@@ -139,9 +139,9 @@ impl HidDeviceJob {
             .take(31)
             .zip(led_state.led_state.chunks(3).rev())
           {
-            buf_chunk[0] = state_chunk[2];
+            buf_chunk[0] = state_chunk[1];
             buf_chunk[1] = state_chunk[0];
-            buf_chunk[2] = state_chunk[1];
+            buf_chunk[2] = state_chunk[2];
           }
           buf.data[96..240].fill(0);
         },
@@ -224,9 +224,10 @@ impl ThreadJob for HidDeviceJob {
     }
   }
 
-  fn tick(&mut self) {
+  fn tick(&mut self) -> bool {
     // Input loop
     let handle = self.handle.as_mut().unwrap();
+    let mut work = false;
 
     {
       let res = handle
@@ -239,6 +240,7 @@ impl ThreadJob for HidDeviceJob {
       self.read_buf.len = res;
       // debug!("{:?}", self.read_buf.slice());
       if self.read_buf.len != 0 {
+        work = true;
         let mut controller_state_handle = self.state.controller_state.lock().unwrap();
         (self.read_callback)(&self.read_buf, controller_state_handle.deref_mut());
       }
@@ -267,12 +269,13 @@ impl ThreadJob for HidDeviceJob {
         })
         .unwrap_or(0);
         if res == self.led_buf.len + 1 {
+          work = true;
           self.led_buf.len = 0;
         }
       }
     }
 
-    // thread::sleep(Duration::from_millis(10));
+    work
   }
 
   fn teardown(&mut self) {

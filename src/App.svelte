@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { emit, listen } from "@tauri-apps/api/event";
-  import { open } from "@tauri-apps/api/shell";
+  import { getVersion } from "@tauri-apps/api/app";
 
   import Link from "./Link.svelte";
   import Preview from "./Preview.svelte";
@@ -24,11 +24,12 @@
   }
 
   // let debugstr = "";
-
+  let versionString = "";
   let ips: Array<string> = [];
   let polling = null;
   let tick = 0;
   let previewData = Array(131).fill(0);
+  let timerData = "";
 
   function updatePolling(enabled) {
     if (!!polling) {
@@ -65,6 +66,9 @@
     await listen("showState", (event) => {
       previewData = event.payload as any;
     });
+    await listen("showTimerState", (event) => {
+      timerData = event.payload as string;
+    });
 
     await listen("listIps", (event) => {
       ips = (event.payload as Array<string>).filter(
@@ -83,6 +87,8 @@
       console.log("ackHide");
       updatePolling(false);
     });
+
+    versionString = ` ${await getVersion()}`;
   });
 
   // Emit events
@@ -124,16 +130,20 @@
   }
 </script>
 
+<div class="titlebar">
+  <div class="header-icon">
+    <img src="/icon.png" />
+  </div>
+  <div class="header">
+    &nbsp;slidershim{versionString}
+  </div>
+  <div class="header-space" />
+  <div class="header-timer">
+    {timerData}
+  </div>
+</div>
+<div data-tauri-drag-region class="titlebar titlebar-front" />
 <main class="main">
-  <!-- <div class="row titlebar" data-tauri-drag-region> -->
-  <!-- <div class="header"> -->
-  <!-- slidershim by @4yn -->
-  <!-- slidershim -->
-  <!-- </div> -->
-  <!-- </div> -->
-  <!-- <div>
-    {debugstr}
-  </div> -->
   <div class="row">
     <Preview data={previewData} />
   </div>
@@ -148,7 +158,9 @@
         <option value="brokenithm">Brokenithm</option>
         <option value="brokenithm-led">Brokenithm + Led</option>
         <option value="brokenithm-ground">Brokenithm, Ground only</option>
-        <option value="brokenithm-ground-led">Brokenithm + Led, Ground only</option>
+        <option value="brokenithm-ground-led"
+          >Brokenithm + Led, Ground only</option
+        >
       </select>
     </div>
   </div>
@@ -192,7 +204,7 @@
           <option value="100">100 Hz</option>
           <option value="330">330 Hz</option>
           <option value="500">500 Hz</option>
-          <option value="1000">1000 Hz</option>
+          <option value="1000">1000 Hz (Unstable, may use a lot of CPU)</option>
         </select>
       </div>
     </div>

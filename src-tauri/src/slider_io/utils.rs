@@ -1,4 +1,10 @@
-use std::{error::Error, fmt};
+use atomic_float::AtomicF64;
+use std::{
+  error::Error,
+  fmt,
+  sync::{atomic::Ordering, Arc},
+  time::{Duration, Instant},
+};
 
 pub struct Buffer {
   pub data: [u8; 256],
@@ -43,4 +49,46 @@ pub fn list_ips() -> Result<Vec<String>, Box<dyn Error>> {
   }
 
   Ok(ips)
+}
+
+pub struct LoopTimer {
+  cap: usize,
+  cur: usize,
+  buf: Vec<Instant>,
+  freq: Arc<AtomicF64>,
+}
+
+impl LoopTimer {
+  pub fn new() -> Self {
+    Self {
+      cap: 100,
+      cur: 0,
+      buf: vec![Instant::now() - Duration::from_secs(10); 100],
+      freq: Arc::new(AtomicF64::new(0.0)),
+    }
+  }
+  pub fn tick(&mut self) {
+    let last = self.buf[self.cur];
+    let now = Instant::now();
+    self.buf[self.cur] = now;
+
+    let delta = (now - last) / 100 + Duration::from_micros(1);
+    let freq = Duration::from_millis(1000)
+      .div_duration_f64(delta)
+      .clamp(0.0, 9999.0);
+    self.freq.store(freq, Ordering::SeqCst);
+
+    self.cur = match self.cur + 1 {
+      cur if cur == self.cap => 0,
+      cur => cur,
+    }
+  }
+
+  // pub fn reset(&mut self) {
+  //   self.buf = vec![Instant::now(); 100];
+  // }
+
+  pub fn fork(&self) -> Arc<AtomicF64> {
+    Arc::clone(&self.freq)
+  }
 }

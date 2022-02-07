@@ -174,7 +174,7 @@ impl ThreadJob for LedJob {
     }
   }
 
-  fn tick(&mut self) {
+  fn tick(&mut self) -> bool {
     let mut flat_controller_state: Option<Vec<bool>> = None;
     let mut serial_buffer: Option<Buffer> = None;
 
@@ -217,7 +217,10 @@ impl ThreadJob for LedJob {
         led_state_handle.deref_mut(),
       );
     }
-    thread::sleep(Duration::from_millis(30));
+    // thread::sleep(Duration::from_millis(30));
+    spin_sleep::sleep(Duration::from_millis(30));
+
+    true
   }
 
   fn teardown(&mut self) {}

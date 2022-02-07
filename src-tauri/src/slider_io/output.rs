@@ -50,7 +50,7 @@ impl ThreadJob for OutputJob {
     true
   }
 
-  fn tick(&mut self) {
+  fn tick(&mut self) -> bool {
     let flat_controller_state: Vec<bool>;
     {
       let controller_state_handle = self.state.controller_state.lock().unwrap();
@@ -58,7 +58,10 @@ impl ThreadJob for OutputJob {
     }
 
     self.handler.tick(&flat_controller_state);
-    thread::sleep(Duration::from_millis(self.t));
+    // thread::sleep(Duration::from_millis(self.t));
+    spin_sleep::sleep(Duration::from_millis(self.t));
+
+    true
   }
 
   fn teardown(&mut self) {

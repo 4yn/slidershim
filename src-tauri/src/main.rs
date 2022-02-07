@@ -140,9 +140,12 @@ fn main() {
       let manager_clone = Arc::clone(&manager);
       app.listen_global("queryState", move |_| {
         // app_handle.emit_all("showState", "@@@");
-        let snapshot = {
+        let (snapshot, timer) = {
           let manager_handle = manager_clone.lock().unwrap();
-          manager_handle.try_get_state().map(|x| x.snapshot())
+          (
+            manager_handle.try_get_state().map(|x| x.snapshot()),
+            manager_handle.get_timer_state(),
+          )
         };
         match snapshot {
           Some(snapshot) => {
@@ -150,6 +153,8 @@ fn main() {
           }
           _ => {}
         }
+
+        app_handle.emit_all("showTimerState", timer).ok();
       });
 
       // Config set event

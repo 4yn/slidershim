@@ -11,9 +11,11 @@ use std::{
 
 use tokio::{sync::oneshot, task};
 
+use crate::slider_io::utils::LoopTimer;
+
 pub trait ThreadJob: Send {
   fn setup(&mut self) -> bool;
-  fn tick(&mut self);
+  fn tick(&mut self) -> bool;
   fn teardown(&mut self);
 }
 
@@ -24,7 +26,7 @@ pub struct ThreadWorker {
 }
 
 impl ThreadWorker {
-  pub fn new<T: 'static + ThreadJob>(name: &'static str, mut job: T) -> Self {
+  pub fn new<T: 'static + ThreadJob>(name: &'static str, mut job: T, mut timer: LoopTimer) -> Self {
     info!("Thread worker starting {}", name);
 
     let stop_signal = Arc::new(AtomicBool::new(false));
@@ -40,7 +42,9 @@ impl ThreadWorker {
           if stop_signal_clone.load(Ordering::SeqCst) {
             break;
           }
-          job.tick();
+          if job.tick() {
+            timer.tick();
+          }
         }
         info!("Thread worker stopping internal {}", name);
         job.teardown();
