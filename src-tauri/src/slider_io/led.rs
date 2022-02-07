@@ -3,7 +3,6 @@ use palette::{FromColor, Hsv, Srgb};
 use serialport::{ClearBuffer, SerialPort};
 use std::{
   ops::DerefMut,
-  thread,
   time::{Duration, Instant},
 };
 
@@ -218,7 +217,7 @@ impl ThreadJob for LedJob {
       );
     }
     // thread::sleep(Duration::from_millis(30));
-    spin_sleep::sleep(Duration::from_millis(30));
+    spin_sleep::sleep(Duration::from_micros(33333));
 
     true
   }

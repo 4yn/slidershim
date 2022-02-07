@@ -13,20 +13,25 @@ where
   // https://stackoverflow.com/a/68950006
   let to = to.as_ref().to_path_buf();
 
-  for path in fs::read_dir(from).unwrap() {
-    let path = path.unwrap().path();
-    let to = to.clone().join(path.file_name().unwrap());
+  match fs::read_dir(from) {
+    Ok(paths) => {
+      for path in paths {
+        let path = path.unwrap().path();
+        let to = to.clone().join(path.file_name().unwrap());
 
-    if path.is_file() {
-      fs::copy(&path, to).unwrap();
-    } else if path.is_dir() {
-      if !to.exists() {
-        fs::create_dir(&to).unwrap();
+        if path.is_file() {
+          fs::copy(&path, to).unwrap();
+        } else if path.is_dir() {
+          if !to.exists() {
+            fs::create_dir(&to).unwrap();
+          }
+
+          copy_dir(&path, to);
+        } else { /* Skip other content */
+        }
       }
-
-      copy_dir(&path, to);
-    } else { /* Skip other content */
     }
+    Err(_) => {}
   }
 }
 

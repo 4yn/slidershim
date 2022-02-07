@@ -23,7 +23,7 @@ pub enum DeviceMode {
 pub enum OutputPolling {
   Sixty,
   Hundred,
-  ThreeHundred,
+  TwoHundredFifty,
   FiveHundred,
   Thousand,
 }
@@ -33,7 +33,7 @@ impl OutputPolling {
     match s {
       "60" => Some(OutputPolling::Sixty),
       "100" => Some(OutputPolling::Hundred),
-      "330" => Some(OutputPolling::ThreeHundred),
+      "250" => Some(OutputPolling::TwoHundredFifty),
       "500" => Some(OutputPolling::FiveHundred),
       "1000" => Some(OutputPolling::Thousand),
       _ => None,
@@ -42,11 +42,11 @@ impl OutputPolling {
 
   pub fn to_t_u64(&self) -> u64 {
     match self {
-      OutputPolling::Sixty => 16,
-      OutputPolling::Hundred => 10,
-      OutputPolling::ThreeHundred => 3,
-      OutputPolling::FiveHundred => 2,
-      OutputPolling::Thousand => 1,
+      OutputPolling::Sixty => 16666,
+      OutputPolling::Hundred => 10000,
+      OutputPolling::TwoHundredFifty => 4000,
+      OutputPolling::FiveHundred => 2000,
+      OutputPolling::Thousand => 1000,
     }
   }
 }

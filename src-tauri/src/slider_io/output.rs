@@ -1,4 +1,4 @@
-use std::{thread, time::Duration};
+use std::time::Duration;
 
 use crate::slider_io::{
   config::OutputMode, controller_state::FullState, gamepad::GamepadOutput,
@@ -59,7 +59,7 @@ impl ThreadJob for OutputJob {
 
     self.handler.tick(&flat_controller_state);
     // thread::sleep(Duration::from_millis(self.t));
-    spin_sleep::sleep(Duration::from_millis(self.t));
+    spin_sleep::sleep(Duration::from_micros(self.t));
 
     true
   }

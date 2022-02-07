@@ -22,7 +22,7 @@
         "icons/icon.ico"
       ],
       "resources": [
-        "res/*"
+        "./README.txt"
       ],
       "externalBin": [],
       "copyright": "© 4yn 2022",

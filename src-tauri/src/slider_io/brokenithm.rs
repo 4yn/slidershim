@@ -8,16 +8,14 @@ use hyper::{
   Body, Method, Request, Response, Server, StatusCode,
 };
 use log::{error, info};
-use path_clean::PathClean;
-use std::{convert::Infallible, env::current_exe, future::Future, net::SocketAddr};
+use phf::phf_map;
+use std::{convert::Infallible, future::Future, net::SocketAddr};
 use tokio::{
-  fs::File,
   select,
   sync::mpsc,
   time::{sleep, Duration},
 };
 use tokio_tungstenite::WebSocketStream;
-use tokio_util::codec::{BytesCodec, FramedRead};
 use tungstenite::{handshake, Message};
 
 use crate::slider_io::{controller_state::FullState, worker::AsyncJob};
@@ -33,23 +31,37 @@ async fn error_response() -> Result<Response<Body>, Infallible> {
   )
 }
 
+// static x: &'static [u8] = include_bytes!("./brokenithm-www/favicon.ico");
+
+static BROKENITHM_FILES: phf::Map<&'static str, &'static [u8]> = phf_map! {
+  "app.js" => include_bytes!("./brokenithm-www/app.js"),
+  "config.js" => include_bytes!("./brokenithm-www/config.js"),
+  "favicon.ico" => include_bytes!("./brokenithm-www/favicon.ico"),
+  "index-go.html" => include_bytes!("./brokenithm-www/index-go.html"),
+  "index.html" => include_bytes!("./brokenithm-www/index.html"),
+};
+
 async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
-  let mut pb = current_exe().unwrap();
-  pb.pop();
-  pb.push("res/www");
-  pb.push(path);
-  pb.clean();
+  // let mut pb = current_exe().unwrap();
+  // pb.pop();
+  // pb.push("res/www");
+  // pb.push(path);
+  // pb.clean();
 
-  // println!("CWD {:?}", std::env::current_dir());
+  // // println!("CWD {:?}", std::env::current_dir());
 
-  match File::open(&pb).await {
-    Ok(f) => {
-      info!("Serving file {:?}", pb);
-      let stream = FramedRead::new(f, BytesCodec::new());
-      let body = Body::wrap_stream(stream);
-      Ok(Response::new(body))
-    }
-    Err(_) => error_response().await,
+  // match File::open(&pb).await {
+  //   Ok(f) => {
+  //     info!("Serving file {:?}", pb);
+  //     let stream = FramedRead::new(f, BytesCodec::new());
+  //     let body = Body::wrap_stream(stream);
+  //     Ok(Response::new(body))
+  //   }
+  //   Err(_) => error_response().await,
+  // }
+  match BROKENITHM_FILES.get(path) {
+    Some(x) => Ok(Response::new(Body::from(*x))),
+    None => error_response().await,
   }
 }
 

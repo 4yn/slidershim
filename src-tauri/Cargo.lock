@@ -2955,6 +2955,7 @@ dependencies = [
  "open",
  "palette",
  "path-clean",
+ "phf 0.10.1",
  "qrcode",
  "rusb",
  "serde",

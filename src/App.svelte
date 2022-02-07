@@ -202,7 +202,7 @@
         <select bind:value={outputPolling} on:change={markDirty}>
           <option value="60">60 Hz</option>
           <option value="100">100 Hz</option>
-          <option value="330">330 Hz</option>
+          <option value="250">250 Hz</option>
           <option value="500">500 Hz</option>
           <option value="1000">1000 Hz (Unstable, may use a lot of CPU)</option>
         </select>
