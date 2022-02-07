@@ -1,10 +1,13 @@
 # Todo
 
-- input polling rate counter
-- settings serializer
-- ouptut websocket
-- led websocket
-- comments
+- major
+  - acio support
+- qol
+  - proper error handling
+  - comments
+- when umiguri comes out
+  - ouptut websocket
+  - led websocket
 
 ```
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
