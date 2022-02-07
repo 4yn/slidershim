@@ -47,6 +47,8 @@
 
   // Receive events
   onMount(async () => {
+    document.addEventListener("contextmenu", (event) => event.preventDefault());
+
     // console.log(emit, listen);
     await listen("showConfig", (event) => {
       const payload: any = JSON.parse(event.payload as any);
