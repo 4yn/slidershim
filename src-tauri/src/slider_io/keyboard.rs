@@ -133,17 +133,19 @@ impl KeyboardOutput {
         continue;
       }
       match (*n, *l) {
-        (false, true) => {
+        (true, false) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
           inner.wVk = keycode;
           inner.dwFlags = 0;
           self.n_kb_buf += 1;
+          // println!("{} down", keycode);
         }
-        (true, false) => {
+        (false, true) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
           inner.wVk = keycode;
           inner.dwFlags = KEYEVENTF_KEYUP;
           self.n_kb_buf += 1;
+          // println!("{} up", keycode);
         }
         _ => {}
       }

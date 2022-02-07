@@ -33,12 +33,15 @@ async fn error_response() -> Result<Response<Body>, Infallible> {
 
 // static x: &'static [u8] = include_bytes!("./brokenithm-www/favicon.ico");
 
-static BROKENITHM_FILES: phf::Map<&'static str, &'static [u8]> = phf_map! {
-  "app.js" => include_bytes!("./brokenithm-www/app.js"),
-  "config.js" => include_bytes!("./brokenithm-www/config.js"),
-  "favicon.ico" => include_bytes!("./brokenithm-www/favicon.ico"),
-  "index-go.html" => include_bytes!("./brokenithm-www/index-go.html"),
-  "index.html" => include_bytes!("./brokenithm-www/index.html"),
+static BROKENITHM_STR_FILES: phf::Map<&'static str, (&'static str, &'static str)> = phf_map! {
+  "app.js" => (include_str!("./brokenithm-www/app.js"), "text/javascript"),
+  "config.js" => (include_str!("./brokenithm-www/config.js"), "text/javascript"),
+  "index-go.html" => (include_str!("./brokenithm-www/index-go.html"), "text/html"),
+  "index.html" => (include_str!("./brokenithm-www/index.html"), "text/html"),
+};
+
+static BROKENITHM_BIN_FILES: phf::Map<&'static str, (&'static [u8], &'static str)> = phf_map! {
+  "favicon.ico" => (include_bytes!("./brokenithm-www/favicon.ico"), "image/x-icon"),
 };
 
 async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
@@ -48,7 +51,7 @@ async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
   // pb.push(path);
   // pb.clean();
 
-  // // println!("CWD {:?}", std::env::current_dir());
+  // println!("CWD {:?}", std::env::current_dir());
 
   // match File::open(&pb).await {
   //   Ok(f) => {
@@ -59,9 +62,24 @@ async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
   //   }
   //   Err(_) => error_response().await,
   // }
-  match BROKENITHM_FILES.get(path) {
-    Some(x) => Ok(Response::new(Body::from(*x))),
-    None => error_response().await,
+
+  match (
+    BROKENITHM_STR_FILES.get(path),
+    BROKENITHM_BIN_FILES.get(path),
+  ) {
+    (Some((data, mime)), _) => Ok(
+      Response::builder()
+        .header(header::CONTENT_TYPE, *mime)
+        .body(Body::from(*data))
+        .unwrap(),
+    ),
+    (_, Some((data, mime))) => Ok(
+      Response::builder()
+        .header(header::CONTENT_TYPE, *mime)
+        .body(Body::from(*data))
+        .unwrap(),
+    ),
+    (None, None) => error_response().await,
   }
 }
 
