@@ -3,7 +3,7 @@
 - major
   - acio support
 - qol
-  - proper error handling
+  - more error handling
   - comments
 - when umiguri comes out
   - ouptut websocket

@@ -98,7 +98,11 @@ impl Manager {
 
 impl Drop for Manager {
   fn drop(&mut self) {
-    self.tx_stop.take().unwrap().send(()).unwrap();
-    self.join_handle.take().unwrap().join().unwrap();
+    if let Some(tx_stop) = self.tx_stop.take() {
+      tx_stop.send(()).ok();
+    }
+    if let Some(join_handle) = self.join_handle.take() {
+      join_handle.join().ok();
+    }
   }
 }

@@ -46,24 +46,6 @@ static BROKENITHM_BIN_FILES: phf::Map<&'static str, (&'static [u8], &'static str
 };
 
 async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
-  // let mut pb = current_exe().unwrap();
-  // pb.pop();
-  // pb.push("res/www");
-  // pb.push(path);
-  // pb.clean();
-
-  // println!("CWD {:?}", std::env::current_dir());
-
-  // match File::open(&pb).await {
-  //   Ok(f) => {
-  //     info!("Serving file {:?}", pb);
-  //     let stream = FramedRead::new(f, BytesCodec::new());
-  //     let body = Body::wrap_stream(stream);
-  //     Ok(Response::new(body))
-  //   }
-  //   Err(_) => error_response().await,
-  // }
-
   match (
     BROKENITHM_STR_FILES.get(path),
     BROKENITHM_BIN_FILES.get(path),
@@ -120,33 +102,30 @@ async fn handle_brokenithm(
         Some(msg) => match msg {
           Ok(msg) => match msg {
             Message::Text(msg) => {
-              let mut chars = msg.chars();
-              let head = chars.next().unwrap();
-              match head {
-                'a' => {
-                  msg_write_handle
-                    .send(Message::Text("alive".to_string()))
-                    .ok();
-                }
-                'b' => {
-                  let flat_state: Vec<bool> = chars
-                    .map(|x| match x {
-                      '0' => false,
-                      '1' => true,
-                      _ => unreachable!(),
-                    })
-                    .collect();
-                  let mut controller_state_handle = state_handle.controller_state.lock().unwrap();
-                  for (idx, c) in flat_state[0..32].iter().enumerate() {
-                    controller_state_handle.ground_state[idx] = match c {
-                      false => 0,
-                      true => 255,
-                    }
+              let chars = msg.chars().collect::<Vec<char>>();
+
+              match chars.len() {
+                6 => {
+                  if chars[0] == 'a' {
+                    msg_write_handle
+                      .send(Message::Text("alive".to_string()))
+                      .ok();
                   }
-                  for (idx, c) in flat_state[32..38].iter().enumerate() {
-                    controller_state_handle.air_state[idx] = match c {
-                      false => 0,
-                      true => 1,
+                }
+                39 => {
+                  if chars[0] == 'b' {
+                    let mut controller_state_handle = state_handle.controller_state.lock().unwrap();
+                    for (idx, c) in chars[0..32].iter().enumerate() {
+                      controller_state_handle.ground_state[idx] = match *c == '1' {
+                        false => 0,
+                        true => 255,
+                      }
+                    }
+                    for (idx, c) in chars[32..38].iter().enumerate() {
+                      controller_state_handle.air_state[idx] = match *c == '1' {
+                        false => 0,
+                        true => 1,
+                      }
                     }
                   }
                 }

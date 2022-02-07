@@ -165,7 +165,7 @@ impl KeyboardOutput {
 }
 
 impl OutputHandler for KeyboardOutput {
-  fn tick(&mut self, flat_controller_state: &Vec<bool>) {
+  fn tick(&mut self, flat_controller_state: &Vec<bool>) -> bool {
     self.next_keys.fill(false);
     for (idx, x) in flat_controller_state.iter().enumerate() {
       if *x {
@@ -173,6 +173,7 @@ impl OutputHandler for KeyboardOutput {
       }
     }
     self.send();
+    true
   }
 
   fn reset(&mut self) {

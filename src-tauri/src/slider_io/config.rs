@@ -213,27 +213,10 @@ impl Config {
     })
   }
 
-  fn factory() -> Self {
-    Self::from_str(
-      r#"{
-      "deviceMode": "none",
-      "outputMode": "none",
-      "ledMode": "none",
-      "keyboardSensitivity": 20,
-      "outputWebsocketUrl": "localhost:3000",
-      "outputPolling": "60",
-      "ledSensitivity": 20,
-      "ledWebsocketUrl": "localhost:3001",
-      "ledSerialPort": "COM5"
-    }"#,
-    )
-    .unwrap()
-  }
-
   pub fn get_log_file_path() -> Option<Box<PathBuf>> {
     let project_dir = ProjectDirs::from("me", "impress labs", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
-    fs::create_dir_all(config_dir).unwrap();
+    fs::create_dir_all(config_dir).ok()?;
 
     let log_path = config_dir.join("log.txt");
 
@@ -243,7 +226,7 @@ impl Config {
   pub fn get_brokenithm_qr_path() -> Option<Box<PathBuf>> {
     let project_dir = ProjectDirs::from("me", "impress labs", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
-    fs::create_dir_all(config_dir).unwrap();
+    fs::create_dir_all(config_dir).ok()?;
 
     let brokenithm_qr_path = config_dir.join("brokenithm.png");
 
@@ -262,18 +245,35 @@ impl Config {
     return Some(Box::new(brokenithm_qr_path));
   }
 
-  fn get_saved_path() -> Option<Box<PathBuf>> {
+  fn get_config_path() -> Option<Box<PathBuf>> {
     let project_dir = ProjectDirs::from("me", "impress labs", "slidershim").unwrap();
     let config_dir = project_dir.config_dir();
-    fs::create_dir_all(config_dir).unwrap();
+    fs::create_dir_all(config_dir).ok()?;
 
     let config_path = config_dir.join("config.json");
 
     return Some(Box::new(config_path));
   }
 
+  fn default() -> Self {
+    Self::from_str(
+      r#"{
+      "deviceMode": "none",
+      "outputMode": "none",
+      "ledMode": "none",
+      "keyboardSensitivity": 20,
+      "outputWebsocketUrl": "localhost:3000",
+      "outputPolling": "60",
+      "ledSensitivity": 20,
+      "ledWebsocketUrl": "localhost:3001",
+      "ledSerialPort": "COM5"
+    }"#,
+    )
+    .unwrap()
+  }
+
   fn load_saved() -> Option<Self> {
-    let config_path = Self::get_saved_path()?;
+    let config_path = Self::get_config_path()?;
     if !config_path.exists() {
       return None;
     }
@@ -282,22 +282,22 @@ impl Config {
     return Self::from_str(saved_data.as_str());
   }
 
-  pub fn default() -> Self {
+  pub fn load() -> Self {
     Self::load_saved()
       .or_else(|| {
         warn!("Config loading from file failed, using default");
-        Some(Self::factory())
+        Some(Self::default())
       })
       .unwrap()
   }
 
   pub fn save(&self) -> Option<()> {
     info!("Config saving...");
-    let config_path = Self::get_saved_path()?;
+    let config_path = Self::get_config_path()?;
     info!("Config saving to {:?}", config_path);
     fs::write(config_path.as_path(), self.raw.as_str()).unwrap();
-
     info!("Config saved");
+
     Some(())
   }
 }

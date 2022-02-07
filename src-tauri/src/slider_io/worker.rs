@@ -59,9 +59,9 @@ impl Drop for ThreadWorker {
     info!("Thread worker stopping {}", self.name);
 
     self.stop_signal.store(true, Ordering::SeqCst);
-    if self.thread.is_some() {
-      self.thread.take().unwrap().join().ok();
-    }
+    if let Some(thread) = self.thread.take() {
+      thread.join().ok();
+    };
   }
 }
 
@@ -88,7 +88,7 @@ impl AsyncWorker {
     let task = tokio::spawn(async move {
       job
         .run(async move {
-          recv_stop.await.unwrap();
+          recv_stop.await.ok();
         })
         .await;
     });
@@ -105,7 +105,9 @@ impl Drop for AsyncWorker {
   fn drop(&mut self) {
     info!("Async worker stopping {}", self.name);
 
-    self.stop_signal.take().unwrap().send(()).unwrap();
+    if let Some(stop_signal) = self.stop_signal.take() {
+      stop_signal.send(()).ok();
+    }
     self.task.take();
   }
 }

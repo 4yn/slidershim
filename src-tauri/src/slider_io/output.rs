@@ -1,3 +1,4 @@
+use log::error;
 use std::time::Duration;
 
 use crate::slider_io::{
@@ -6,48 +7,65 @@ use crate::slider_io::{
 };
 
 pub trait OutputHandler: Send {
-  fn tick(&mut self, flat_controller_state: &Vec<bool>);
+  fn tick(&mut self, flat_controller_state: &Vec<bool>) -> bool;
   fn reset(&mut self);
 }
 
 pub struct OutputJob {
   state: FullState,
+  mode: OutputMode,
   t: u64,
   sensitivity: u8,
-  handler: Box<dyn OutputHandler>,
+  handler: Option<Box<dyn OutputHandler>>,
 }
 
 impl OutputJob {
   pub fn new(state: &FullState, mode: &OutputMode) -> Self {
-    match mode {
-      OutputMode::Keyboard {
-        layout,
-        polling,
-        sensitivity,
-      } => Self {
-        state: state.clone(),
-        t: polling.to_t_u64(),
-        sensitivity: *sensitivity,
-        handler: Box::new(KeyboardOutput::new(layout.clone())),
-      },
-      OutputMode::Gamepad {
-        layout,
-        polling,
-        sensitivity,
-      } => Self {
-        state: state.clone(),
-        t: polling.to_t_u64(),
-        sensitivity: *sensitivity,
-        handler: Box::new(GamepadOutput::new(layout.clone())),
-      },
-      _ => panic!("Not implemented"),
+    Self {
+      state: state.clone(),
+      mode: mode.clone(),
+      t: 0,
+      sensitivity: 0,
+      handler: None,
     }
   }
 }
 
 impl ThreadJob for OutputJob {
   fn setup(&mut self) -> bool {
-    true
+    match self.mode {
+      OutputMode::Keyboard {
+        layout,
+        polling,
+        sensitivity,
+      } => {
+        self.t = polling.to_t_u64();
+        self.sensitivity = sensitivity;
+        self.handler = Some(Box::new(KeyboardOutput::new(layout.clone())));
+
+        true
+      }
+      OutputMode::Gamepad {
+        layout,
+        polling,
+        sensitivity,
+      } => {
+        self.t = polling.to_t_u64();
+        self.sensitivity = sensitivity;
+        let handler = GamepadOutput::new(layout.clone());
+        match handler {
+          Some(handler) => {
+            self.handler = Some(Box::new(handler));
+            true
+          }
+          None => false,
+        }
+      }
+      _ => {
+        error!("Not implemented");
+        false
+      }
+    }
   }
 
   fn tick(&mut self) -> bool {
@@ -57,14 +75,17 @@ impl ThreadJob for OutputJob {
       flat_controller_state = controller_state_handle.flat(&self.sensitivity);
     }
 
-    self.handler.tick(&flat_controller_state);
-    // thread::sleep(Duration::from_millis(self.t));
+    if let Some(handler) = self.handler.as_mut() {
+      handler.tick(&flat_controller_state);
+    }
     spin_sleep::sleep(Duration::from_micros(self.t));
 
     true
   }
 
   fn teardown(&mut self) {
-    self.handler.reset();
+    if let Some(handler) = self.handler.as_mut() {
+      handler.reset();
+    }
   }
 }

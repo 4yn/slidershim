@@ -84,9 +84,11 @@ impl LoopTimer {
     }
   }
 
-  // pub fn reset(&mut self) {
-  //   self.buf = vec![Instant::now(); 100];
-  // }
+  #[allow(dead_code)]
+  pub fn reset(&mut self) {
+    self.buf = vec![Instant::now() - Duration::from_secs(10); 100];
+    self.cur = 0;
+  }
 
   pub fn fork(&self) -> Arc<AtomicF64> {
     Arc::clone(&self.freq)

@@ -41,10 +41,9 @@ fn main() {
   {
     let log_file_path = slider_io::Config::get_log_file_path().unwrap();
     simple_logging::log_to_file(log_file_path.as_path(), log::LevelFilter::Debug).unwrap();
-    // simple_logging::log_to_file("./log.txt", log::LevelFilter::Debug).unwrap();
   }
 
-  let config = Arc::new(Mutex::new(Some(slider_io::Config::default())));
+  let config = Arc::new(Mutex::new(Some(slider_io::Config::load())));
   let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
   {
     let config_handle = config.lock().unwrap();

@@ -185,7 +185,7 @@ impl HidDeviceJob {
     }
   }
 
-  fn setup_impl(&mut self) -> Result<(), Box<dyn Error>> {
+  fn get_handle(&mut self) -> Result<(), Box<dyn Error>> {
     info!("Device finding vid {} pid {}", self.vid, self.pid);
     let handle = rusb::open_device_with_vid_pid(self.vid, self.pid);
     if handle.is_none() {
@@ -212,7 +212,7 @@ const TIMEOUT: Duration = Duration::from_millis(20);
 
 impl ThreadJob for HidDeviceJob {
   fn setup(&mut self) -> bool {
-    match self.setup_impl() {
+    match self.get_handle() {
       Ok(_) => {
         info!("Device OK");
         true
@@ -279,8 +279,7 @@ impl ThreadJob for HidDeviceJob {
   }
 
   fn teardown(&mut self) {
-    if self.handle.is_some() {
-      let handle = self.handle.as_mut().unwrap();
+    if let Some(handle) = self.handle.as_mut() {
       handle.release_interface(0).ok();
     }
   }
