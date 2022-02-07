@@ -42,6 +42,7 @@ static BROKENITHM_STR_FILES: phf::Map<&'static str, (&'static str, &'static str)
 
 static BROKENITHM_BIN_FILES: phf::Map<&'static str, (&'static [u8], &'static str)> = phf_map! {
   "favicon.ico" => (include_bytes!("./brokenithm-www/favicon.ico"), "image/x-icon"),
+  "icon.png" => (include_bytes!("./brokenithm-www/icon.png"), "image/png"),
 };
 
 async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
