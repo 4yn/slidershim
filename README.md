@@ -40,6 +40,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ![layouts](./res/layouts/layout.png)
 
+Voltex layout disables air tower, Neardayo layout enables air tower.
+
 ## Troubleshooting
 
 <details>
