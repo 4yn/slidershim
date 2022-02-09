@@ -60,6 +60,24 @@ const VOLTEX_KB_MAP: [usize; 41] = [
   0x31, 0x1b, 0x0d, // 1, VK_ESCAPE, VK_RETURN
 ];
 
+#[rustfmt::skip]
+const VOLTEX_KB_MAP_NEARDAYO: [usize; 41] = [
+  0x57, 0x57, 0x57, 0x57, // W
+  0x45, 0x45, 0x45, 0x45, // E
+  0x43, 0x44,
+  0x43, 0x44,
+  0x43, 0x46,      // D
+  0x43, 0x46, // C // F
+  0x4d, 0x4a, // M // J
+  0x4d, 0x4a,      // K
+  0x4d, 0x4b,
+  0x4d, 0x4b,
+  0x4f, 0x4f, 0x4f, 0x4f, // O
+  0x50, 0x50, 0x50, 0x50, // P
+  0x57, 0x45, 0x45, 0x4f, 0x4f, 0x50, // Disabled
+  0x31, 0x1b, 0x0d, // 1, VK_ESCAPE, VK_RETURN
+];
+
 pub struct KeyboardOutput {
   ground_to_idx: [usize; 41],
   idx_to_keycode: [u16; 41],
@@ -78,6 +96,7 @@ impl KeyboardOutput {
       KeyboardLayout::Yuancon => &YUANCON_KB_MAP,
       KeyboardLayout::Deemo => &DEEMO_KB_MAP,
       KeyboardLayout::Voltex => &VOLTEX_KB_MAP,
+      KeyboardLayout::Neardayo => &VOLTEX_KB_MAP_NEARDAYO,
     };
 
     let mut ground_to_idx = [0 as usize; 41];

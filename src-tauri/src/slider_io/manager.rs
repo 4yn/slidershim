@@ -1,6 +1,7 @@
 use log::info;
+use parking_lot::Mutex;
 use std::{
-  sync::{Arc, Mutex},
+  sync::Arc,
   thread::{self, JoinHandle},
 };
 use tokio::{
@@ -34,7 +35,7 @@ impl Manager {
     let join_handle = thread::spawn(move || {
       info!("Manager thread started");
       let runtime = tokio::runtime::Builder::new_multi_thread()
-        .worker_threads(2)
+        .worker_threads(4)
         .enable_all()
         .build()
         .unwrap();
@@ -47,18 +48,18 @@ impl Manager {
               match rx_config.recv().await {
                 Some(config) => {
                   info!("Rebuilding context");
-                  let mut context_handle = context_cloned.lock().unwrap();
+                  let mut context_handle = context_cloned.lock();
                   context_handle.take();
 
                   let new_context = Context::new(config);
                   let new_state = new_context.clone_state();
                   context_handle.replace(new_context);
 
-                  let mut state_handle = state_cloned.lock().unwrap();
+                  let mut state_handle = state_cloned.lock();
                   state_handle.replace(new_state);
                 },
                 None => {
-                  let mut context_handle = context_cloned.lock().unwrap();
+                  let mut context_handle = context_cloned.lock();
                   context_handle.take();
                 }
               }
@@ -83,12 +84,12 @@ impl Manager {
   }
 
   pub fn try_get_state(&self) -> Option<FullState> {
-    let state_handle = self.state.lock().unwrap();
+    let state_handle = self.state.lock();
     state_handle.as_ref().map(|x| x.clone())
   }
 
   pub fn get_timer_state(&self) -> String {
-    let context_handle = self.context.lock().unwrap();
+    let context_handle = self.context.lock();
     context_handle
       .as_ref()
       .map(|context| context.timer_state())

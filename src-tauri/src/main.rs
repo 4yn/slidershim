@@ -7,7 +7,8 @@
 
 mod slider_io;
 
-use std::sync::{Arc, Mutex};
+use parking_lot::Mutex;
+use std::sync::Arc;
 
 use log::info;
 
@@ -46,10 +47,10 @@ fn main() {
   let config = Arc::new(Mutex::new(Some(slider_io::Config::load())));
   let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
   {
-    let config_handle = config.lock().unwrap();
+    let config_handle = config.lock();
     let config_handle_ref = config_handle.as_ref().unwrap();
     config_handle_ref.save();
-    let manager_handle = manager.lock().unwrap();
+    let manager_handle = manager.lock();
     manager_handle.update_config(config_handle_ref.clone());
   }
 
@@ -119,7 +120,7 @@ fn main() {
       let app_handle = app.handle();
       let config_clone = Arc::clone(&config);
       app.listen_global("ready", move |_| {
-        let config_handle = config_clone.lock().unwrap();
+        let config_handle = config_clone.lock();
         info!("Start signal received");
         app_handle
           .emit_all(
@@ -140,7 +141,7 @@ fn main() {
       app.listen_global("queryState", move |_| {
         // app_handle.emit_all("showState", "@@@");
         let (snapshot, timer) = {
-          let manager_handle = manager_clone.lock().unwrap();
+          let manager_handle = manager_clone.lock();
           (
             manager_handle.try_get_state().map(|x| x.snapshot()),
             manager_handle.get_timer_state(),
@@ -163,12 +164,12 @@ fn main() {
         let payload = event.payload().unwrap();
         info!("Config applied {}", payload);
         if let Some(new_config) = slider_io::Config::from_str(payload) {
-          let mut config_handle = config_clone.lock().unwrap();
+          let mut config_handle = config_clone.lock();
           config_handle.take();
           config_handle.replace(new_config);
           let config_handle_ref = config_handle.as_ref().unwrap();
           config_handle_ref.save();
-          let manager_handle = manager_clone.lock().unwrap();
+          let manager_handle = manager_clone.lock();
           manager_handle.update_config(config_handle_ref.clone());
         }
       });

@@ -18,7 +18,7 @@ use tokio::{
 use tokio_tungstenite::WebSocketStream;
 use tungstenite::{handshake, Message};
 
-use crate::slider_io::{controller_state::FullState, worker::AsyncJob};
+use crate::slider_io::{controller_state::FullState, worker::AsyncHaltableJob};
 
 // https://levelup.gitconnected.com/handling-websocket-and-http-on-the-same-port-with-rust-f65b770722c9
 
@@ -114,7 +114,7 @@ async fn handle_brokenithm(
                 }
                 39 => {
                   if chars[0] == 'b' {
-                    let mut controller_state_handle = state_handle.controller_state.lock().unwrap();
+                    let mut controller_state_handle = state_handle.controller_state.lock();
                     for (idx, c) in chars[0..32].iter().enumerate() {
                       controller_state_handle.ground_state[idx] = match *c == '1' {
                         false => 0,
@@ -167,7 +167,7 @@ async fn handle_brokenithm(
         loop {
           let mut led_data = vec![0; 93];
           {
-            let led_state_handle = state_handle.led_state.lock().unwrap();
+            let led_state_handle = state_handle.led_state.lock();
             (&mut led_data).copy_from_slice(&led_state_handle.led_state);
           }
           msg_write_handle.send(Message::Binary(led_data)).ok();
@@ -273,7 +273,7 @@ impl BrokenithmJob {
 }
 
 #[async_trait]
-impl AsyncJob for BrokenithmJob {
+impl AsyncHaltableJob for BrokenithmJob {
   async fn run<F: Future<Output = ()> + Send>(self, stop_signal: F) {
     let state = self.state.clone();
     let ground_only = self.ground_only;

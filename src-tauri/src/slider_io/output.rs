@@ -1,9 +1,11 @@
+use async_trait::async_trait;
 use log::error;
 use std::time::Duration;
+use tokio::time::{interval, Interval};
 
 use crate::slider_io::{
   config::OutputMode, controller_state::FullState, gamepad::GamepadOutput,
-  keyboard::KeyboardOutput, worker::ThreadJob,
+  keyboard::KeyboardOutput, worker::AsyncJob,
 };
 
 pub trait OutputHandler: Send {
@@ -14,9 +16,9 @@ pub trait OutputHandler: Send {
 pub struct OutputJob {
   state: FullState,
   mode: OutputMode,
-  t: u64,
   sensitivity: u8,
   handler: Option<Box<dyn OutputHandler>>,
+  timer: Interval,
 }
 
 impl OutputJob {
@@ -24,24 +26,25 @@ impl OutputJob {
     Self {
       state: state.clone(),
       mode: mode.clone(),
-      t: 0,
       sensitivity: 0,
       handler: None,
+      timer: interval(Duration::MAX),
     }
   }
 }
 
-impl ThreadJob for OutputJob {
-  fn setup(&mut self) -> bool {
+#[async_trait]
+impl AsyncJob for OutputJob {
+  async fn setup(&mut self) -> bool {
     match self.mode {
       OutputMode::Keyboard {
         layout,
         polling,
         sensitivity,
       } => {
-        self.t = polling.to_t_u64();
         self.sensitivity = sensitivity;
         self.handler = Some(Box::new(KeyboardOutput::new(layout.clone())));
+        self.timer = interval(Duration::from_micros(polling.to_t_u64()));
 
         true
       }
@@ -50,9 +53,10 @@ impl ThreadJob for OutputJob {
         polling,
         sensitivity,
       } => {
-        self.t = polling.to_t_u64();
         self.sensitivity = sensitivity;
         let handler = GamepadOutput::new(layout.clone());
+        self.timer = interval(Duration::from_micros(polling.to_t_u64()));
+
         match handler {
           Some(handler) => {
             self.handler = Some(Box::new(handler));
@@ -68,22 +72,24 @@ impl ThreadJob for OutputJob {
     }
   }
 
-  fn tick(&mut self) -> bool {
+  async fn tick(&mut self) -> bool {
     let flat_controller_state: Vec<bool>;
     {
-      let controller_state_handle = self.state.controller_state.lock().unwrap();
+      let controller_state_handle = self.state.controller_state.lock();
       flat_controller_state = controller_state_handle.flat(&self.sensitivity);
     }
 
     if let Some(handler) = self.handler.as_mut() {
       handler.tick(&flat_controller_state);
     }
-    spin_sleep::sleep(Duration::from_micros(self.t));
+    self.timer.tick().await;
 
     true
   }
+}
 
-  fn teardown(&mut self) {
+impl Drop for OutputJob {
+  fn drop(&mut self) {
     if let Some(handler) = self.handler.as_mut() {
       handler.reset();
     }

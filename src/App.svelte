@@ -179,6 +179,7 @@
       </div>
     </div>
   {/if}
+
   <div class="row">
     <div class="label">Output Mode</div>
     <div class="input">
@@ -189,6 +190,7 @@
         <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option>
         <option value="kb-8-deemo">Keyboard 8-zone, Deemo Layout</option>
         <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
+        <option value="kb-neardayo">Keyboard 10-zone, Neardayo Layout</option>
         <option value="gamepad-voltex">XBOX 360 Gamepad, Voltex Layout</option>
         <option value="gamepad-neardayo"
           >XBOX 360 Gamepad, Neardayo Layout</option
@@ -206,7 +208,7 @@
           <option value="100">100 Hz</option>
           <option value="250">250 Hz</option>
           <option value="500">500 Hz</option>
-          <option value="1000">1000 Hz (Unstable, may use a lot of CPU)</option>
+          <option value="1000">1000 Hz</option>
         </select>
       </div>
     </div>
@@ -263,6 +265,7 @@
       </div>
     </div>
   {/if}
+
   <div class="row">
     <div class="label">LED Mode</div>
     <div class="input">

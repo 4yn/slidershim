@@ -2,12 +2,13 @@ use log::{error, info};
 use rusb::{self, DeviceHandle, GlobalContext};
 use std::{
   error::Error,
+  mem::swap,
   ops::{Deref, DerefMut},
   time::Duration,
 };
 
 use crate::slider_io::{
-  config::DeviceMode,
+  config::HardwareSpec,
   controller_state::{ControllerState, FullState, LedState},
   utils::{Buffer, ShimError},
   worker::ThreadJob,
@@ -23,6 +24,7 @@ enum WriteType {
 
 pub struct HidDeviceJob {
   state: FullState,
+
   vid: u16,
   pid: u16,
   read_endpoint: u8,
@@ -30,6 +32,7 @@ pub struct HidDeviceJob {
 
   read_callback: HidReadCallback,
   read_buf: Buffer,
+  last_read_buf: Buffer,
 
   led_write_type: WriteType,
   led_callback: HidLedCallback,
@@ -57,6 +60,7 @@ impl HidDeviceJob {
       led_endpoint,
       read_callback,
       read_buf: Buffer::new(),
+      last_read_buf: Buffer::new(),
       led_write_type: led_type,
       led_callback,
       led_buf: Buffer::new(),
@@ -64,9 +68,9 @@ impl HidDeviceJob {
     }
   }
 
-  pub fn from_config(state: &FullState, mode: &DeviceMode) -> Self {
-    match mode {
-      DeviceMode::TasollerOne => Self::new(
+  pub fn from_config(state: &FullState, spec: &HardwareSpec) -> Self {
+    match spec {
+      HardwareSpec::TasollerOne => Self::new(
         state.clone(),
         0x1ccf,
         0x2333,
@@ -108,7 +112,7 @@ impl HidDeviceJob {
           buf.data[96..240].fill(0);
         },
       ),
-      DeviceMode::TasollerTwo => Self::new(
+      HardwareSpec::TasollerTwo => Self::new(
         state.clone(),
         0x1ccf,
         0x2333,
@@ -146,7 +150,7 @@ impl HidDeviceJob {
           buf.data[96..240].fill(0);
         },
       ),
-      DeviceMode::Yuancon => Self::new(
+      HardwareSpec::Yuancon => Self::new(
         state.clone(),
         0x1973,
         0x2001,
@@ -164,7 +168,7 @@ impl HidDeviceJob {
             controller_state.air_state[i ^ 1] = (buf.data[0] >> i) & 1;
           }
           for i in 0..3 {
-            controller_state.extra_state[i] = (buf.data[1] >> i) & 1;
+            controller_state.extra_state[2 - i] = (buf.data[1] >> i) & 1;
           }
         },
         WriteType::Interrupt,
@@ -181,7 +185,6 @@ impl HidDeviceJob {
           }
         },
       ),
-      _ => panic!("Not implemented"),
     }
   }
 
@@ -239,17 +242,19 @@ impl ThreadJob for HidDeviceJob {
         .unwrap_or(0);
       self.read_buf.len = res;
       // debug!("{:?}", self.read_buf.slice());
-      if self.read_buf.len != 0 {
+      // if self.read_buf.len != 0 {
+      if (self.read_buf.len != 0) && (self.read_buf.slice() != self.last_read_buf.slice()) {
         work = true;
-        let mut controller_state_handle = self.state.controller_state.lock().unwrap();
+        let mut controller_state_handle = self.state.controller_state.lock();
         (self.read_callback)(&self.read_buf, controller_state_handle.deref_mut());
+        swap(&mut self.read_buf, &mut self.last_read_buf);
       }
     }
 
     // Led loop
     {
       {
-        let mut led_state_handle = self.state.led_state.lock().unwrap();
+        let mut led_state_handle = self.state.led_state.lock();
         if led_state_handle.dirty {
           (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
           led_state_handle.dirty = false;
@@ -269,7 +274,7 @@ impl ThreadJob for HidDeviceJob {
         })
         .unwrap_or(0);
         if res == self.led_buf.len + 1 {
-          work = true;
+          // work = true;
           self.led_buf.len = 0;
         }
       }
@@ -277,8 +282,10 @@ impl ThreadJob for HidDeviceJob {
 
     work
   }
+}
 
-  fn teardown(&mut self) {
+impl Drop for HidDeviceJob {
+  fn drop(&mut self) {
     if let Some(handle) = self.handle.as_mut() {
       handle.release_interface(0).ok();
     }

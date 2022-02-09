@@ -4,10 +4,48 @@ use vigem_client::{Client, TargetId, XButtons, XGamepad, Xbox360Wired};
 
 use crate::slider_io::{config::GamepadLayout, output::OutputHandler, voltex::VoltexState};
 
+struct LastWind {
+  left: bool,
+  right: bool,
+  out: i16,
+}
+
+impl LastWind {
+  fn new() -> Self {
+    LastWind {
+      left: false,
+      right: false,
+      out: 0,
+    }
+  }
+
+  fn update(&mut self, left: bool, right: bool) -> i16 {
+    let out = match (left, right) {
+      (false, false) => 0,
+      (true, false) => -1,
+      (false, true) => 1,
+      (true, true) => match (self.left, self.right) {
+        (false, false) => 0,
+        (true, false) => 1,
+        (false, true) => -1,
+        (true, true) => self.out,
+      },
+    };
+
+    self.left = left;
+    self.right = right;
+    self.out = out;
+
+    out
+  }
+}
+
 pub struct GamepadOutput {
   target: Xbox360Wired<Client>,
   use_air: bool,
   gamepad: XGamepad,
+  left_wind: LastWind,
+  right_wind: LastWind,
 }
 
 impl GamepadOutput {
@@ -23,6 +61,8 @@ impl GamepadOutput {
         target,
         use_air,
         gamepad: XGamepad::default(),
+        left_wind: LastWind::new(),
+        right_wind: LastWind::new(),
       }),
       Err(e) => {
         error!("Gamepad connection error: {}", e);
@@ -80,21 +120,17 @@ impl OutputHandler for GamepadOutput {
           }
       });
 
-    let lx = (match voltex_state.laser[0] || (self.use_air && flat_controller_state[34]) {
-      true => -30000,
-      false => 0,
-    } + match voltex_state.laser[1] || (self.use_air && flat_controller_state[35]) {
-      true => 30000,
-      false => 0,
-    });
+    let lx = self.left_wind.update(
+      voltex_state.laser[0] || (self.use_air && flat_controller_state[32]),
+      voltex_state.laser[1]
+        || (self.use_air && (flat_controller_state[33] || flat_controller_state[34])),
+    ) * 20000;
 
-    let rx = (match voltex_state.laser[2] || (self.use_air && flat_controller_state[36]) {
-      true => -30000,
-      false => 0,
-    } + match voltex_state.laser[3] || (self.use_air && flat_controller_state[37]) {
-      true => 30000,
-      false => 0,
-    });
+    let rx = self.right_wind.update(
+      voltex_state.laser[2]
+        || (self.use_air && (flat_controller_state[35] || flat_controller_state[36])),
+      voltex_state.laser[3] || (self.use_air && flat_controller_state[37]),
+    ) * 20000;
 
     let mut dirty = false;
     if self.gamepad.buttons.raw != buttons {

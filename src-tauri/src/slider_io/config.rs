@@ -8,11 +8,18 @@ use std::{convert::TryFrom, fs, path::PathBuf};
 use crate::slider_io::utils::list_ips;
 
 #[derive(Debug, Clone)]
-pub enum DeviceMode {
-  None,
+pub enum HardwareSpec {
   TasollerOne,
   TasollerTwo,
   Yuancon,
+}
+
+#[derive(Debug, Clone)]
+pub enum DeviceMode {
+  None,
+  Hardware {
+    spec: HardwareSpec,
+  },
   Brokenithm {
     ground_only: bool,
     led_enabled: bool,
@@ -20,35 +27,12 @@ pub enum DeviceMode {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum OutputPolling {
+pub enum PollingRate {
   Sixty,
   Hundred,
   TwoHundredFifty,
   FiveHundred,
   Thousand,
-}
-
-impl OutputPolling {
-  pub fn from_str(s: &str) -> Option<Self> {
-    match s {
-      "60" => Some(OutputPolling::Sixty),
-      "100" => Some(OutputPolling::Hundred),
-      "250" => Some(OutputPolling::TwoHundredFifty),
-      "500" => Some(OutputPolling::FiveHundred),
-      "1000" => Some(OutputPolling::Thousand),
-      _ => None,
-    }
-  }
-
-  pub fn to_t_u64(&self) -> u64 {
-    match self {
-      OutputPolling::Sixty => 16666,
-      OutputPolling::Hundred => 10000,
-      OutputPolling::TwoHundredFifty => 4000,
-      OutputPolling::FiveHundred => 2000,
-      OutputPolling::Thousand => 1000,
-    }
-  }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -57,6 +41,7 @@ pub enum KeyboardLayout {
   Yuancon,
   Deemo,
   Voltex,
+  Neardayo,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -65,22 +50,45 @@ pub enum GamepadLayout {
   Neardayo,
 }
 
+impl PollingRate {
+  pub fn from_str(s: &str) -> Option<Self> {
+    match s {
+      "60" => Some(PollingRate::Sixty),
+      "100" => Some(PollingRate::Hundred),
+      "250" => Some(PollingRate::TwoHundredFifty),
+      "500" => Some(PollingRate::FiveHundred),
+      "1000" => Some(PollingRate::Thousand),
+      _ => None,
+    }
+  }
+
+  pub fn to_t_u64(&self) -> u64 {
+    match self {
+      PollingRate::Sixty => 16666,
+      PollingRate::Hundred => 10000,
+      PollingRate::TwoHundredFifty => 4000,
+      PollingRate::FiveHundred => 2000,
+      PollingRate::Thousand => 1000,
+    }
+  }
+}
+
 #[derive(Debug, Clone)]
 pub enum OutputMode {
   None,
   Keyboard {
     layout: KeyboardLayout,
-    polling: OutputPolling,
+    polling: PollingRate,
     sensitivity: u8,
   },
   Gamepad {
     layout: GamepadLayout,
-    polling: OutputPolling,
+    polling: PollingRate,
     sensitivity: u8,
   },
   Websocket {
     url: String,
-    polling: OutputPolling,
+    polling: PollingRate,
   },
 }
 
@@ -123,9 +131,15 @@ impl Config {
       raw: s.to_string(),
       device_mode: match v["deviceMode"].as_str()? {
         "none" => DeviceMode::None,
-        "tasoller-one" => DeviceMode::TasollerOne,
-        "tasoller-two" => DeviceMode::TasollerTwo,
-        "yuancon" => DeviceMode::Yuancon,
+        "tasoller-one" => DeviceMode::Hardware {
+          spec: HardwareSpec::TasollerOne,
+        },
+        "tasoller-two" => DeviceMode::Hardware {
+          spec: HardwareSpec::TasollerTwo,
+        },
+        "yuancon" => DeviceMode::Hardware {
+          spec: HardwareSpec::Yuancon,
+        },
         "brokenithm" => DeviceMode::Brokenithm {
           ground_only: false,
           led_enabled: false,
@@ -148,37 +162,42 @@ impl Config {
         "none" => OutputMode::None,
         "kb-32-tasoller" => OutputMode::Keyboard {
           layout: KeyboardLayout::Tasoller,
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-32-yuancon" => OutputMode::Keyboard {
           layout: KeyboardLayout::Yuancon,
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-8-deemo" => OutputMode::Keyboard {
           layout: KeyboardLayout::Deemo,
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "kb-voltex" => OutputMode::Keyboard {
           layout: KeyboardLayout::Voltex,
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        },
+        "kb-neardayo" => OutputMode::Keyboard {
+          layout: KeyboardLayout::Neardayo,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "gamepad-voltex" => OutputMode::Gamepad {
           layout: GamepadLayout::Voltex,
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "gamepad-neardayo" => OutputMode::Gamepad {
           layout: GamepadLayout::Neardayo,
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
           sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         },
         "websocket" => OutputMode::Websocket {
           url: v["outputWebsocketUrl"].as_str()?.to_string(),
-          polling: OutputPolling::from_str(v["outputPolling"].as_str()?)?,
+          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         },
         _ => panic!("Invalid output mode"),
       },
@@ -259,11 +278,12 @@ impl Config {
     Self::from_str(
       r#"{
       "deviceMode": "none",
+      "devicePolling": "100",
       "outputMode": "none",
       "ledMode": "none",
       "keyboardSensitivity": 20,
       "outputWebsocketUrl": "localhost:3000",
-      "outputPolling": "60",
+      "outputPolling": "100",
       "ledSensitivity": 20,
       "ledWebsocketUrl": "localhost:3001",
       "ledSerialPort": "COM5"

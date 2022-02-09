@@ -1,7 +1,5 @@
-use std::{
-  sync::{Arc, Mutex},
-  time::Instant,
-};
+use parking_lot::Mutex;
+use std::{sync::Arc, time::Instant};
 
 pub struct ControllerState {
   pub ground_state: [u8; 32],
@@ -84,13 +82,13 @@ impl FullState {
   pub fn snapshot(&self) -> Vec<u8> {
     let mut buf: Vec<u8> = vec![];
     {
-      let controller_state_handle = self.controller_state.lock().unwrap();
+      let controller_state_handle = self.controller_state.lock();
       buf.extend(controller_state_handle.ground_state);
       buf.extend(controller_state_handle.air_state);
       buf.extend(controller_state_handle.extra_state);
     };
     {
-      let led_state_handle = self.led_state.lock().unwrap();
+      let led_state_handle = self.led_state.lock();
       buf.extend(led_state_handle.led_state);
     };
 

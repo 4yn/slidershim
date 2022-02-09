@@ -10,7 +10,7 @@ use crate::slider_io::{
   led::LedJob,
   output::OutputJob,
   utils::LoopTimer,
-  worker::{AsyncWorker, ThreadWorker},
+  worker::{AsyncHaltableWorker, AsyncWorker, ThreadWorker},
 };
 
 #[allow(dead_code)]
@@ -18,9 +18,9 @@ pub struct Context {
   state: FullState,
   config: Config,
   device_worker: Option<ThreadWorker>,
-  brokenithm_worker: Option<AsyncWorker>,
-  output_worker: Option<ThreadWorker>,
-  led_worker: Option<ThreadWorker>,
+  brokenithm_worker: Option<AsyncHaltableWorker>,
+  output_worker: Option<AsyncWorker>,
+  led_worker: Option<AsyncWorker>,
   timers: Vec<(&'static str, Arc<AtomicF64>)>,
 }
 
@@ -41,18 +41,18 @@ impl Context {
         led_enabled,
       } => (
         None,
-        Some(AsyncWorker::new(
+        Some(AsyncHaltableWorker::new(
           "brokenithm",
           BrokenithmJob::new(&state, ground_only, led_enabled),
         )),
       ),
-      _ => (
+      DeviceMode::Hardware { spec } => (
         {
           let timer = LoopTimer::new();
           timers.push(("d", timer.fork()));
           Some(ThreadWorker::new(
             "device",
-            HidDeviceJob::from_config(&state, &config.device_mode),
+            HidDeviceJob::from_config(&state, spec),
             timer,
           ))
         },
@@ -64,7 +64,7 @@ impl Context {
       _ => {
         let timer = LoopTimer::new();
         timers.push(("o", timer.fork()));
-        Some(ThreadWorker::new(
+        Some(AsyncWorker::new(
           "output",
           OutputJob::new(&state, &config.output_mode),
           timer,
@@ -76,7 +76,7 @@ impl Context {
       _ => {
         let timer = LoopTimer::new();
         timers.push(("l", timer.fork()));
-        Some(ThreadWorker::new(
+        Some(AsyncWorker::new(
           "led",
           LedJob::new(&state, &config.led_mode),
           timer,
