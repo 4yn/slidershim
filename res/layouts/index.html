@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        max-width: 650px;
+        margin: 40px auto;
+        padding: 0 10px;
+        font: 18px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+          "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        color: #444;
+      }
+      h1,
+      h2,
+      h3 {
+        line-height: 1.2;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          color: #ccc;
+          background: black;
+        }
+        a:link {
+          color: #5bf;
+        }
+        a:visited {
+          color: #ccf;
+        }
+      }
+
+      .layout {
+        display: grid;
+
+        width: 36rem;
+        height: 13rem;
+        margin-bottom: 2rem;
+
+        gap: 0.5rem;
+
+        grid: 1.5rem 8.5rem 2rem / 32rem 3.5rem;
+        grid-template-areas:
+          "t a"
+          "b a"
+          "e a";
+      }
+
+      .name {
+        display: flex;
+        flex: row nowrap;
+        align-items: center;
+        justify-content: flex-start;
+
+        grid-area: t;
+      }
+
+      .ground {
+        grid-area: b;
+        display: grid;
+        width: 100%;
+        height: 100%;
+
+        gap: 0.25rem;
+
+        font-size: 1.5rem;
+        font-family: monospace;
+      }
+
+      .ground div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background-color: #ff04;
+      }
+
+      .ground.ground-32 {
+        grid: repeat(2, 1fr) / repeat(16, 1fr);
+      }
+
+      .ground.ground-16 {
+        grid: repeat(1, 1fr) / repeat(16, 1fr);
+      }
+
+      .ground.ground-8 {
+        grid: repeat(1, 1fr) / repeat(8, 1fr);
+      }
+
+      .ground.ground-voltex {
+        grid: repeat(2, 1fr) / repeat(8, 1fr);
+        grid-template-areas:
+          "ll lr a  b  c  d  rl rr"
+          "ll lr fl fl fr fr rl rr";
+      }
+
+      .air {
+        grid-area: a;
+
+        display: grid;
+        width: 100%;
+        height: 100%;
+
+        grid: repeat(6, 1fr) / repeat(1, 1fr);
+        gap: 0.25rem;
+
+        font-family: monospace;
+      }
+
+      .air div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background-color: #0ff4;
+      }
+
+      .air.air-single {
+        grid: repeat(1, 1fr) / repeat(1, 1fr);
+      }
+
+      .air.air-voltex {
+        grid-template-areas:
+          "rr"
+          "rl"
+          "rl"
+          "lr"
+          "lr"
+          "ll";
+      }
+
+      .extra {
+        grid-area: e;
+
+        display: grid;
+        width: 100%;
+        height: 100%;
+
+        grid: repeat(1, 1fr) / repeat(3, 1fr);
+        gap: 0.25rem;
+
+        font-family: monospace;
+      }
+
+      .extra div {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background-color: #f004;
+      }
+    </style>
+    <title>Slidershim Layouts</title>
+  </head>
+  <body>
+    <div class="layout">
+      <div class="name">Keyboard 32-zone, Tasoller Layout</div>
+      <div class="ground ground-32">
+        <div>1</div>
+        <div>Q</div>
+        <div>2</div>
+        <div>W</div>
+        <div>3</div>
+        <div>E</div>
+        <div>4</div>
+        <div>R</div>
+        <div>5</div>
+        <div>T</div>
+        <div>6</div>
+        <div>Y</div>
+        <div>7</div>
+        <div>U</div>
+        <div>8</div>
+        <div>I</div>
+        <div>A</div>
+        <div>Z</div>
+        <div>S</div>
+        <div>X</div>
+        <div>D</div>
+        <div>C</div>
+        <div>F</div>
+        <div>V</div>
+        <div>G</div>
+        <div>B</div>
+        <div>H</div>
+        <div>N</div>
+        <div>J</div>
+        <div>M</div>
+        <div>K</div>
+        <div>,</div>
+      </div>
+      <div class="air">
+        <div>]</div>
+        <div>[</div>
+        <div>;</div>
+        <div>.</div>
+        <div>'</div>
+        <div>/</div>
+      </div>
+      <div class="extra">
+        <div>[enter]</div>
+        <div>[space]</div>
+        <div>[esc]</div>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="name">Keyboard 32-zone, Yuancon Layout</div>
+      <div class="ground ground-32">
+        <div>5</div>
+        <div>3</div>
+        <div>1</div>
+        <div>Y</div>
+        <div>W</div>
+        <div>U</div>
+        <div>S</div>
+        <div>Q</div>
+        <div>O</div>
+        <div>M</div>
+        <div>K</div>
+        <div>I</div>
+        <div>G</div>
+        <div>E</div>
+        <div>C</div>
+        <div>A</div>
+        <div>6</div>
+        <div>4</div>
+        <div>2</div>
+        <div>Z</div>
+        <div>X</div>
+        <div>V</div>
+        <div>T</div>
+        <div>R</div>
+        <div>P</div>
+        <div>N</div>
+        <div>L</div>
+        <div>J</div>
+        <div>H</div>
+        <div>F</div>
+        <div>D</div>
+        <div>B</div>
+      </div>
+      <div class="air">
+        <div>;</div>
+        <div>\</div>
+        <div>]</div>
+        <div>[</div>
+        <div>=</div>
+        <div>-</div>
+      </div>
+      <div class="extra">
+        <div>[enter]</div>
+        <div>[space]</div>
+        <div>[esc]</div>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="name">Keyboard 8-zone, Deemo Layout</div>
+      <div class="ground ground-8">
+        <div>A</div>
+        <div>S</div>
+        <div>D</div>
+        <div>F</div>
+        <div>J</div>
+        <div>K</div>
+        <div>L</div>
+        <div>;</div>
+      </div>
+      <div class="air air-single">
+        <div>
+          <span style="writing-mode: vertical-lr">[space]</span>
+        </div>
+      </div>
+      <div class="extra">
+        <div>[disabled]</div>
+        <div>[disabled]</div>
+        <div>[disabled]</div>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="name">Keyboard 10-zone, Voltex/Neardayo Layout</div>
+      <div class="ground ground-voltex">
+        <div style="grid-area: ll">W</div>
+        <div style="grid-area: lr">E</div>
+        <div style="grid-area: rl">O</div>
+        <div style="grid-area: rr">P</div>
+        <div style="grid-area: a">D</div>
+        <div style="grid-area: b">F</div>
+        <div style="grid-area: c">J</div>
+        <div style="grid-area: d">K</div>
+        <div style="grid-area: fl">C</div>
+        <div style="grid-area: fr">M</div>
+      </div>
+      <div class="air air-voltex">
+        <div style="grid-area: rr">P</div>
+        <div style="grid-area: rl">O</div>
+        <div style="grid-area: lr">E</div>
+        <div style="grid-area: ll">W</div>
+      </div>
+      <div class="extra">
+        <div>1</div>
+        <div>[esc]</div>
+        <div>[enter]</div>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="name">XBOX 360 Gamepad, Voltex/Neardayo Layout</div>
+      <div class="ground ground-voltex">
+        <div style="grid-area: ll">LS<br />&lt;&lt;</div>
+        <div style="grid-area: lr">LS<br />&gt;&gt;</div>
+        <div style="grid-area: rl">RS<br />&lt;&lt;</div>
+        <div style="grid-area: rr">RS<br />&gt;&gt;</div>
+        <div style="grid-area: a">A</div>
+        <div style="grid-area: b">B</div>
+        <div style="grid-area: c">X</div>
+        <div style="grid-area: d">Y</div>
+        <div style="grid-area: fl">LB</div>
+        <div style="grid-area: fr">RB</div>
+      </div>
+      <div class="air air-voltex">
+        <div style="grid-area: rr">RS&gt;</div>
+        <div style="grid-area: rl">RS&lt;</div>
+        <div style="grid-area: lr">LS&gt;</div>
+        <div style="grid-area: ll">LS&lt;</div>
+      </div>
+      <div class="extra">
+        <div>[start]</div>
+        <div>[back]</div>
+        <div>[guide]</div>
+      </div>
+    </div>
+  </body>
+</html>
