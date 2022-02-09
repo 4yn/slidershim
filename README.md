@@ -6,7 +6,7 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 [Download link](https://github.com/4yn/slidershim/releases/latest)
 
-<img width="300" alt="screenshot" src="res/screenshots/demo.png">
+<img alt="screenshot" src="res/screenshots/demo.png">
 
 ## Setup Instructions
 
