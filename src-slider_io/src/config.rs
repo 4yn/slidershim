@@ -3,13 +3,9 @@ use image::Luma;
 use log::{info, warn};
 use qrcode::QrCode;
 use serde_json::Value;
-use std::{convert::TryFrom, error::Error, fs, path::PathBuf};
+use std::{error::Error, fs, path::PathBuf};
 
-use crate::{
-  device::config::{DeviceMode, HardwareSpec},
-  lighting::config::{LedMode, ReactiveLayout},
-  output::config::{GamepadLayout, KeyboardLayout, OutputMode, PollingRate},
-};
+use crate::{device::config::DeviceMode, lighting::config::LedMode, output::config::OutputMode};
 
 pub fn list_ips() -> Result<Vec<String>, Box<dyn Error>> {
   let mut ips = vec![];
@@ -36,106 +32,9 @@ impl Config {
 
     Some(Config {
       raw: s.to_string(),
-      device_mode: match v["deviceMode"].as_str()? {
-        "none" => DeviceMode::None,
-        "tasoller-one" => DeviceMode::Hardware {
-          spec: HardwareSpec::TasollerOne,
-        },
-        "tasoller-two" => DeviceMode::Hardware {
-          spec: HardwareSpec::TasollerTwo,
-        },
-        "yuancon" => DeviceMode::Hardware {
-          spec: HardwareSpec::Yuancon,
-        },
-        "brokenithm" => DeviceMode::Brokenithm {
-          ground_only: false,
-          led_enabled: false,
-        },
-        "brokenithm-led" => DeviceMode::Brokenithm {
-          ground_only: false,
-          led_enabled: true,
-        },
-        "brokenithm-ground" => DeviceMode::Brokenithm {
-          ground_only: true,
-          led_enabled: false,
-        },
-        "brokenithm-ground-led" => DeviceMode::Brokenithm {
-          ground_only: true,
-          led_enabled: true,
-        },
-        _ => panic!("Invalid device mode"),
-      },
-      output_mode: match v["outputMode"].as_str().unwrap() {
-        "none" => OutputMode::None,
-        "kb-32-tasoller" => OutputMode::Keyboard {
-          layout: KeyboardLayout::Tasoller,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "kb-32-yuancon" => OutputMode::Keyboard {
-          layout: KeyboardLayout::Yuancon,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "kb-8-deemo" => OutputMode::Keyboard {
-          layout: KeyboardLayout::Deemo,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "kb-voltex" => OutputMode::Keyboard {
-          layout: KeyboardLayout::Voltex,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "kb-neardayo" => OutputMode::Keyboard {
-          layout: KeyboardLayout::Neardayo,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "gamepad-voltex" => OutputMode::Gamepad {
-          layout: GamepadLayout::Voltex,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "gamepad-neardayo" => OutputMode::Gamepad {
-          layout: GamepadLayout::Neardayo,
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-          sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
-        },
-        "websocket" => OutputMode::Websocket {
-          url: v["outputWebsocketUrl"].as_str()?.to_string(),
-          polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
-        },
-        _ => panic!("Invalid output mode"),
-      },
-      led_mode: match v["ledMode"].as_str()? {
-        "none" => LedMode::None,
-        "reactive-4" => LedMode::Reactive {
-          layout: ReactiveLayout::Even { splits: 4 },
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
-        },
-        "reactive-8" => LedMode::Reactive {
-          layout: ReactiveLayout::Even { splits: 8 },
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
-        },
-        "reactive-16" => LedMode::Reactive {
-          layout: ReactiveLayout::Even { splits: 16 },
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
-        },
-        "reactive-voltex" => LedMode::Reactive {
-          layout: ReactiveLayout::Voltex,
-          sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
-        },
-        "attract" => LedMode::Attract,
-        "test" => LedMode::Test,
-        "websocket" => LedMode::Websocket {
-          url: v["ledWebsocketUrl"].as_str()?.to_string(),
-        },
-        "serial" => LedMode::Serial {
-          port: v["ledSerialPort"].as_str()?.to_string(),
-        },
-        _ => panic!("Invalid led mode"),
-      },
+      device_mode: DeviceMode::from_serde_value(&v)?,
+      output_mode: OutputMode::from_serde_value(&v)?,
+      led_mode: LedMode::from_serde_value(&v)?,
     })
   }
 
