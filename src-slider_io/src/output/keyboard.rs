@@ -4,7 +4,10 @@ use winapi::{
   um::winuser::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP},
 };
 
-use crate::slider_io::{config::KeyboardLayout, output::OutputHandler};
+use super::{
+  config::KeyboardLayout,
+  output::OutputHandler
+};
 
 #[rustfmt::skip]
 const TASOLLER_KB_MAP: [usize; 41] = [

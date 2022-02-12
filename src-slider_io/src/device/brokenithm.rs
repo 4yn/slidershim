@@ -18,7 +18,7 @@ use tokio::{
 use tokio_tungstenite::WebSocketStream;
 use tungstenite::{handshake, Message};
 
-use crate::slider_io::{controller_state::FullState, worker::AsyncHaltableJob};
+use crate::{controller_state::FullState, shared::worker::AsyncHaltableJob};
 
 // https://levelup.gitconnected.com/handling-websocket-and-http-on-the-same-port-with-rust-f65b770722c9
 

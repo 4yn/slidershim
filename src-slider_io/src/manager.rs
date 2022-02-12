@@ -9,9 +9,7 @@ use tokio::{
   sync::{mpsc, oneshot},
 };
 
-use crate::slider_io::{config::Config, context::Context};
-
-use super::controller_state::FullState;
+use crate::{config::Config, context::Context, controller_state::FullState};
 
 pub struct Manager {
   state: Arc<Mutex<Option<FullState>>>,

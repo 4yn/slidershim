@@ -8,13 +8,12 @@ use std::{
 };
 use tokio::time::{interval, Interval};
 
-use crate::slider_io::{
-  config::{LedMode, ReactiveLayout},
+use crate::{
   controller_state::{FullState, LedState},
-  utils::Buffer,
-  voltex::VoltexState,
-  worker::AsyncJob,
+  shared::{utils::Buffer, voltex::VoltexState, worker::AsyncJob},
 };
+
+use super::config::{LedMode, ReactiveLayout};
 
 pub struct LedJob {
   state: FullState,

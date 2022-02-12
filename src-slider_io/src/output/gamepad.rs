@@ -2,7 +2,9 @@ use log::error;
 use std::error::Error;
 use vigem_client::{Client, TargetId, XButtons, XGamepad, Xbox360Wired};
 
-use crate::slider_io::{config::GamepadLayout, output::OutputHandler, voltex::VoltexState};
+use crate::shared::voltex::VoltexState;
+
+use super::{config::GamepadLayout, output::OutputHandler};
 
 struct LastWind {
   left: bool,

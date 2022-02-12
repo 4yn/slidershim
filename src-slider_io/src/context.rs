@@ -2,15 +2,16 @@ use atomic_float::AtomicF64;
 use log::info;
 use std::sync::{atomic::Ordering, Arc};
 
-use crate::slider_io::{
-  brokenithm::BrokenithmJob,
-  config::{Config, DeviceMode, LedMode, OutputMode},
+use crate::{
+  config::Config,
   controller_state::FullState,
-  device::HidDeviceJob,
-  led::LedJob,
-  output::OutputJob,
-  utils::LoopTimer,
-  worker::{AsyncHaltableWorker, AsyncWorker, ThreadWorker},
+  device::{brokenithm::BrokenithmJob, config::DeviceMode, device::HidDeviceJob},
+  lighting::{config::LedMode, led::LedJob},
+  output::{config::OutputMode, output::OutputJob},
+  shared::{
+    utils::LoopTimer,
+    worker::{AsyncHaltableWorker, AsyncWorker, ThreadWorker},
+  },
 };
 
 #[allow(dead_code)]

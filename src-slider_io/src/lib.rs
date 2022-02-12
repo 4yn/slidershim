@@ -1,12 +1,20 @@
 #![cfg_attr(
-    all(not(debug_assertions), target_os = "windows"),
-    windows_subsystem = "windows"
+  all(not(debug_assertions), target_os = "windows"),
+  windows_subsystem = "windows"
 )]
 #![feature(div_duration)]
 #![feature(more_qualified_paths)]
 
-mod slider_io;
+mod config;
+mod controller_state;
+mod shared;
 
-pub use slider_io::list_ips;
-pub use slider_io::Config;
-pub use slider_io::Manager;
+mod device;
+mod lighting;
+mod output;
+
+mod context;
+mod manager;
+
+pub use config::{list_ips, Config};
+pub use manager::Manager;

@@ -3,116 +3,23 @@ use image::Luma;
 use log::{info, warn};
 use qrcode::QrCode;
 use serde_json::Value;
-use std::{convert::TryFrom, fs, path::PathBuf};
+use std::{convert::TryFrom, error::Error, fs, path::PathBuf};
 
-use crate::slider_io::utils::list_ips;
+use crate::{
+  device::config::{DeviceMode, HardwareSpec},
+  lighting::config::{LedMode, ReactiveLayout},
+  output::config::{GamepadLayout, KeyboardLayout, OutputMode, PollingRate},
+};
 
-#[derive(Debug, Clone)]
-pub enum HardwareSpec {
-  TasollerOne,
-  TasollerTwo,
-  Yuancon,
-}
-
-#[derive(Debug, Clone)]
-pub enum DeviceMode {
-  None,
-  Hardware {
-    spec: HardwareSpec,
-  },
-  Brokenithm {
-    ground_only: bool,
-    led_enabled: bool,
-  },
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum PollingRate {
-  Sixty,
-  Hundred,
-  TwoHundredFifty,
-  FiveHundred,
-  Thousand,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum KeyboardLayout {
-  Tasoller,
-  Yuancon,
-  Deemo,
-  Voltex,
-  Neardayo,
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum GamepadLayout {
-  Voltex,
-  Neardayo,
-}
-
-impl PollingRate {
-  pub fn from_str(s: &str) -> Option<Self> {
-    match s {
-      "60" => Some(PollingRate::Sixty),
-      "100" => Some(PollingRate::Hundred),
-      "250" => Some(PollingRate::TwoHundredFifty),
-      "500" => Some(PollingRate::FiveHundred),
-      "1000" => Some(PollingRate::Thousand),
-      _ => None,
+pub fn list_ips() -> Result<Vec<String>, Box<dyn Error>> {
+  let mut ips = vec![];
+  for adapter in ipconfig::get_adapters()? {
+    for ip_address in adapter.ip_addresses() {
+      ips.push(format!("{}", ip_address));
     }
   }
 
-  pub fn to_t_u64(&self) -> u64 {
-    match self {
-      PollingRate::Sixty => 16666,
-      PollingRate::Hundred => 10000,
-      PollingRate::TwoHundredFifty => 4000,
-      PollingRate::FiveHundred => 2000,
-      PollingRate::Thousand => 1000,
-    }
-  }
-}
-
-#[derive(Debug, Clone)]
-pub enum OutputMode {
-  None,
-  Keyboard {
-    layout: KeyboardLayout,
-    polling: PollingRate,
-    sensitivity: u8,
-  },
-  Gamepad {
-    layout: GamepadLayout,
-    polling: PollingRate,
-    sensitivity: u8,
-  },
-  Websocket {
-    url: String,
-    polling: PollingRate,
-  },
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum ReactiveLayout {
-  Even { splits: usize },
-  Voltex,
-}
-
-#[derive(Debug, Clone)]
-pub enum LedMode {
-  None,
-  Reactive {
-    layout: ReactiveLayout,
-    sensitivity: u8,
-  },
-  Attract,
-  Test,
-  Websocket {
-    url: String,
-  },
-  Serial {
-    port: String,
-  },
+  Ok(ips)
 }
 
 #[derive(Debug, Clone)]

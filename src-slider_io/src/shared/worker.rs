@@ -11,7 +11,7 @@ use std::{
 
 use tokio::{sync::oneshot, task};
 
-use crate::slider_io::utils::LoopTimer;
+use super::utils::LoopTimer;
 
 pub trait ThreadJob: Send {
   fn setup(&mut self) -> bool;

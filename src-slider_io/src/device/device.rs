@@ -7,12 +7,15 @@ use std::{
   time::Duration,
 };
 
-use crate::slider_io::{
-  config::HardwareSpec,
+use crate::{
   controller_state::{ControllerState, FullState, LedState},
-  utils::{Buffer, ShimError},
-  worker::ThreadJob,
+  shared::{
+    utils::{Buffer, ShimError},
+    worker::ThreadJob,
+  },
 };
+
+use super::config::HardwareSpec;
 
 type HidReadCallback = fn(&Buffer, &mut ControllerState) -> ();
 type HidLedCallback = fn(&mut Buffer, &LedState) -> ();

@@ -3,10 +3,14 @@ use log::error;
 use std::time::Duration;
 use tokio::time::{interval, Interval};
 
-use crate::slider_io::{
-  config::OutputMode, controller_state::FullState, gamepad::GamepadOutput,
-  keyboard::KeyboardOutput, worker::AsyncJob,
-};
+// use crate::slider_io::{
+//   config::OutputMode, controller_state::FullState, gamepad::GamepadOutput,
+//   keyboard::KeyboardOutput, worker::AsyncJob,
+// };
+
+use crate::{controller_state::FullState, shared::worker::AsyncJob};
+
+use super::{config::OutputMode, gamepad::GamepadOutput, keyboard::KeyboardOutput};
 
 pub trait OutputHandler: Send {
   fn tick(&mut self, flat_controller_state: &Vec<bool>) -> bool;

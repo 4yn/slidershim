@@ -40,17 +40,6 @@ impl Error for ShimError {
   }
 }
 
-pub fn list_ips() -> Result<Vec<String>, Box<dyn Error>> {
-  let mut ips = vec![];
-  for adapter in ipconfig::get_adapters()? {
-    for ip_address in adapter.ip_addresses() {
-      ips.push(format!("{}", ip_address));
-    }
-  }
-
-  Ok(ips)
-}
-
 pub struct LoopTimer {
   cap: usize,
   cur: usize,
