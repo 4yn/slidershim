@@ -1,4 +1,4 @@
-extern crate slidershim;
+extern crate slider_io;
 
 use async_trait::async_trait;
 use std::{future::Future, io, time::Duration};
@@ -35,11 +35,11 @@ use tokio::{select, time::sleep};
 // }
 
 fn main() {
-  env_logger::Builder::new()
-    .filter_level(log::LevelFilter::Debug)
-    .init();
+    env_logger::Builder::new()
+        .filter_level(log::LevelFilter::Debug)
+        .init();
 
-  // let worker = AsyncWorker::new("counter", CounterJob);
-  let mut input = String::new();
-  let string = io::stdin().read_line(&mut input).unwrap();
+    // let worker = AsyncWorker::new("counter", CounterJob);
+    let mut input = String::new();
+    let string = io::stdin().read_line(&mut input).unwrap();
 }

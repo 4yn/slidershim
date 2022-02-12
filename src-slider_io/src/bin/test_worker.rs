@@ -1,4 +1,4 @@
-extern crate slidershim;
+extern crate slider_io;
 
 use std::io;
 
@@ -24,8 +24,8 @@ use std::io;
 // }
 
 fn main() {
-  // let worker = Worker::new(TestJob { data: 1 });
+    // let worker = Worker::new(TestJob { data: 1 });
 
-  let mut input = String::new();
-  let string = io::stdin().read_line(&mut input).unwrap();
+    let mut input = String::new();
+    let string = io::stdin().read_line(&mut input).unwrap();
 }

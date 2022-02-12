@@ -13,49 +13,16 @@ build = "src/build.rs"
 tauri-build = { version = "1.0.0-beta.4" }
 
 [dependencies]
-
-# logging
 log = "0.4.14"
-env_logger = "0.9.0"
 simple-logging = "2.0.2"
+env_logger = "0.9.0"
 
-# threads
 parking_lot = "0.12.0"
-atomic_float = "0.1.0"
-spin_sleep = "1.0.0"
 
-# async
-futures = "0.3.19"
-futures-util = "0.3.19"
-async-trait = "0.1.52"
-tokio = { version="1.16.1", features= ["rt-multi-thread","macros"] }
-tokio-util = "0.6.9"
-
-# UI
 tauri = { version = "1.0.0-beta.8", features = ["shell-open", "system-tray"] }
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
 open = "2.0.2"
-directories = "4.0.1"
-image = "0.23.14"
 
-# device and system
-rusb = "0.9.0"
-serialport = "4.0.1"
-vigem-client = "0.1.1"
-winapi = "0.3.9"
-ipconfig = "0.3.0"
-
-# webserver
-hyper = { version="0.14.16", features= ["server", "http1", "http2", "tcp", "stream", "runtime"] }
-phf = { version = "0.10.1", features = ["macros"] }
-tungstenite = { version="0.16.0", default-features=false }
-tokio-tungstenite = "0.16.1"
-
-# webserver utils
-base64 = "0.13.0"
-palette = "0.6.0"
-qrcode = { version="0.12.0", features= ["image"] }
+slider_io =  {path = "../src-slider_io" }
 
 [features]
 default = [ "custom-protocol" ]

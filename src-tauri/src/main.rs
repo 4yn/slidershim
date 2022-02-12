@@ -5,7 +5,7 @@
 #![feature(div_duration)]
 #![feature(more_qualified_paths)]
 
-mod slider_io;
+use slider_io;
 
 use parking_lot::Mutex;
 use std::sync::Arc;

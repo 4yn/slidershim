@@ -1382,9 +1382,9 @@ checksum = "eee9694f83d9b7c09682fdb32213682939507884e5bcf227be9aff5d644b90dc"
 
 [[package]]
 name = "httparse"
-version = "1.5.1"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "acd94fdbe1d4ff688b67b04eee2e17bd50995534a61539e45adfefb45e5e5503"
+checksum = "9100414882e15fb7feccb4897e5f0ff0ff1ca7d1a86a23208ada4d7a18e6c6c4"
 
 [[package]]
 name = "httpdate"
@@ -1400,9 +1400,9 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
-version = "0.14.16"
+version = "0.14.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7ec3e62bdc98a2f0393a5048e4c30ef659440ea6e0e572965103e72bd836f55"
+checksum = "043f0e083e9901b6cc658a77d1eb86f4fc650bbb977a4337dd63192826aa85dd"
 dependencies = [
  "bytes",
  "futures-channel",
@@ -1413,7 +1413,7 @@ dependencies = [
  "http-body",
  "httparse",
  "httpdate",
- "itoa 0.4.8",
+ "itoa 1.0.1",
  "pin-project-lite",
  "socket2",
  "tokio",
@@ -1906,9 +1906,9 @@ checksum = "72ef4a56884ca558e5ddb05a1d1e7e1bfd9a68d9ed024c21704cc98872dae1bb"
 
 [[package]]
 name = "ntapi"
-version = "0.3.6"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f6bb902e437b6d86e03cce10a7e2af662292c5dfef23b65899ea3ac9354ad44"
+checksum = "c28774a7fd2fbb4f0babd8237ce554b73af68021b5f695a3cebd6c59bac0980f"
 dependencies = [
  "winapi",
 ]
@@ -2955,8 +2955,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9def91fd1e018fe007022791f865d0ccc9b3a0d5001e01aabb8b40e46000afb5"
 
 [[package]]
-name = "slidershim"
-version = "0.1.4"
+name = "slider_io"
+version = "0.1.0"
 dependencies = [
  "async-trait",
  "atomic_float",
@@ -2969,7 +2969,6 @@ dependencies = [
  "image",
  "ipconfig",
  "log",
- "open",
  "palette",
  "parking_lot 0.12.0",
  "phf 0.10.1",
@@ -2978,16 +2977,26 @@ dependencies = [
  "serde",
  "serde_json",
  "serialport",
- "simple-logging",
- "spin_sleep",
- "tauri",
- "tauri-build",
  "tokio",
  "tokio-tungstenite",
  "tokio-util",
  "tungstenite",
  "vigem-client",
  "winapi",
+]
+
+[[package]]
+name = "slidershim"
+version = "0.1.4"
+dependencies = [
+ "env_logger",
+ "log",
+ "open",
+ "parking_lot 0.12.0",
+ "simple-logging",
+ "slider_io",
+ "tauri",
+ "tauri-build",
 ]
 
 [[package]]
@@ -3019,16 +3028,6 @@ dependencies = [
  "libc",
  "pkg-config",
  "system-deps 1.3.2",
-]
-
-[[package]]
-name = "spin_sleep"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a98101bdc3833e192713c2af0b0dd2614f50d1cf1f7a97c5221b7aac052acc7"
-dependencies = [
- "once_cell",
- "winapi",
 ]
 
 [[package]]
