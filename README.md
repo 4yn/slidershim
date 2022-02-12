@@ -47,7 +47,7 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 <details>
 <summary><strong>My controller is not recognised</strong></summary>
 
-- slidershim supports the GAMO2 Tasoller on HID firmware and Yuancon Laverita v2 controllers on HID firmware.
+- slidershim supports the GAMO2 Tasoller and Yuancon Laverita v2 controllers on HID firmware.
   - If you are using a Tasoller controller, make sure it has the correct HID firmware installed.
   - If your hardware controller is not one of these, it will not work.
 - Hotplug is not supported. If you plugged in the controller after starting slidershim, re-connect your controller by just clicking the "Apply" button (even if it is grey).
@@ -97,8 +97,15 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 
 ## Technical Information
 
-- Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs) and [serialport](https://crates.io/crates/serialport)
+- Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [vigem](https://github.com/ViGEm/ViGEmClient)[-client](https://github.com/CasualX/vigem-client), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs) and [serialport](https://crates.io/crates/serialport)
 - USB device polling is done on a dedicated thread while everything else is done on a async runtime.
+
+### Repository Layout
+
+- [`public`](./public) / [`src`](./src): Svelte frontend
+- [`src-tauri`](./src-tauri): Tauri adapter between frontend and backend
+- [`src-slider_io`](./src-slider_io): Backend logic for handling usb, brokenithm, output emulation and lighting.
+- [`res`](./res): Miscellaneous tools such as Brokenithm QR parser and keyboard layout visualisation.
 
 ## Planned Features
 
