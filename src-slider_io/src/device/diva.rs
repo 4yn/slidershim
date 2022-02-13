@@ -1,8 +1,17 @@
 use log::{error, info};
-use serialport::SerialPort;
-use std::{collections::VecDeque, num::Wrapping, thread::sleep, time::Duration};
+use serialport::{COMPort, SerialPort};
+use std::{
+  collections::VecDeque,
+  io::{Read, Write},
+  num::Wrapping,
+  thread::sleep,
+  time::Duration,
+};
 
-use crate::{shared::worker::ThreadJob, state::SliderState};
+use crate::{
+  shared::{serial::ReadWriteTimeout, worker::ThreadJob},
+  state::SliderState,
+};
 
 struct DivaPacket {
   command: u8,
@@ -98,15 +107,20 @@ impl DivaDeserializer {
   }
 
   fn deserialize(&mut self, data: &[u8], out: &mut VecDeque<DivaPacket>) {
+    // println!("Found data");
     for c in data {
       match c {
         0xff => {
           self.packet = DivaPacket::new();
           self.packet.checksum = Wrapping(0xff);
           self.state = DivaDeserializerState::ExpectCommand;
+          self.escape = 0;
+
+          // println!("{} open", c);
         }
         0xfd => {
           self.escape = 1;
+          // println!("esc {}", c);
         }
         c => {
           let c = c + self.escape;
@@ -117,6 +131,8 @@ impl DivaDeserializer {
             DivaDeserializerState::ExpectCommand => {
               self.packet.command = c;
               self.state = DivaDeserializerState::ExpectLen;
+
+              // println!("cmd {}", c);
             }
             DivaDeserializerState::ExpectLen => {
               self.len = c;
@@ -125,6 +141,7 @@ impl DivaDeserializer {
                 0 => DivaDeserializerState::ExpectChecksum,
                 _ => DivaDeserializerState::ExpectData,
               };
+              // println!("len {}", c);
             }
             DivaDeserializerState::ExpectData => {
               self.packet.data.push(c);
@@ -133,8 +150,11 @@ impl DivaDeserializer {
               if self.len == 0 {
                 self.state = DivaDeserializerState::ExpectChecksum;
               }
+
+              // println!("data {}", c);
             }
             DivaDeserializerState::ExpectChecksum => {
+              // println!("checksum {} {:?}", c, self.packet.checksum);
               debug_assert!(self.packet.checksum == Wrapping(0));
               if self.packet.checksum == Wrapping(0) {
                 out.push_back(DivaPacket::new());
@@ -163,7 +183,7 @@ pub struct DivaSliderJob {
   port: String,
   packets: VecDeque<DivaPacket>,
   deserializer: DivaDeserializer,
-  serial_port: Option<Box<dyn SerialPort>>,
+  serial_port: Option<COMPort>,
   bootstrap: DivaSliderBootstrap,
 }
 
@@ -187,10 +207,13 @@ impl ThreadJob for DivaSliderJob {
       self.port.as_str(),
       115200
     );
-    match serialport::new(&self.port, 152000).open() {
-      Ok(serial_port_buf) => {
+    match serialport::new(&self.port, 152000).open_native() {
+      Ok(serial_port) => {
         info!("Serial port opened");
-        self.serial_port = Some(serial_port_buf);
+        serial_port
+          .set_read_write_timeout(Duration::from_millis(3))
+          .ok();
+        self.serial_port = Some(serial_port);
         true
       }
       Err(e) => {
@@ -208,53 +231,81 @@ impl ThreadJob for DivaSliderJob {
     let bytes_avail = serial_port.bytes_to_read().unwrap_or(0);
     if bytes_avail > 0 {
       let mut read_buf = vec![0 as u8; bytes_avail as usize];
-      serial_port.read_exact(&mut read_buf).ok();
+      serial_port.read(&mut read_buf).ok();
       self.deserializer.deserialize(&read_buf, &mut self.packets);
       work = true;
     }
 
     match self.bootstrap {
       DivaSliderBootstrap::Init => {
-        println!("Diva sending init");
+        info!("Diva sending init");
         let mut reset_packet = DivaPacket::from_bytes(0x10, &[]);
-        serial_port.write(reset_packet.serialize()).ok();
-        println!("Diva sent init");
+        match serial_port.write(reset_packet.serialize()) {
+          Ok(_) => {
+            info!("Diva sent init");
 
-        self.bootstrap = DivaSliderBootstrap::AwaitReset;
-        work = true;
+            self.bootstrap = DivaSliderBootstrap::AwaitReset;
+            work = true;
+          }
+          Err(e) => {
+            error!("Diva send init error {}", e);
+          }
+        }
+
+        // Wait for flush
+        sleep(Duration::from_millis(100));
       }
       DivaSliderBootstrap::AwaitReset => {
+        while self.packets.len() > 1 {
+          self.packets.pop_front();
+        }
         if let Some(ack_packet) = self.packets.pop_front() {
           info!(
-            "Diva slider ack reset {:?} {:?}",
+            "Diva ack reset {:?} {:?}",
             ack_packet.command, ack_packet.data
           );
 
           let mut info_packet = DivaPacket::from_bytes(0xf0, &[]);
-          serial_port.write(info_packet.serialize()).ok();
 
-          self.bootstrap = DivaSliderBootstrap::AwaitInfo;
-          work = true;
+          match serial_port.write(info_packet.serialize()) {
+            Ok(_) => {
+              info!("Diva sent info");
+
+              self.bootstrap = DivaSliderBootstrap::AwaitInfo;
+              work = true;
+            }
+            Err(e) => {
+              error!("Diva send info error {}", e);
+            }
+          }
         }
       }
       DivaSliderBootstrap::AwaitInfo => {
         if let Some(ack_packet) = self.packets.pop_front() {
           info!(
-            "Diva slider ack info {:?} {:?}",
+            "Diva ack info {:?} {:?}",
             ack_packet.command, ack_packet.data
           );
 
           let mut start_packet = DivaPacket::from_bytes(0x03, &[]);
-          serial_port.write(start_packet.serialize()).ok();
 
-          self.bootstrap = DivaSliderBootstrap::AwaitStart;
-          work = true;
+          match serial_port.write(start_packet.serialize()) {
+            Ok(_) => {
+              info!("Diva sent start");
+
+              self.bootstrap = DivaSliderBootstrap::AwaitStart;
+              work = true;
+            }
+            Err(e) => {
+              error!("Diva send start error {}", e);
+            }
+          }
         }
       }
       DivaSliderBootstrap::AwaitStart => {
         if let Some(ack_packet) = self.packets.pop_front() {
           info!(
-            "Diva slider ack start {:?} {:?}",
+            "Diva ack start {:?} {:?}",
             ack_packet.command, ack_packet.data
           );
 
@@ -301,16 +352,15 @@ impl ThreadJob for DivaSliderJob {
 
 impl Drop for DivaSliderJob {
   fn drop(&mut self) {
-    println!("Dropping diva");
     match self.bootstrap {
       DivaSliderBootstrap::AwaitStart | DivaSliderBootstrap::ReadLoop => {
-        info!("Diva slider sending stop");
-
         let serial_port = self.serial_port.as_mut().unwrap();
         let mut stop_packet = DivaPacket::from_bytes(0x04, &[]);
         serial_port.write(stop_packet.serialize()).ok();
       }
       _ => {}
     };
+    info!("Diva serial port closed");
+    // println!("Diva slider dropped");
   }
 }
