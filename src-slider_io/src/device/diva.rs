@@ -215,8 +215,10 @@ impl ThreadJob for DivaSliderJob {
 
     match self.bootstrap {
       DivaSliderBootstrap::Init => {
+        println!("Diva sending init");
         let mut reset_packet = DivaPacket::from_bytes(0x10, &[]);
         serial_port.write(reset_packet.serialize()).ok();
+        println!("Diva sent init");
 
         self.bootstrap = DivaSliderBootstrap::AwaitReset;
         work = true;
@@ -299,6 +301,7 @@ impl ThreadJob for DivaSliderJob {
 
 impl Drop for DivaSliderJob {
   fn drop(&mut self) {
+    println!("Dropping diva");
     match self.bootstrap {
       DivaSliderBootstrap::AwaitStart | DivaSliderBootstrap::ReadLoop => {
         info!("Diva slider sending stop");

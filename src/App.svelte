@@ -10,6 +10,7 @@
   let outputMode = "none";
   let ledMode = "none";
 
+  let divaSerialPort = "COM1";
   let keyboardSensitivity = 20;
   let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
@@ -56,6 +57,7 @@
       outputMode = payload.outputMode || "none";
       ledMode = payload.ledMode || "none";
 
+      divaSerialPort = payload.divaSerialPort || "COM1";
       keyboardSensitivity = payload.keyboardSensitivity || 20;
       outputPolling = payload.outputPolling || "100";
       outputWebsocketUrl =
@@ -103,6 +105,7 @@
         deviceMode,
         outputMode,
         ledMode,
+        divaSerialPort,
         keyboardSensitivity,
         outputPolling,
         outputWebsocketUrl,
@@ -157,6 +160,7 @@
         <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
         <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
         <option value="yuancon">Yuancon Laverita, HID Firmware</option>
+        <option value="diva">Diva Slider over Serial</option>
         <option value="brokenithm">Brokenithm</option>
         <option value="brokenithm-led">Brokenithm + Led</option>
         <option value="brokenithm-ground">Brokenithm, Ground only</option>
@@ -176,6 +180,24 @@
             {ips.map((x) => `http://${x}:1606/`).join("\n")}
           </pre>
         </div>
+      </div>
+    </div>
+  {/if}
+  {#if deviceMode === "diva"}
+    <div class="row">
+      <div class="label">Diva Serial Port</div>
+      <div class="input">
+        <select bind:value={divaSerialPort} on:change={markDirty}>
+          <option value="COM1">COM1</option>
+          <option value="COM2">COM2</option>
+          <option value="COM3">COM3</option>
+          <option value="COM4">COM4</option>
+          <option value="COM5">COM5</option>
+          <option value="COM6">COM6</option>
+          <option value="COM7">COM7</option>
+          <option value="COM8">COM8</option>
+          <option value="COM9">COM9</option>
+        </select>
       </div>
     </div>
   {/if}
