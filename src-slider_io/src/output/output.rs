@@ -80,7 +80,7 @@ impl AsyncJob for OutputJob {
     let flat_controller_state: Vec<bool>;
     {
       let controller_state_handle = self.state.controller_state.lock();
-      flat_controller_state = controller_state_handle.flat(&self.sensitivity);
+      flat_controller_state = controller_state_handle.to_flat(&self.sensitivity);
     }
 
     if let Some(handler) = self.handler.as_mut() {

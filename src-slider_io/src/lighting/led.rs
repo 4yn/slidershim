@@ -190,7 +190,7 @@ impl AsyncJob for LedJob {
     match self.mode {
       LedMode::Reactive { sensitivity, .. } => {
         let controller_state_handle = self.state.controller_state.lock();
-        flat_controller_state = Some(controller_state_handle.flat(&sensitivity));
+        flat_controller_state = Some(controller_state_handle.to_flat(&sensitivity));
       }
       LedMode::Serial { .. } => {
         if let Some(serial_port) = self.serial_port.as_mut() {
