@@ -9,12 +9,15 @@ mod config;
 mod shared;
 mod state;
 
-mod device;
+mod input;
 mod lighting;
 mod output;
+
+mod system;
 
 mod context;
 mod manager;
 
-pub use config::{list_ips, Config};
+pub use config::Config;
 pub use manager::Manager;
+pub use system::{get_brokenithm_qr_path, get_log_file_path, list_ips};

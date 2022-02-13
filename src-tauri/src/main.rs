@@ -102,7 +102,7 @@ fn main() {
 
       // Show logs
       app.listen_global("openLogfile", |_| {
-        let log_file_path = slider_io::Config::get_log_file_path();
+        let log_file_path = slider_io::get_log_file_path();
         if let Some(log_file_path) = log_file_path {
           open::that(log_file_path.as_path()).ok();
         }
@@ -110,7 +110,7 @@ fn main() {
 
       // Show brokenithm qr
       app.listen_global("openBrokenithmQr", |_| {
-        let brokenithm_qr_path = slider_io::Config::get_brokenithm_qr_path();
+        let brokenithm_qr_path = slider_io::get_brokenithm_qr_path();
         if let Some(brokenithm_qr_path) = brokenithm_qr_path {
           open::that(brokenithm_qr_path.as_path()).ok();
         }

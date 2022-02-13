@@ -4,8 +4,8 @@ use std::sync::{atomic::Ordering, Arc};
 
 use crate::{
   config::Config,
-  device::{brokenithm::BrokenithmJob, config::DeviceMode, device::HidDeviceJob},
-  lighting::{config::LedMode, led::LedJob},
+  input::{brokenithm::BrokenithmJob, config::DeviceMode, device::HidDeviceJob},
+  lighting::{config::LedMode, lighting::LedJob},
   output::{config::OutputMode, output::OutputJob},
   shared::{
     utils::LoopTimer,
