@@ -69,7 +69,7 @@ async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
 async fn handle_brokenithm(
   ws_stream: WebSocketStream<Upgraded>,
   state: SliderState,
-  led_enabled: bool,
+  lights_enabled: bool,
 ) {
   let (mut ws_write, mut ws_read) = ws_stream.split();
 
@@ -153,7 +153,7 @@ async fn handle_brokenithm(
     // info!("Websocket read task done");
   };
 
-  match led_enabled {
+  match lights_enabled {
     false => {
       select! {
         _ = read_task => {}
@@ -163,14 +163,14 @@ async fn handle_brokenithm(
     true => {
       let msg_write_handle = msg_write.clone();
       let state_handle = state.clone();
-      let led_task = async move {
+      let lights_task = async move {
         loop {
-          let mut led_data = vec![0; 93];
+          let mut lights_data = vec![0; 93];
           {
             let lights_handle = state_handle.lights.lock();
-            (&mut led_data).copy_from_slice(&lights_handle.ground);
+            (&mut lights_data).copy_from_slice(&lights_handle.ground);
           }
-          msg_write_handle.send(Message::Binary(led_data)).ok();
+          msg_write_handle.send(Message::Binary(lights_data)).ok();
 
           sleep(Duration::from_millis(50)).await;
         }
@@ -179,7 +179,7 @@ async fn handle_brokenithm(
       select! {
         _ = read_task => {}
         _ = write_task => {}
-        _ = led_task => {}
+        _ = lights_task => {}
       };
     }
   }
@@ -188,7 +188,7 @@ async fn handle_brokenithm(
 async fn handle_websocket(
   mut request: Request<Body>,
   state: SliderState,
-  led_enabled: bool,
+  lights_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
   let res = match handshake::server::create_response_with_body(&request, || Body::empty()) {
     Ok(res) => {
@@ -202,7 +202,7 @@ async fn handle_websocket(
             )
             .await;
 
-            handle_brokenithm(ws_stream, state, led_enabled).await;
+            handle_brokenithm(ws_stream, state, lights_enabled).await;
           }
 
           Err(e) => {
@@ -229,7 +229,7 @@ async fn handle_request(
   remote_addr: SocketAddr,
   state: SliderState,
   ground_only: bool,
-  led_enabled: bool,
+  lights_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
   let method = request.method();
   let path = request.uri().path();
@@ -251,7 +251,7 @@ async fn handle_request(
       true => serve_file("index-go.html").await,
     },
     (filename, false) => serve_file(&filename[1..]).await,
-    ("/ws", true) => handle_websocket(request, state, led_enabled).await,
+    ("/ws", true) => handle_websocket(request, state, lights_enabled).await,
     _ => error_response().await,
   }
 }
@@ -259,15 +259,15 @@ async fn handle_request(
 pub struct BrokenithmJob {
   state: SliderState,
   ground_only: bool,
-  led_enabled: bool,
+  lights_enabled: bool,
 }
 
 impl BrokenithmJob {
-  pub fn new(state: &SliderState, ground_only: &bool, led_enabled: &bool) -> Self {
+  pub fn new(state: &SliderState, ground_only: &bool, lights_enabled: &bool) -> Self {
     Self {
       state: state.clone(),
       ground_only: *ground_only,
-      led_enabled: *led_enabled,
+      lights_enabled: *lights_enabled,
     }
   }
 }
@@ -277,14 +277,14 @@ impl AsyncHaltableJob for BrokenithmJob {
   async fn run<F: Future<Output = ()> + Send>(self, stop_signal: F) {
     let state = self.state.clone();
     let ground_only = self.ground_only;
-    let led_enabled = self.led_enabled;
+    let lights_enabled = self.lights_enabled;
     let make_svc = make_service_fn(|conn: &AddrStream| {
       let remote_addr = conn.remote_addr();
       let make_svc_state = state.clone();
       async move {
         Ok::<_, Infallible>(service_fn(move |request: Request<Body>| {
           let svc_state = make_svc_state.clone();
-          handle_request(request, remote_addr, svc_state, ground_only, led_enabled)
+          handle_request(request, remote_addr, svc_state, ground_only, lights_enabled)
         }))
       }
     });

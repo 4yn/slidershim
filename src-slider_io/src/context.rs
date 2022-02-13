@@ -4,8 +4,8 @@ use std::sync::{atomic::Ordering, Arc};
 
 use crate::{
   config::Config,
-  input::{brokenithm::BrokenithmJob, config::DeviceMode, device::HidDeviceJob},
-  lighting::{config::LedMode, lighting::LedJob},
+  device::{brokenithm::BrokenithmJob, config::DeviceMode, diva::DivaSliderJob, hid::HidJob},
+  lighting::{config::LightsMode, lighting::LightsJob},
   output::{config::OutputMode, output::OutputJob},
   shared::{
     utils::LoopTimer,
@@ -18,10 +18,10 @@ use crate::{
 pub struct Context {
   state: SliderState,
   config: Config,
-  device_worker: Option<ThreadWorker>,
-  brokenithm_worker: Option<AsyncHaltableWorker>,
+  device_thread_worker: Option<ThreadWorker>,
+  device_async_haltable_worker: Option<AsyncHaltableWorker>,
   output_worker: Option<AsyncWorker>,
-  led_worker: Option<AsyncWorker>,
+  lights_worker: Option<AsyncWorker>,
   timers: Vec<(&'static str, Arc<AtomicF64>)>,
 }
 
@@ -30,7 +30,7 @@ impl Context {
     info!("Context creating");
     info!("Device config {:?}", config.device_mode);
     info!("Output config {:?}", config.output_mode);
-    info!("LED config {:?}", config.led_mode);
+    info!("Lights config {:?}", config.lights_mode);
 
     let state = SliderState::new();
     let mut timers = vec![];
@@ -39,12 +39,12 @@ impl Context {
       DeviceMode::None => (None, None),
       DeviceMode::Brokenithm {
         ground_only,
-        led_enabled,
+        lights_enabled,
       } => (
         None,
         Some(AsyncHaltableWorker::new(
           "brokenithm",
-          BrokenithmJob::new(&state, ground_only, led_enabled),
+          BrokenithmJob::new(&state, ground_only, lights_enabled),
         )),
       ),
       DeviceMode::Hardware { spec } => (
@@ -53,7 +53,19 @@ impl Context {
           timers.push(("d", timer.fork()));
           Some(ThreadWorker::new(
             "device",
-            HidDeviceJob::from_config(&state, spec),
+            HidJob::from_config(&state, spec),
+            timer,
+          ))
+        },
+        None,
+      ),
+      DeviceMode::DivaSlider { port } => (
+        {
+          let timer = LoopTimer::new();
+          timers.push(("d", timer.fork()));
+          Some(ThreadWorker::new(
+            "diva",
+            DivaSliderJob::new(&state, port),
             timer,
           ))
         },
@@ -72,14 +84,14 @@ impl Context {
         ))
       }
     };
-    let led_worker = match &config.led_mode {
-      LedMode::None => None,
+    let lights_worker = match &config.lights_mode {
+      LightsMode::None => None,
       _ => {
         let timer = LoopTimer::new();
         timers.push(("l", timer.fork()));
         Some(AsyncWorker::new(
-          "led",
-          LedJob::new(&state, &config.led_mode),
+          "lights",
+          LightsJob::new(&state, &config.lights_mode),
           timer,
         ))
       }
@@ -88,10 +100,10 @@ impl Context {
     Self {
       state,
       config,
-      device_worker,
-      brokenithm_worker,
+      device_thread_worker: device_worker,
+      device_async_haltable_worker: brokenithm_worker,
       output_worker,
-      led_worker,
+      lights_worker,
       timers,
     }
   }

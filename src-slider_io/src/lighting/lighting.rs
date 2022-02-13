@@ -13,18 +13,18 @@ use crate::{
   state::{SliderLights, SliderState},
 };
 
-use super::config::{LedMode, ReactiveLayout};
+use super::config::{LightsMode, ReactiveLayout};
 
-pub struct LedJob {
+pub struct LightsJob {
   state: SliderState,
-  mode: LedMode,
+  mode: LightsMode,
   serial_port: Option<Box<dyn SerialPort>>,
   started: Instant,
   timer: Interval,
 }
 
-impl LedJob {
-  pub fn new(state: &SliderState, mode: &LedMode) -> Self {
+impl LightsJob {
+  pub fn new(state: &SliderState, mode: &LightsMode) -> Self {
     Self {
       state: state.clone(),
       mode: mode.clone(),
@@ -41,7 +41,7 @@ impl LedJob {
     lights: &mut SliderLights,
   ) {
     match self.mode {
-      LedMode::Reactive { layout, .. } => {
+      LightsMode::Reactive { layout, .. } => {
         let flat_input = flat_input.unwrap();
 
         match layout {
@@ -116,7 +116,7 @@ impl LedJob {
           }
         }
       }
-      LedMode::Attract => {
+      LightsMode::Attract => {
         let theta = self
           .started
           .elapsed()
@@ -128,7 +128,7 @@ impl LedJob {
           lights.paint(idx, &[color.red, color.green, color.blue]);
         }
       }
-      LedMode::Serial { .. } => {
+      LightsMode::Serial { .. } => {
         // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialProcessor.h
         // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialProcessor.cpp
         // https://github.com/jmontineri/OpeNITHM/blob/89e9a43f7484e8949cd31bbff79c32f21ea3ec1d/Firmware/OpeNITHM/SerialLeds.h
@@ -155,10 +155,10 @@ impl LedJob {
 }
 
 #[async_trait]
-impl AsyncJob for LedJob {
+impl AsyncJob for LightsJob {
   async fn setup(&mut self) -> bool {
     match &self.mode {
-      LedMode::Serial { port } => {
+      LightsMode::Serial { port } => {
         info!(
           "Serial port for led opening at {} {:?}",
           port.as_str(),
@@ -187,11 +187,11 @@ impl AsyncJob for LedJob {
 
     // Do the IO here
     match self.mode {
-      LedMode::Reactive { sensitivity, .. } => {
+      LightsMode::Reactive { sensitivity, .. } => {
         let input_handle = self.state.input.lock();
         flat_input = Some(input_handle.to_flat(&sensitivity));
       }
-      LedMode::Serial { .. } => {
+      LightsMode::Serial { .. } => {
         if let Some(serial_port) = self.serial_port.as_mut() {
           let mut serial_data_avail = serial_port.bytes_to_read().unwrap_or(0);
           if serial_data_avail >= 100 {

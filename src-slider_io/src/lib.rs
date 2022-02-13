@@ -9,7 +9,7 @@ mod config;
 mod shared;
 mod state;
 
-mod input;
+mod device;
 mod lighting;
 mod output;
 

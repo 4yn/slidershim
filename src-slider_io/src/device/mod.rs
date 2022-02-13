@@ -1,6 +1,5 @@
 pub mod config;
 
-mod acio;
-
+pub mod diva;
 pub mod brokenithm;
-pub mod device;
+pub mod hid;

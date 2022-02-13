@@ -15,7 +15,10 @@ pub enum DeviceMode {
   },
   Brokenithm {
     ground_only: bool,
-    led_enabled: bool,
+    lights_enabled: bool,
+  },
+  DivaSlider {
+    port: String,
   },
 }
 
@@ -32,21 +35,24 @@ impl DeviceMode {
       "yuancon" => DeviceMode::Hardware {
         spec: HardwareSpec::Yuancon,
       },
+      "diva" => DeviceMode::DivaSlider {
+        port: v["divaSerialPort"].as_str()?.to_string(),
+      },
       "brokenithm" => DeviceMode::Brokenithm {
         ground_only: false,
-        led_enabled: false,
+        lights_enabled: false,
       },
       "brokenithm-led" => DeviceMode::Brokenithm {
         ground_only: false,
-        led_enabled: true,
+        lights_enabled: true,
       },
       "brokenithm-ground" => DeviceMode::Brokenithm {
         ground_only: true,
-        led_enabled: false,
+        lights_enabled: false,
       },
       "brokenithm-ground-led" => DeviceMode::Brokenithm {
         ground_only: true,
-        led_enabled: true,
+        lights_enabled: true,
       },
       _ => return None,
     })

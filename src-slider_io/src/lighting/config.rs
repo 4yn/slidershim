@@ -7,7 +7,7 @@ pub enum ReactiveLayout {
 }
 
 #[derive(Debug, Clone)]
-pub enum LedMode {
+pub enum LightsMode {
   None,
   Reactive {
     layout: ReactiveLayout,
@@ -23,32 +23,32 @@ pub enum LedMode {
   },
 }
 
-impl LedMode {
+impl LightsMode {
   pub fn from_serde_value(v: &Value) -> Option<Self> {
     Some(match v["ledMode"].as_str()? {
-      "none" => LedMode::None,
-      "reactive-4" => LedMode::Reactive {
+      "none" => LightsMode::None,
+      "reactive-4" => LightsMode::Reactive {
         layout: ReactiveLayout::Even { splits: 4 },
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
       },
-      "reactive-8" => LedMode::Reactive {
+      "reactive-8" => LightsMode::Reactive {
         layout: ReactiveLayout::Even { splits: 8 },
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
       },
-      "reactive-16" => LedMode::Reactive {
+      "reactive-16" => LightsMode::Reactive {
         layout: ReactiveLayout::Even { splits: 16 },
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
       },
-      "reactive-voltex" => LedMode::Reactive {
+      "reactive-voltex" => LightsMode::Reactive {
         layout: ReactiveLayout::Voltex,
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
       },
-      "attract" => LedMode::Attract,
-      "test" => LedMode::Test,
-      "websocket" => LedMode::Websocket {
+      "attract" => LightsMode::Attract,
+      "test" => LightsMode::Test,
+      "websocket" => LightsMode::Websocket {
         url: v["ledWebsocketUrl"].as_str()?.to_string(),
       },
-      "serial" => LedMode::Serial {
+      "serial" => LightsMode::Serial {
         port: v["ledSerialPort"].as_str()?.to_string(),
       },
       _ => return None,

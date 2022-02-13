@@ -25,7 +25,7 @@ enum WriteType {
   Interrupt,
 }
 
-pub struct HidDeviceJob {
+pub struct HidJob {
   state: SliderState,
 
   vid: u16,
@@ -44,7 +44,7 @@ pub struct HidDeviceJob {
   handle: Option<DeviceHandle<GlobalContext>>,
 }
 
-impl HidDeviceJob {
+impl HidJob {
   fn new(
     state: SliderState,
     vid: u16,
@@ -212,7 +212,7 @@ impl HidDeviceJob {
 
 const TIMEOUT: Duration = Duration::from_millis(20);
 
-impl ThreadJob for HidDeviceJob {
+impl ThreadJob for HidJob {
   fn setup(&mut self) -> bool {
     match self.get_handle() {
       Ok(_) => {
@@ -283,7 +283,7 @@ impl ThreadJob for HidDeviceJob {
   }
 }
 
-impl Drop for HidDeviceJob {
+impl Drop for HidJob {
   fn drop(&mut self) {
     if let Some(handle) = self.handle.as_mut() {
       handle.release_interface(0).ok();

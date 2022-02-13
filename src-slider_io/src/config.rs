@@ -3,7 +3,7 @@ use serde_json::Value;
 use std::fs;
 
 use crate::{
-  input::config::DeviceMode, lighting::config::LedMode, output::config::OutputMode, system,
+  device::config::DeviceMode, lighting::config::LightsMode, output::config::OutputMode, system,
 };
 
 #[derive(Debug, Clone)]
@@ -11,7 +11,7 @@ pub struct Config {
   pub raw: String,
   pub device_mode: DeviceMode,
   pub output_mode: OutputMode,
-  pub led_mode: LedMode,
+  pub lights_mode: LightsMode,
 }
 
 impl Config {
@@ -22,7 +22,7 @@ impl Config {
       raw: s.to_string(),
       device_mode: DeviceMode::from_serde_value(&v)?,
       output_mode: OutputMode::from_serde_value(&v)?,
-      led_mode: LedMode::from_serde_value(&v)?,
+      lights_mode: LightsMode::from_serde_value(&v)?,
     })
   }
 
