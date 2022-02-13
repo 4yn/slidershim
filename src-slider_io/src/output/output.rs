@@ -3,22 +3,17 @@ use log::error;
 use std::time::Duration;
 use tokio::time::{interval, Interval};
 
-// use crate::slider_io::{
-//   config::OutputMode, controller_state::FullState, gamepad::GamepadOutput,
-//   keyboard::KeyboardOutput, worker::AsyncJob,
-// };
-
-use crate::{controller_state::FullState, shared::worker::AsyncJob};
+use crate::{shared::worker::AsyncJob, state::SliderState};
 
 use super::{config::OutputMode, gamepad::GamepadOutput, keyboard::KeyboardOutput};
 
 pub trait OutputHandler: Send {
-  fn tick(&mut self, flat_controller_state: &Vec<bool>) -> bool;
+  fn tick(&mut self, flat_input: &Vec<bool>) -> bool;
   fn reset(&mut self);
 }
 
 pub struct OutputJob {
-  state: FullState,
+  state: SliderState,
   mode: OutputMode,
   sensitivity: u8,
   handler: Option<Box<dyn OutputHandler>>,
@@ -26,7 +21,7 @@ pub struct OutputJob {
 }
 
 impl OutputJob {
-  pub fn new(state: &FullState, mode: &OutputMode) -> Self {
+  pub fn new(state: &SliderState, mode: &OutputMode) -> Self {
     Self {
       state: state.clone(),
       mode: mode.clone(),
@@ -77,14 +72,13 @@ impl AsyncJob for OutputJob {
   }
 
   async fn tick(&mut self) -> bool {
-    let flat_controller_state: Vec<bool>;
-    {
-      let controller_state_handle = self.state.controller_state.lock();
-      flat_controller_state = controller_state_handle.to_flat(&self.sensitivity);
-    }
+    let flat_input = {
+      let input_handle = self.state.input.lock();
+      input_handle.to_flat(&self.sensitivity)
+    };
 
     if let Some(handler) = self.handler.as_mut() {
-      handler.tick(&flat_controller_state);
+      handler.tick(&flat_input);
     }
     self.timer.tick().await;
 

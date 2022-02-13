@@ -187,9 +187,9 @@ impl KeyboardOutput {
 }
 
 impl OutputHandler for KeyboardOutput {
-  fn tick(&mut self, flat_controller_state: &Vec<bool>) -> bool {
+  fn tick(&mut self, flat_input: &Vec<bool>) -> bool {
     self.next_keys.fill(false);
-    for (idx, x) in flat_controller_state.iter().enumerate() {
+    for (idx, x) in flat_input.iter().enumerate() {
       if *x {
         self.next_keys[self.ground_to_idx[idx]] = true;
       }

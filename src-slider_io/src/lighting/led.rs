@@ -9,14 +9,14 @@ use std::{
 use tokio::time::{interval, Interval};
 
 use crate::{
-  controller_state::{FullState, LedState},
   shared::{utils::Buffer, voltex::VoltexState, worker::AsyncJob},
+  state::{SliderLights, SliderState},
 };
 
 use super::config::{LedMode, ReactiveLayout};
 
 pub struct LedJob {
-  state: FullState,
+  state: SliderState,
   mode: LedMode,
   serial_port: Option<Box<dyn SerialPort>>,
   started: Instant,
@@ -24,7 +24,7 @@ pub struct LedJob {
 }
 
 impl LedJob {
-  pub fn new(state: &FullState, mode: &LedMode) -> Self {
+  pub fn new(state: &SliderState, mode: &LedMode) -> Self {
     Self {
       state: state.clone(),
       mode: mode.clone(),
@@ -36,26 +36,26 @@ impl LedJob {
 
   fn calc_lights(
     &self,
-    flat_controller_state: Option<&Vec<bool>>,
+    flat_input: Option<&Vec<bool>>,
     serial_buffer: Option<&Buffer>,
-    led_state: &mut LedState,
+    lights: &mut SliderLights,
   ) {
     match self.mode {
       LedMode::Reactive { layout, .. } => {
-        let flat_controller_state = flat_controller_state.unwrap();
+        let flat_input = flat_input.unwrap();
 
         match layout {
           ReactiveLayout::Even { splits } => {
             let buttons_per_split = 32 / splits;
 
-            let banks: Vec<bool> = flat_controller_state
+            let banks: Vec<bool> = flat_input
               .chunks(32 / splits)
               .take(splits)
               .map(|x| x.contains(&true))
               .collect();
 
             for idx in 0..31 {
-              led_state.paint(
+              lights.paint(
                 idx,
                 match (idx + 1) % buttons_per_split {
                   0 => &[255, 0, 255],
@@ -68,49 +68,49 @@ impl LedJob {
             }
           }
           ReactiveLayout::Voltex => {
-            led_state.led_state.fill(0);
+            lights.ground.fill(0);
 
             // Fixed
-            led_state.paint(3, &[10, 100, 180]);
+            lights.paint(3, &[10, 100, 180]);
             for idx in 0..5 {
-              led_state.paint(7 + idx * 4, &[64, 64, 64]);
+              lights.paint(7 + idx * 4, &[64, 64, 64]);
             }
-            led_state.paint(27, &[180, 10, 110]);
+            lights.paint(27, &[180, 10, 110]);
 
-            let voltex_state = VoltexState::from_flat(flat_controller_state);
+            let voltex_input = VoltexState::from_flat(flat_input);
 
             // Left laser
-            for (idx, state) in voltex_state.laser[0..2].iter().enumerate() {
+            for (idx, state) in voltex_input.laser[0..2].iter().enumerate() {
               if *state {
-                led_state.paint(0 + idx * 4, &[70, 230, 250]);
-                led_state.paint(1 + idx * 4, &[70, 230, 250]);
-                led_state.paint(2 + idx * 4, &[70, 230, 250]);
+                lights.paint(0 + idx * 4, &[70, 230, 250]);
+                lights.paint(1 + idx * 4, &[70, 230, 250]);
+                lights.paint(2 + idx * 4, &[70, 230, 250]);
               }
             }
 
             // Right laser
-            for (idx, state) in voltex_state.laser[2..4].iter().enumerate() {
+            for (idx, state) in voltex_input.laser[2..4].iter().enumerate() {
               if *state {
-                led_state.paint(24 + idx * 4, &[250, 60, 200]);
-                led_state.paint(25 + idx * 4, &[255, 60, 200]);
-                led_state.paint(26 + idx * 4, &[255, 60, 200]);
+                lights.paint(24 + idx * 4, &[250, 60, 200]);
+                lights.paint(25 + idx * 4, &[255, 60, 200]);
+                lights.paint(26 + idx * 4, &[255, 60, 200]);
               }
             }
 
             // Buttons
-            for (idx, state) in voltex_state.bt.iter().enumerate() {
+            for (idx, state) in voltex_input.bt.iter().enumerate() {
               if *state {
-                led_state.paint(8 + idx * 4, &[255, 255, 255]);
-                led_state.paint(10 + idx * 4, &[255, 255, 255]);
+                lights.paint(8 + idx * 4, &[255, 255, 255]);
+                lights.paint(10 + idx * 4, &[255, 255, 255]);
               }
             }
 
             // Fx
-            for (idx, state) in voltex_state.fx.iter().enumerate() {
+            for (idx, state) in voltex_input.fx.iter().enumerate() {
               if *state {
-                led_state.paint(9 + idx * 8, &[250, 100, 30]);
-                led_state.paint(11 + idx * 8, &[250, 100, 30]);
-                led_state.paint(13 + idx * 8, &[250, 100, 30]);
+                lights.paint(9 + idx * 8, &[250, 100, 30]);
+                lights.paint(11 + idx * 8, &[250, 100, 30]);
+                lights.paint(13 + idx * 8, &[250, 100, 30]);
               }
             }
           }
@@ -125,7 +125,7 @@ impl LedJob {
         for idx in 0..31 {
           let slice_theta = (&theta + (idx as f64) / 32.0) % 1.0;
           let color = Srgb::from_color(Hsv::new(slice_theta * 360.0, 1.0, 1.0)).into_format::<u8>();
-          led_state.paint(idx, &[color.red, color.green, color.blue]);
+          lights.paint(idx, &[color.red, color.green, color.blue]);
         }
       }
       LedMode::Serial { .. } => {
@@ -142,16 +142,15 @@ impl LedJob {
               .rev()
               .enumerate()
             {
-              led_state.paint(idx, &[(*buf_chunk)[1], (*buf_chunk)[2], (*buf_chunk)[0]]);
+              lights.paint(idx, &[(*buf_chunk)[1], (*buf_chunk)[2], (*buf_chunk)[0]]);
             }
-            // println!("leds {:?}", led_state.led_state);
           }
         }
       }
       _ => panic!("Not implemented"),
     }
 
-    led_state.dirty = true;
+    lights.dirty = true;
   }
 }
 
@@ -183,14 +182,14 @@ impl AsyncJob for LedJob {
   }
 
   async fn tick(&mut self) -> bool {
-    let mut flat_controller_state: Option<Vec<bool>> = None;
+    let mut flat_input: Option<Vec<bool>> = None;
     let mut serial_buffer: Option<Buffer> = None;
 
     // Do the IO here
     match self.mode {
       LedMode::Reactive { sensitivity, .. } => {
-        let controller_state_handle = self.state.controller_state.lock();
-        flat_controller_state = Some(controller_state_handle.to_flat(&sensitivity));
+        let input_handle = self.state.input.lock();
+        flat_input = Some(input_handle.to_flat(&sensitivity));
       }
       LedMode::Serial { .. } => {
         if let Some(serial_port) = self.serial_port.as_mut() {
@@ -218,15 +217,13 @@ impl AsyncJob for LedJob {
 
     // Then calculate and transfer
     {
-      let mut led_state_handle = self.state.led_state.lock();
+      let mut lights_handle = self.state.lights.lock();
       self.calc_lights(
-        flat_controller_state.as_ref(),
+        flat_input.as_ref(),
         serial_buffer.as_ref(),
-        led_state_handle.deref_mut(),
+        lights_handle.deref_mut(),
       );
     }
-    // thread::sleep(Duration::from_millis(30));
-    // spin_sleep::sleep(Duration::from_micros(33333));
     self.timer.tick().await;
 
     true

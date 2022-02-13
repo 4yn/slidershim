@@ -18,7 +18,7 @@ use tokio::{
 use tokio_tungstenite::WebSocketStream;
 use tungstenite::{handshake, Message};
 
-use crate::{controller_state::FullState, shared::worker::AsyncHaltableJob};
+use crate::{shared::worker::AsyncHaltableJob, state::SliderState};
 
 // https://levelup.gitconnected.com/handling-websocket-and-http-on-the-same-port-with-rust-f65b770722c9
 
@@ -68,7 +68,7 @@ async fn serve_file(path: &str) -> Result<Response<Body>, Infallible> {
 
 async fn handle_brokenithm(
   ws_stream: WebSocketStream<Upgraded>,
-  state: FullState,
+  state: SliderState,
   led_enabled: bool,
 ) {
   let (mut ws_write, mut ws_read) = ws_stream.split();
@@ -114,15 +114,15 @@ async fn handle_brokenithm(
                 }
                 39 => {
                   if chars[0] == 'b' {
-                    let mut controller_state_handle = state_handle.controller_state.lock();
+                    let mut input_handle = state_handle.input.lock();
                     for (idx, c) in chars[0..32].iter().enumerate() {
-                      controller_state_handle.ground_state[idx] = match *c == '1' {
+                      input_handle.ground[idx] = match *c == '1' {
                         false => 0,
                         true => 255,
                       }
                     }
                     for (idx, c) in chars[32..38].iter().enumerate() {
-                      controller_state_handle.air_state[idx] = match *c == '1' {
+                      input_handle.air[idx] = match *c == '1' {
                         false => 0,
                         true => 1,
                       }
@@ -167,8 +167,8 @@ async fn handle_brokenithm(
         loop {
           let mut led_data = vec![0; 93];
           {
-            let led_state_handle = state_handle.led_state.lock();
-            (&mut led_data).copy_from_slice(&led_state_handle.led_state);
+            let lights_handle = state_handle.lights.lock();
+            (&mut led_data).copy_from_slice(&lights_handle.ground);
           }
           msg_write_handle.send(Message::Binary(led_data)).ok();
 
@@ -187,7 +187,7 @@ async fn handle_brokenithm(
 
 async fn handle_websocket(
   mut request: Request<Body>,
-  state: FullState,
+  state: SliderState,
   led_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
   let res = match handshake::server::create_response_with_body(&request, || Body::empty()) {
@@ -227,7 +227,7 @@ async fn handle_websocket(
 async fn handle_request(
   request: Request<Body>,
   remote_addr: SocketAddr,
-  state: FullState,
+  state: SliderState,
   ground_only: bool,
   led_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
@@ -257,13 +257,13 @@ async fn handle_request(
 }
 
 pub struct BrokenithmJob {
-  state: FullState,
+  state: SliderState,
   ground_only: bool,
   led_enabled: bool,
 }
 
 impl BrokenithmJob {
-  pub fn new(state: &FullState, ground_only: &bool, led_enabled: &bool) -> Self {
+  pub fn new(state: &SliderState, ground_only: &bool, led_enabled: &bool) -> Self {
     Self {
       state: state.clone(),
       ground_only: *ground_only,

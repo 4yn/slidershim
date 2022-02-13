@@ -6,8 +6,8 @@
 #![feature(more_qualified_paths)]
 
 mod config;
-mod controller_state;
 mod shared;
+mod state;
 
 mod device;
 mod lighting;

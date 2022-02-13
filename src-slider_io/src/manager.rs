@@ -9,10 +9,10 @@ use tokio::{
   sync::{mpsc, oneshot},
 };
 
-use crate::{config::Config, context::Context, controller_state::FullState};
+use crate::{config::Config, context::Context, state::SliderState};
 
 pub struct Manager {
-  state: Arc<Mutex<Option<FullState>>>,
+  state: Arc<Mutex<Option<SliderState>>>,
   context: Arc<Mutex<Option<Context>>>,
   join_handle: Option<JoinHandle<()>>,
   tx_config: mpsc::UnboundedSender<Config>,
@@ -81,7 +81,7 @@ impl Manager {
     self.tx_config.send(config).unwrap();
   }
 
-  pub fn try_get_state(&self) -> Option<FullState> {
+  pub fn try_get_state(&self) -> Option<SliderState> {
     let state_handle = self.state.lock();
     state_handle.as_ref().map(|x| x.clone())
   }

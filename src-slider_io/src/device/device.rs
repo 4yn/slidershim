@@ -8,17 +8,17 @@ use std::{
 };
 
 use crate::{
-  controller_state::{ControllerState, FullState, LedState},
   shared::{
     utils::{Buffer, ShimError},
     worker::ThreadJob,
   },
+  state::{SliderInput, SliderLights, SliderState},
 };
 
 use super::config::HardwareSpec;
 
-type HidReadCallback = fn(&Buffer, &mut ControllerState) -> ();
-type HidLedCallback = fn(&mut Buffer, &LedState) -> ();
+type HidReadCallback = fn(&Buffer, &mut SliderInput) -> ();
+type HidLedCallback = fn(&mut Buffer, &SliderLights) -> ();
 
 enum WriteType {
   Bulk,
@@ -26,7 +26,7 @@ enum WriteType {
 }
 
 pub struct HidDeviceJob {
-  state: FullState,
+  state: SliderState,
 
   vid: u16,
   pid: u16,
@@ -46,7 +46,7 @@ pub struct HidDeviceJob {
 
 impl HidDeviceJob {
   fn new(
-    state: FullState,
+    state: SliderState,
     vid: u16,
     pid: u16,
     read_endpoint: u8,
@@ -71,7 +71,7 @@ impl HidDeviceJob {
     }
   }
 
-  pub fn from_config(state: &FullState, spec: &HardwareSpec) -> Self {
+  pub fn from_config(state: &SliderState, spec: &HardwareSpec) -> Self {
     match spec {
       HardwareSpec::TasollerOne => Self::new(
         state.clone(),
@@ -79,7 +79,7 @@ impl HidDeviceJob {
         0x2333,
         0x84,
         0x03,
-        |buf, controller_state| {
+        |buf, input| {
           if buf.len != 11 {
             return;
           }
@@ -90,15 +90,15 @@ impl HidDeviceJob {
             .flat_map(|x| (0..8).map(move |i| ((x) >> i) & 1))
             .collect();
           for i in 0..32 {
-            controller_state.ground_state[i] = bits[34 + i] * 255;
+            input.ground[i] = bits[34 + i] * 255;
           }
-          controller_state.flip_vert();
+          input.flip_vert();
 
-          controller_state.air_state.copy_from_slice(&bits[28..34]);
-          controller_state.extra_state[0..2].copy_from_slice(&bits[26..28]);
+          input.air.copy_from_slice(&bits[28..34]);
+          input.extra[0..2].copy_from_slice(&bits[26..28]);
         },
         WriteType::Bulk,
-        |buf, led_state| {
+        |buf, lights| {
           buf.len = 240;
           buf.data[0] = 'B' as u8;
           buf.data[1] = 'L' as u8;
@@ -106,7 +106,7 @@ impl HidDeviceJob {
           for (buf_chunk, state_chunk) in buf.data[3..96]
             .chunks_mut(3)
             .take(31)
-            .zip(led_state.led_state.chunks(3).rev())
+            .zip(lights.ground.chunks(3).rev())
           {
             buf_chunk[0] = state_chunk[1];
             buf_chunk[1] = state_chunk[0];
@@ -121,22 +121,20 @@ impl HidDeviceJob {
         0x2333,
         0x84,
         0x03,
-        |buf, controller_state| {
+        |buf, input| {
           if buf.len != 36 {
             return;
           }
 
-          controller_state
-            .ground_state
-            .copy_from_slice(&buf.data[4..36]);
-          controller_state.flip_vert();
+          input.ground.copy_from_slice(&buf.data[4..36]);
+          input.flip_vert();
 
           let bits: Vec<u8> = (0..8).map(|x| (buf.data[3] >> x) & 1).collect();
-          controller_state.air_state.copy_from_slice(&bits[0..6]);
-          controller_state.extra_state[0..2].copy_from_slice(&bits[6..8]);
+          input.air.copy_from_slice(&bits[0..6]);
+          input.extra[0..2].copy_from_slice(&bits[6..8]);
         },
         WriteType::Bulk,
-        |buf, led_state| {
+        |buf, lights| {
           buf.len = 240;
           buf.data[0] = 'B' as u8;
           buf.data[1] = 'L' as u8;
@@ -144,7 +142,7 @@ impl HidDeviceJob {
           for (buf_chunk, state_chunk) in buf.data[3..96]
             .chunks_mut(3)
             .take(31)
-            .zip(led_state.led_state.chunks(3).rev())
+            .zip(lights.ground.chunks(3).rev())
           {
             buf_chunk[0] = state_chunk[1];
             buf_chunk[1] = state_chunk[0];
@@ -159,29 +157,27 @@ impl HidDeviceJob {
         0x2001,
         0x81,
         0x02,
-        |buf, controller_state| {
+        |buf, input| {
           if buf.len != 34 {
             return;
           }
 
-          controller_state
-            .ground_state
-            .copy_from_slice(&buf.data[2..34]);
+          input.ground.copy_from_slice(&buf.data[2..34]);
           for i in 0..6 {
-            controller_state.air_state[i ^ 1] = (buf.data[0] >> i) & 1;
+            input.air[i ^ 1] = (buf.data[0] >> i) & 1;
           }
           for i in 0..3 {
-            controller_state.extra_state[2 - i] = (buf.data[1] >> i) & 1;
+            input.extra[2 - i] = (buf.data[1] >> i) & 1;
           }
         },
         WriteType::Interrupt,
-        |buf, led_state| {
+        |buf, lights| {
           buf.len = 31 * 2;
           for (buf_chunk, state_chunk) in buf
             .data
             .chunks_mut(2)
             .take(31)
-            .zip(led_state.led_state.chunks(3).rev())
+            .zip(lights.ground.chunks(3).rev())
           {
             buf_chunk[0] = (state_chunk[0] << 3 & 0xe0) | (state_chunk[2] >> 3);
             buf_chunk[1] = (state_chunk[1] & 0xf8) | (state_chunk[0] >> 5);
@@ -248,8 +244,8 @@ impl ThreadJob for HidDeviceJob {
       // if self.read_buf.len != 0 {
       if (self.read_buf.len != 0) && (self.read_buf.slice() != self.last_read_buf.slice()) {
         work = true;
-        let mut controller_state_handle = self.state.controller_state.lock();
-        (self.read_callback)(&self.read_buf, controller_state_handle.deref_mut());
+        let mut input_handle = self.state.input.lock();
+        (self.read_callback)(&self.read_buf, input_handle.deref_mut());
         swap(&mut self.read_buf, &mut self.last_read_buf);
       }
     }
@@ -257,10 +253,10 @@ impl ThreadJob for HidDeviceJob {
     // Led loop
     {
       {
-        let mut led_state_handle = self.state.led_state.lock();
-        if led_state_handle.dirty {
-          (self.led_callback)(&mut self.led_buf, led_state_handle.deref());
-          led_state_handle.dirty = false;
+        let mut lights_handle = self.state.lights.lock();
+        if lights_handle.dirty {
+          (self.led_callback)(&mut self.led_buf, lights_handle.deref());
+          lights_handle.dirty = false;
         }
       }
 

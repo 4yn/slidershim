@@ -95,8 +95,8 @@ impl GamepadOutput {
 }
 
 impl OutputHandler for GamepadOutput {
-  fn tick(&mut self, flat_controller_state: &Vec<bool>) -> bool {
-    let voltex_state = VoltexState::from_flat(flat_controller_state);
+  fn tick(&mut self, flat_input: &Vec<bool>) -> bool {
+    let voltex_state = VoltexState::from_flat(flat_input);
 
     let buttons = voltex_state
       .bt
@@ -123,15 +123,13 @@ impl OutputHandler for GamepadOutput {
       });
 
     let lx = self.left_wind.update(
-      voltex_state.laser[0] || (self.use_air && flat_controller_state[32]),
-      voltex_state.laser[1]
-        || (self.use_air && (flat_controller_state[33] || flat_controller_state[34])),
+      voltex_state.laser[0] || (self.use_air && flat_input[32]),
+      voltex_state.laser[1] || (self.use_air && (flat_input[33] || flat_input[34])),
     ) * 20000;
 
     let rx = self.right_wind.update(
-      voltex_state.laser[2]
-        || (self.use_air && (flat_controller_state[35] || flat_controller_state[36])),
-      voltex_state.laser[3] || (self.use_air && flat_controller_state[37]),
+      voltex_state.laser[2] || (self.use_air && (flat_input[35] || flat_input[36])),
+      voltex_state.laser[3] || (self.use_air && flat_input[37]),
     ) * 20000;
 
     let mut dirty = false;

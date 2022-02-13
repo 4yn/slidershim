@@ -4,7 +4,6 @@ use std::sync::{atomic::Ordering, Arc};
 
 use crate::{
   config::Config,
-  controller_state::FullState,
   device::{brokenithm::BrokenithmJob, config::DeviceMode, device::HidDeviceJob},
   lighting::{config::LedMode, led::LedJob},
   output::{config::OutputMode, output::OutputJob},
@@ -12,11 +11,12 @@ use crate::{
     utils::LoopTimer,
     worker::{AsyncHaltableWorker, AsyncWorker, ThreadWorker},
   },
+  state::SliderState,
 };
 
 #[allow(dead_code)]
 pub struct Context {
-  state: FullState,
+  state: SliderState,
   config: Config,
   device_worker: Option<ThreadWorker>,
   brokenithm_worker: Option<AsyncHaltableWorker>,
@@ -32,7 +32,7 @@ impl Context {
     info!("Output config {:?}", config.output_mode);
     info!("LED config {:?}", config.led_mode);
 
-    let state = FullState::new();
+    let state = SliderState::new();
     let mut timers = vec![];
 
     let (device_worker, brokenithm_worker) = match &config.device_mode {
@@ -96,7 +96,7 @@ impl Context {
     }
   }
 
-  pub fn clone_state(&self) -> FullState {
+  pub fn clone_state(&self) -> SliderState {
     self.state.clone()
   }
 
