@@ -4,7 +4,10 @@ use std::io;
 
 use slider_io::{
   device::diva,
-  shared::{utils::LoopTimer, worker::ThreadWorker},
+  shared::{
+    utils::LoopTimer,
+    worker::{ThreadJob, ThreadWorker},
+  },
   state::SliderState,
 };
 
@@ -14,14 +17,23 @@ fn main() {
     .init();
 
   let state = SliderState::new();
+  let mut job = diva::DivaSliderJob::new(&state, &"COM4".to_string(), 0x3f);
 
-  let timer = LoopTimer::new();
-  let _worker = ThreadWorker::new(
-    "d",
-    diva::DivaSliderJob::new(&state, &"COM5".to_string()),
-    timer,
-  );
+  let ok = job.setup();
+  while ok {
+    job.tick();
+  }
 
+  // let state = SliderState::new();
+
+  // let timer = LoopTimer::new();
+  // let _worker = ThreadWorker::new(
+  //   "d",
+  //   diva::DivaSliderJob::new(&state, &"COM4".to_string(), 0x3f),
+  //   timer,
+  // );
+
+  println!("Press enter to quit");
   let mut input = String::new();
   io::stdin().read_line(&mut input).unwrap();
 }

@@ -19,6 +19,7 @@ pub enum DeviceMode {
   },
   DivaSlider {
     port: String,
+    brightness: u8,
   },
 }
 
@@ -37,6 +38,7 @@ impl DeviceMode {
       },
       "diva" => DeviceMode::DivaSlider {
         port: v["divaSerialPort"].as_str()?.to_string(),
+        brightness: u8::try_from(v["divaBrightness"].as_i64()?).ok()?,
       },
       "brokenithm" => DeviceMode::Brokenithm {
         ground_only: false,

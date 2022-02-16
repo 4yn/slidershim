@@ -11,6 +11,7 @@
   let ledMode = "none";
 
   let divaSerialPort = "COM1";
+  let divaBrightness = 63;
   let keyboardSensitivity = 20;
   let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
@@ -58,6 +59,7 @@
       ledMode = payload.ledMode || "none";
 
       divaSerialPort = payload.divaSerialPort || "COM1";
+      divaBrightness = payload.divaBrightness || 63;
       keyboardSensitivity = payload.keyboardSensitivity || 20;
       outputPolling = payload.outputPolling || "100";
       outputWebsocketUrl =
@@ -106,6 +108,7 @@
         outputMode,
         ledMode,
         divaSerialPort,
+        divaBrightness,
         keyboardSensitivity,
         outputPolling,
         outputWebsocketUrl,
@@ -137,7 +140,7 @@
 
 <div class="titlebar">
   <div class="header-icon">
-    <img src="/icon.png" />
+    <img src="/icon.png" alt="logo" />
   </div>
   <div class="header">
     &nbsp;slidershim{versionString}
@@ -198,6 +201,32 @@
           <option value="COM8">COM8</option>
           <option value="COM9">COM9</option>
         </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">Brightness</div>
+      <div class="input">
+        <input
+          type="number"
+          min="1"
+          max="255"
+          step="1"
+          bind:value={divaBrightness}
+          on:change={markDirty}
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="label" />
+      <div class="input">
+        <input
+          type="range"
+          min="1"
+          max="255"
+          step="1"
+          bind:value={divaBrightness}
+          on:change={markDirty}
+        />
       </div>
     </div>
   {/if}

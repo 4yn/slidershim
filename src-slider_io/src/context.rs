@@ -63,13 +63,13 @@ impl Context {
           None,
           None,
         ),
-        DeviceMode::DivaSlider { port } => (
+        DeviceMode::DivaSlider { port, brightness } => (
           {
             let timer = LoopTimer::new();
             timers.push(("d", timer.fork()));
             Some(ThreadWorker::new(
               "diva",
-              DivaSliderJob::new(&state, port),
+              DivaSliderJob::new(&state, port, *brightness),
               timer,
             ))
           },

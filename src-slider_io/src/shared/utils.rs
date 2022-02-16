@@ -52,7 +52,7 @@ impl LoopTimer {
     Self {
       cap: 100,
       cur: 0,
-      buf: vec![Instant::now() - Duration::from_secs(10); 100],
+      buf: vec![Instant::now() - Duration::from_secs(10_000); 100],
       freq: Arc::new(AtomicF64::new(0.0)),
     }
   }

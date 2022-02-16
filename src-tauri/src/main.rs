@@ -40,7 +40,7 @@ fn main() {
 
   #[cfg(not(debug_assertions))]
   {
-    let log_file_path = slider_io::Config::get_log_file_path().unwrap();
+    let log_file_path = slider_io::system::get_log_file_path().unwrap();
     simple_logging::log_to_file(log_file_path.as_path(), log::LevelFilter::Debug).unwrap();
   }
 
