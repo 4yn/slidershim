@@ -239,6 +239,9 @@
         <option value="kb-32-tasoller">Keyboard 32-zone, Tasoller Layout</option
         >
         <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option>
+        <option value="kb-16-tasoller"
+          >Keyboard 16-zone, Tasoller (Bottom Half) Layout</option
+        >
         <option value="kb-8-deemo">Keyboard 8-zone, Deemo Layout</option>
         <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
         <option value="kb-neardayo">Keyboard 10-zone, Neardayo Layout</option>

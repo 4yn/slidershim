@@ -32,6 +32,17 @@ const YUANCON_KB_MAP: [usize; 41] = [
 ];
 
 #[rustfmt::skip]
+const TASOLLER_HALF_KB_MAP: [usize; 41] = [
+  0x41, 0x41 /* A */, 0x5a, 0x5a /* Z */, 0x53, 0x53 /* S */, 0x58, 0x58 /* X */, 
+  0x44, 0x44 /* D */, 0x43, 0x43 /* C */, 0x46, 0x46 /* F */, 0x56, 0x56 /* V */,
+  0x47, 0x47 /* G */, 0x42, 0x42 /* B */, 0x48, 0x48 /* H */, 0x4e, 0x4e /* N */,
+  0x4a, 0x4a /* J */, 0x4d, 0x4d /* M */, 0x4b, 0x4b /* K */, 0xbc, 0xbc /* VK_OEM_COMMA */,
+  0xbf, 0xde, 0xbe, // VK_OEM_2, VK_OEM_7, VK_OEM_PERIOD,
+  0xba, 0xdd, 0xdb, // VK_OEM_1, VK_OEM_6, VK_OEM_4
+  0x0d, 0x20, 0x1b  // VK_RETURN, VK_SPACE, VK_ESCAPE
+];
+
+#[rustfmt::skip]
 const DEEMO_KB_MAP: [usize; 41] = [
   0x41, 0x41, 0x41, 0x41, // A
   0x53, 0x53, 0x53, 0x53, // S
@@ -97,6 +108,7 @@ impl KeyboardOutput {
     let kb_map = match layout {
       KeyboardLayout::Tasoller => &TASOLLER_KB_MAP,
       KeyboardLayout::Yuancon => &YUANCON_KB_MAP,
+      KeyboardLayout::TasollerHalf => &TASOLLER_HALF_KB_MAP,
       KeyboardLayout::Deemo => &DEEMO_KB_MAP,
       KeyboardLayout::Voltex => &VOLTEX_KB_MAP,
       KeyboardLayout::Neardayo => &VOLTEX_KB_MAP_NEARDAYO,
