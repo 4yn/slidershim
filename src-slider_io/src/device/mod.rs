@@ -1,5 +1,5 @@
 pub mod config;
 
-pub mod diva;
 pub mod brokenithm;
+pub mod diva;
 pub mod hid;

@@ -1,16 +1,8 @@
-use log::{debug, error, info, warn};
-use serialport::{COMPort, SerialPort};
-use std::{
-  collections::VecDeque,
-  io::{Read, Write},
-  thread::sleep,
-  time::Duration,
-};
+use log::{error, info, warn}; // debug
+use std::collections::VecDeque; //thread::sleep, time::Duration
+use wwserial::WwSerial;
 
-use crate::{
-  shared::{serial::ReadWriteTimeout, worker::ThreadJob},
-  state::SliderState,
-};
+use crate::{shared::worker::ThreadJob, state::SliderState};
 
 /*
 Init packet
@@ -75,7 +67,7 @@ impl DivaPacket {
     }
   }
 
-  fn serialize(&mut self) -> &[u8] {
+  fn serialize(&mut self) -> &Vec<u8> {
     let mut raw: Vec<u8> = Vec::with_capacity(512);
 
     raw.push(0xff);
@@ -89,7 +81,7 @@ impl DivaPacket {
     // null pad?
     // raw.push(0);
 
-    debug!("Diva serializing {}", raw.len());
+    // debug!("Diva serializing {}", raw.len());
     self.raw = Some(raw);
     // debug!("Diva serializing {:?}", &self.raw);
     return self.raw.as_ref().unwrap();
@@ -124,9 +116,7 @@ impl DivaDeserializer {
   }
 
   fn deserialize(&mut self, data: &[u8], out: &mut VecDeque<DivaPacket>) {
-    // println!("Found data");
-    // debug!("Diva deserializing {:?}", data);
-    debug!("Diva deserializing {}", data.len());
+    // debug!("Diva deserializing {} {:?}", data.len(), data);
     for c in data {
       match c {
         0xff => {
@@ -177,7 +167,6 @@ impl DivaDeserializer {
               debug_assert!(self.checksum & 0xff == 0);
               // println!("Packet complete {} {}", self.checksum, c);
               if self.checksum & 0xff == 0 {
-                // println!("Feeding packet");
                 out.push_back(DivaPacket::new());
                 std::mem::swap(&mut self.packet, out.back_mut().unwrap());
               }
@@ -196,18 +185,17 @@ enum DivaSliderBootstrap {
   AwaitReset,
   AwaitInfo,
   ReadLoop,
-  Halt,
 }
 
 pub struct DivaSliderJob {
   state: SliderState,
   port: String,
   brightness: u8,
-  // read_buf: Vec<u8>,
+  read_buf: Vec<u8>,
   in_packets: VecDeque<DivaPacket>,
   out_packets: VecDeque<DivaPacket>,
   deserializer: DivaDeserializer,
-  serial_port: Option<COMPort>,
+  serial_port: Option<WwSerial>,
   bootstrap: DivaSliderBootstrap,
 }
 
@@ -217,7 +205,7 @@ impl DivaSliderJob {
       state: state.clone(),
       port: port.clone(),
       brightness,
-      // read_buf: vec![0u8; 1024],
+      read_buf: Vec::with_capacity(1024),
       in_packets: VecDeque::with_capacity(100),
       out_packets: VecDeque::with_capacity(100),
       deserializer: DivaDeserializer::new(),
@@ -234,33 +222,14 @@ impl ThreadJob for DivaSliderJob {
       self.port.as_str(),
       115200
     );
-    match serialport::new(&self.port, 152000)
-      .flow_control(serialport::FlowControl::Hardware)
-      .open_native()
-    {
-      Ok(serial_port) => {
-        info!("Serial port opened");
-        // serial_port.write_request_to_send(true).unwrap_or_else(|e| {
-        //   error!("Serial request to send failed {}", e);
-        // });
-        // serial_port
-        //   .write_data_terminal_ready(true)
-        //   .unwrap_or_else(|e| {
-        //     error!("Serial data terminal ready failed {}", e);
-        //   });
-        // serial_port.set_timeout(Duration::from_millis(10)).ok();
-        serial_port.clear(serialport::ClearBuffer::All).ok();
-        serial_port
-          .set_read_write_timeout(Duration::from_millis(100))
-          .ok();
-        self.serial_port = Some(serial_port);
-        true
-      }
-      Err(e) => {
-        error!("Serial port could not open: {}", e);
-        false
-      }
+
+    let serial_port = WwSerial::new(self.port.clone(), 115200, 10, true);
+    if !serial_port.check() {
+      error!("Cannot open serial port at {}", self.port.as_str());
+      return false;
     }
+    self.serial_port = Some(serial_port);
+    true
   }
 
   fn tick(&mut self) -> bool {
@@ -268,30 +237,14 @@ impl ThreadJob for DivaSliderJob {
 
     let serial_port = self.serial_port.as_mut().unwrap();
 
-    let bytes_avail = serial_port.bytes_to_read().unwrap_or_else(|e| {
-      error!("Diva serial read error {}", e);
-      0
-    });
-    // debug!("Serial read {} bytes", bytes_avail);
-    if bytes_avail > 0 {
-      let mut read_buf = vec![0 as u8; bytes_avail as usize];
-      serial_port.read_exact(&mut read_buf).unwrap();
+    self.read_buf.clear();
+    let read_amount = serial_port.read(&mut self.read_buf, 1024) as usize;
+    if read_amount > 0 {
+      // debug!("Serial read {} bytes", read_amount);
       self
         .deserializer
-        .deserialize(&read_buf, &mut self.in_packets);
-      work = true;
+        .deserialize(&self.read_buf[0..read_amount], &mut self.in_packets);
     }
-
-    // let read_amount = serial_port.read(&mut self.read_buf).unwrap_or_else(|e| {
-    //   error!("Read error {}", e);
-    //   0
-    // });
-    // debug!("Serial read {} bytes", read_amount);
-    // if read_amount > 0 {
-    //   self
-    //     .deserializer
-    //     .deserialize(&self.read_buf[0..read_amount], &mut self.packets);
-    // }
 
     match self.bootstrap {
       DivaSliderBootstrap::Init => {
@@ -304,7 +257,7 @@ impl ThreadJob for DivaSliderJob {
         while let Some(ack_packet) = self.in_packets.pop_front() {
           if ack_packet.command == 0x10 && ack_packet.len == 0x00 && ack_packet.checksum == 0xf1 {
             info!(
-              "Diva ack reset {:#4x} {:?}",
+              "Diva ack init {:#4x} {:?}",
               ack_packet.command, ack_packet.data
             );
 
@@ -362,48 +315,14 @@ impl ThreadJob for DivaSliderJob {
           self.out_packets.push_back(lights_packet);
         }
       }
-      DivaSliderBootstrap::Halt => {}
     };
 
-    let mut sent = false;
     while let Some(mut packet) = self.out_packets.pop_front() {
-      println!("Sending packet {:?}", packet);
-      sent = true;
-      serial_port
-        .write(packet.serialize())
-        .map_err(|e| {
-          error!("Send packet err {}", e);
-          e
-        })
-        .ok();
-    }
-    if sent {
-      println!("Flushing");
-      serial_port
-        .flush()
-        .map_err(|e| {
-          error!("Flush err {}", e);
-          e
-        })
-        .ok();
-      serial_port
-        .write(&[0])
-        .map_err(|e| {
-          error!("Send null packet err {}", e);
-          e
-        })
-        .ok();
-      serial_port
-        .flush()
-        .map_err(|e| {
-          error!("Flush null packet err {}", e);
-          e
-        })
-        .ok();
+      serial_port.write(packet.serialize());
     }
 
     // TODO: async worker?
-    sleep(Duration::from_millis(10));
+    // sleep(Duration::from_millis(10));
 
     work
   }
@@ -415,7 +334,7 @@ impl Drop for DivaSliderJob {
       DivaSliderBootstrap::ReadLoop => {
         let serial_port = self.serial_port.as_mut().unwrap();
         let mut stop_packet = DivaPacket::from_bytes(0x04, &[]);
-        serial_port.write(stop_packet.serialize()).ok();
+        serial_port.write(stop_packet.serialize());
       }
       _ => {}
     };

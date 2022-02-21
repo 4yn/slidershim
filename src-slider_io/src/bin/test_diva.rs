@@ -2,14 +2,7 @@ extern crate slider_io;
 
 use std::io;
 
-use slider_io::{
-  device::diva,
-  shared::{
-    utils::LoopTimer,
-    worker::{ThreadJob, ThreadWorker},
-  },
-  state::SliderState,
-};
+use slider_io::{device::diva, shared::worker::ThreadJob, state::SliderState};
 
 fn main() {
   env_logger::Builder::new()
@@ -17,7 +10,7 @@ fn main() {
     .init();
 
   let state = SliderState::new();
-  let mut job = diva::DivaSliderJob::new(&state, &"COM4".to_string(), 0x3f);
+  let mut job = diva::DivaSliderJob::new(&state, &"COM3".to_string(), 0x3f);
 
   let ok = job.setup();
   while ok {
