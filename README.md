@@ -1,12 +1,22 @@
 <img align="right" alt="logo" width="100" height="100" src="public/icon.png">
 
-# slidershim
+# [slidershim](https://github.com/4yn/slidershim)
 
 Software adapter for various Chunithm slider controllers with a built-in Brokenithm web controller. Has support for keyboard/gamepad output and LED lighting.
 
 [Download link](https://github.com/4yn/slidershim/releases/latest)
 
+> Starting 0.2.0, there are reports that windows defender may block this software. You may need to disable windows defender the first time you run slidershim. If you are not comfortable with this, you can [download an older version here](https://github.com/4yn/slidershim/releases/tag/v0.1.4) that is known to be OK with windows defender.
+
 <img alt="screenshot" src="res/screenshots/demo.png">
+
+## Changelog
+
+- v0.2.0
+  - Added support for Hori Project DIVA slider protocol
+  - Added 16 key keyboard layout
+- v0.1.4
+  - Initial public release
 
 ## Setup Instructions
 
@@ -50,6 +60,7 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 - slidershim supports the GAMO2 Tasoller and Yuancon Laverita v2 controllers on HID firmware.
   - If you are using a Tasoller controller, make sure it has the correct HID firmware installed.
   - If your hardware controller is not one of these, it will not work.
+- If you have a device that communicates using serial protocol, chances are it will work with the "Diva Slider over Serial" option
 - Hotplug is not supported. If you plugged in the controller after starting slidershim, re-connect your controller by just clicking the "Apply" button (even if it is grey).
 
 </details>
@@ -81,6 +92,13 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 </details>
 
 <details>
+<summary><strong>slidershim 2.0 crashes right after I turn it on</strong></summary>
+
+I'm not sure why this happens. I suspect some cases are because of windows defender and other antivirus software stopping the process while running. Try disabling antivirus or using an [older version of slidershim](https://github.com/4yn/slidershim/releases/tag/v0.1.4).
+
+</details>
+
+<details>
 <summary><strong>I am still having problems</strong></summary>
 
 - Join the [Cons&amp;Stuff Discord](https://discord.com/invite/zFGemg4r) and ping me there.
@@ -97,8 +115,8 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 
 ## Technical Information
 
-- Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [vigem](https://github.com/ViGEm/ViGEmClient)[-client](https://github.com/CasualX/vigem-client), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs) and [serialport](https://crates.io/crates/serialport)
-- USB device polling is done on a dedicated thread while everything else is done on a async runtime.
+- Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [vigem](https://github.com/ViGEm/ViGEmClient)[-client](https://github.com/CasualX/vigem-client), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs), [serialport](https://crates.io/crates/serialport), [dtolnay/cxx](https://github.com/dtolnay/cxx) and [wjwwood/serial](https://github.com/wjwwood/serial)
+- USB device and serial polling is done on a dedicated thread while everything else is done on a async runtime.
 
 ### Repository Layout
 
@@ -110,7 +128,7 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 ## Planned Features
 
 - Major:
-  - Support AC slider serial protocol
+  - ✅ DONE: Support AC slider serial protocol
   - Output and LED websocket adapters when UMIGURI comes out
 - QOL:
   - Documentation
