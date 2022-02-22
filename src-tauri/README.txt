@@ -2,13 +2,16 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.0
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.1
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.2.1
+  - Reactive + Rainbow mode
+  - Fixed byte order for DIVA slider lights
 - v0.2.0
   - Added support for Hori Project DIVA slider protocol
   - Added 16 key keyboard layout

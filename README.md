@@ -12,6 +12,9 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.1
+  - Reactive + Rainbow mode
+  - Fixed byte order for DIVA slider lights
 - v0.2.0
   - Added support for Hori Project DIVA slider protocol
   - Added 16 key keyboard layout
