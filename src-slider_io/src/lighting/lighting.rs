@@ -114,6 +114,35 @@ impl LightsJob {
               }
             }
           }
+          ReactiveLayout::Rainbow => {
+            let banks: Vec<bool> = flat_input
+              .chunks(2)
+              .take(16)
+              .map(|x| x.contains(&true))
+              .collect();
+            let theta = self
+              .started
+              .elapsed()
+              .div_duration_f64(Duration::from_secs(4))
+              % 1.0;
+            for idx in 0..31 {
+              let slice_theta = (&theta + (idx as f64) / 32.0) % 1.0;
+              let color = Srgb::from_color(Hsv::new(
+                slice_theta * 360.0,
+                match idx % 2 {
+                  0 => match banks[idx / 2] {
+                    true => 0.2,
+                    false => 1.0,
+                  },
+                  1 => 1.0,
+                  _ => unreachable!(),
+                },
+                1.0,
+              ))
+              .into_format::<u8>();
+              lights.paint(idx, &[color.red, color.green, color.blue]);
+            }
+          }
         }
       }
       LightsMode::Attract => {

@@ -4,6 +4,7 @@ use serde_json::Value;
 pub enum ReactiveLayout {
   Even { splits: usize },
   Voltex,
+  Rainbow,
 }
 
 #[derive(Debug, Clone)]
@@ -37,6 +38,10 @@ impl LightsMode {
       },
       "reactive-16" => LightsMode::Reactive {
         layout: ReactiveLayout::Even { splits: 16 },
+        sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
+      },
+      "reactive-rainbow" => LightsMode::Reactive {
+        layout: ReactiveLayout::Rainbow,
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
       },
       "reactive-voltex" => LightsMode::Reactive {

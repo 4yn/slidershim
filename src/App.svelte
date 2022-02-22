@@ -328,6 +328,7 @@
         <option value="reactive-4">Reactive, 4-Zone</option>
         <option value="reactive-8">Reactive, 8-Zone</option>
         <option value="reactive-16">Reactive, 16-Zone</option>
+        <option value="reactive-rainbow">Reactive, 16-Zone Rainbow</option>
         <option value="reactive-voltex">Reactive, Voltex Layout</option>
         <option value="attract">Rainbow Attract Mode</option>
         <!-- <option value="websocket">Websocket</option> -->
