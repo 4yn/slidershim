@@ -300,6 +300,7 @@ impl ThreadJob for DivaSliderJob {
             input_handle
               .ground
               .copy_from_slice(&data_packet.data[0..32]);
+            input_handle.flip_all();
             work = true;
           }
         }
@@ -312,7 +313,15 @@ impl ThreadJob for DivaSliderJob {
           if lights_handle.dirty || self.last_lights.elapsed() > Duration::from_millis(1000) {
             send_lights = true;
             lights_buf[0] = self.brightness;
-            lights_buf[1..94].copy_from_slice(&lights_handle.ground[0..93]);
+            for (buf_chunk, state_chunk) in lights_buf[1..94]
+              .chunks_mut(3)
+              .take(31)
+              .zip(lights_handle.ground.chunks(3).rev())
+            {
+              buf_chunk[0] = state_chunk[1];
+              buf_chunk[1] = state_chunk[0];
+              buf_chunk[2] = state_chunk[2];
+            }
             lights_handle.dirty = false;
           }
         }

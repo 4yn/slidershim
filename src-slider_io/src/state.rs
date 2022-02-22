@@ -47,6 +47,12 @@ impl SliderInput {
       self.ground.swap(i * 2, i * 2 + 1);
     }
   }
+
+  pub fn flip_all(&mut self) {
+    for i in 0..16 {
+      self.ground.swap(i, 31 - i);
+    }
+  }
 }
 
 // Stores the lighting state of a slider controller.
