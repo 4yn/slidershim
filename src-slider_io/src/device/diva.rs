@@ -1,4 +1,4 @@
-use log::{debug, error, info, warn};
+use log::{error, info, warn};
 use std::{
   collections::VecDeque,
   time::{Duration, Instant},
@@ -245,7 +245,7 @@ impl ThreadJob for DivaSliderJob {
     self.read_buf.clear();
     let read_amount = serial_port.read(&mut self.read_buf) as usize;
     if read_amount > 0 {
-      debug!("Serial read {} bytes", read_amount);
+      // debug!("Serial read {} bytes", read_amount);
       self
         .deserializer
         .deserialize(&self.read_buf[0..read_amount], &mut self.in_packets);
@@ -342,7 +342,7 @@ impl ThreadJob for DivaSliderJob {
       if bytes_written == 0 {
         warn!("Serial write timeout");
       }
-      debug!("Serial write {}/{}", bytes_written, data.len());
+      // debug!("Serial write {}/{}", bytes_written, data.len());
     }
 
     // sleep(Duration::from_millis(3));
