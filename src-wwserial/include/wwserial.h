@@ -6,11 +6,11 @@
 
 struct CxxSerial
 {
-    CxxSerial(rust::String port, uint32_t baud, uint32_t timeout, bool hardware);
+    CxxSerial(rust::String port, uint32_t baud, uint32_t read_timeout, uint32_t write_timeout, bool hardware);
 
     uint32_t write(const rust::Vec<uint8_t> &data) const;
 
-    uint32_t read(rust::Vec<uint8_t> &data, uint32_t cap) const;
+    uint32_t read(rust::Vec<uint8_t> &data) const;
 
     void flush() const;
 
@@ -22,4 +22,4 @@ private:
 };
 
 // port: String, baud: u32, timeout: u32, hardware: bool
-std::unique_ptr<CxxSerial> new_cxx_serial(rust::String port, uint32_t baud, uint32_t timeout, bool hardware);
+std::unique_ptr<CxxSerial> new_cxx_serial(rust::String port, uint32_t baud, uint32_t read_timeout, uint32_t write_timeout, bool hardware);

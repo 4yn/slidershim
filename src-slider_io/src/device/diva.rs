@@ -1,5 +1,8 @@
-use log::{error, info, warn}; // debug
-use std::collections::VecDeque; //thread::sleep, time::Duration
+use log::{debug, error, info, warn};
+use std::{
+  collections::VecDeque,
+  time::{Duration, Instant},
+}; // thread::sleep, time::Duration
 use wwserial::WwSerial;
 
 use crate::{shared::worker::ThreadJob, state::SliderState};
@@ -197,6 +200,7 @@ pub struct DivaSliderJob {
   deserializer: DivaDeserializer,
   serial_port: Option<WwSerial>,
   bootstrap: DivaSliderBootstrap,
+  last_lights: Instant,
 }
 
 impl DivaSliderJob {
@@ -211,6 +215,7 @@ impl DivaSliderJob {
       deserializer: DivaDeserializer::new(),
       serial_port: None,
       bootstrap: DivaSliderBootstrap::Init,
+      last_lights: Instant::now(),
     }
   }
 }
@@ -223,7 +228,7 @@ impl ThreadJob for DivaSliderJob {
       115200
     );
 
-    let serial_port = WwSerial::new(self.port.clone(), 115200, 10, true);
+    let serial_port = WwSerial::new(self.port.clone(), 115200, 5, 0, false);
     if !serial_port.check() {
       error!("Cannot open serial port at {}", self.port.as_str());
       return false;
@@ -238,9 +243,9 @@ impl ThreadJob for DivaSliderJob {
     let serial_port = self.serial_port.as_mut().unwrap();
 
     self.read_buf.clear();
-    let read_amount = serial_port.read(&mut self.read_buf, 1024) as usize;
+    let read_amount = serial_port.read(&mut self.read_buf) as usize;
     if read_amount > 0 {
-      // debug!("Serial read {} bytes", read_amount);
+      debug!("Serial read {} bytes", read_amount);
       self
         .deserializer
         .deserialize(&self.read_buf[0..read_amount], &mut self.in_packets);
@@ -285,6 +290,7 @@ impl ThreadJob for DivaSliderJob {
           let start_packet = DivaPacket::from_bytes(0x03, &[]);
           self.out_packets.push_back(start_packet);
           self.bootstrap = DivaSliderBootstrap::ReadLoop;
+          self.last_lights = Instant::now();
         }
       }
       DivaSliderBootstrap::ReadLoop => {
@@ -302,7 +308,8 @@ impl ThreadJob for DivaSliderJob {
         let mut lights_buf = [0; 94];
         {
           let mut lights_handle = self.state.lights.lock();
-          if lights_handle.dirty {
+          // Send leds at least once a second to keep alive
+          if lights_handle.dirty || self.last_lights.elapsed() > Duration::from_millis(1000) {
             send_lights = true;
             lights_buf[0] = self.brightness;
             lights_buf[1..94].copy_from_slice(&lights_handle.ground[0..93]);
@@ -311,15 +318,25 @@ impl ThreadJob for DivaSliderJob {
         }
 
         if send_lights {
+          self.last_lights = Instant::now();
           let lights_packet = DivaPacket::from_bytes(0x02, &lights_buf);
           self.out_packets.push_back(lights_packet);
         }
       }
     };
 
+    // sleep(Duration::from_millis(3));
     while let Some(mut packet) = self.out_packets.pop_front() {
-      serial_port.write(packet.serialize());
+      work = true;
+      let data = packet.serialize();
+      let bytes_written = serial_port.write(data);
+      if bytes_written == 0 {
+        warn!("Serial write timeout");
+      }
+      debug!("Serial write {}/{}", bytes_written, data.len());
     }
+
+    // sleep(Duration::from_millis(3));
 
     // TODO: async worker?
     // sleep(Duration::from_millis(10));

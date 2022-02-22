@@ -351,8 +351,13 @@ Serial::SerialImpl::write (const uint8_t *data, size_t length)
   }
   DWORD bytes_written;
   if (!WriteFile(fd_, data, static_cast<DWORD>(length), &bytes_written, NULL)) {
+    DWORD errcode = GetLastError();
+    if (errcode == 121) {
+      // Timeout
+      return 0;
+    }
     stringstream ss;
-    ss << "Error while writing to the serial port: " << GetLastError();
+    ss << "Error while writing to the serial port: " << errcode;
     THROW (IOException, ss.str().c_str());
   }
   return (size_t) (bytes_written);

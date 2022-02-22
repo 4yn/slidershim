@@ -1,6 +1,9 @@
 extern crate slider_io;
 
-use std::io;
+use std::{
+  io,
+  time::{Duration, Instant},
+};
 
 use slider_io::{device::diva, shared::worker::ThreadJob, state::SliderState};
 
@@ -10,7 +13,7 @@ fn main() {
     .init();
 
   let state = SliderState::new();
-  let mut job = diva::DivaSliderJob::new(&state, &"COM3".to_string(), 0x3f);
+  let mut job = diva::DivaSliderJob::new(&state, &"COM1".to_string(), 0x3f);
 
   let ok = job.setup();
   while ok {

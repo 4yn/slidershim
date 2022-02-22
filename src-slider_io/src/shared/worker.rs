@@ -82,6 +82,8 @@ impl AsyncWorker {
   where
     T: AsyncJob,
   {
+    info!("Async worker starting {}", name);
+
     let stop_signal = Arc::new(AtomicBool::new(false));
 
     let stop_signal_clone = Arc::clone(&stop_signal);

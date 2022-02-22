@@ -8,13 +8,14 @@ mod ffi {
         fn new_cxx_serial(
             port: String,
             baud: u32,
-            timeout: u32,
+            read_timeout: u32,
+            write_timeout: u32,
             hardware: bool,
         ) -> UniquePtr<CxxSerial>;
 
         fn write(self: &CxxSerial, data: &Vec<u8>) -> u32;
 
-        fn read(self: &CxxSerial, data: &mut Vec<u8>, cap: u32) -> u32;
+        fn read(self: &CxxSerial, data: &mut Vec<u8>) -> u32;
 
         fn flush(self: &CxxSerial);
 
@@ -31,9 +32,15 @@ pub struct WwSerial {
 unsafe impl Send for WwSerial {}
 
 impl WwSerial {
-    pub fn new(port: String, baud: u32, timeout: u32, hardware: bool) -> Self {
+    pub fn new(
+        port: String,
+        baud: u32,
+        read_timeout: u32,
+        write_timeout: u32,
+        hardware: bool,
+    ) -> Self {
         Self {
-            inner: new_cxx_serial(port, baud, timeout, hardware),
+            inner: new_cxx_serial(port, baud, read_timeout, write_timeout, hardware),
         }
     }
 
@@ -43,8 +50,8 @@ impl WwSerial {
     }
 
     // #[inline(always)]
-    pub fn read(&self, data: &mut Vec<u8>, cap: u32) -> u32 {
-        self.inner.read(data, cap)
+    pub fn read(&self, data: &mut Vec<u8>) -> u32 {
+        self.inner.read(data)
     }
 
     // #[inline(always)]
