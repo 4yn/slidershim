@@ -318,9 +318,9 @@ impl ThreadJob for DivaSliderJob {
               .take(31)
               .zip(lights_handle.ground.chunks(3).rev())
             {
-              buf_chunk[0] = state_chunk[1];
+              buf_chunk[0] = state_chunk[2];
               buf_chunk[1] = state_chunk[0];
-              buf_chunk[2] = state_chunk[2];
+              buf_chunk[2] = state_chunk[1];
             }
             lights_handle.dirty = false;
           }
