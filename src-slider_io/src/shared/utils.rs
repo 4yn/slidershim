@@ -43,6 +43,7 @@ impl Error for ShimError {
 pub struct LoopTimer {
   cap: usize,
   cur: usize,
+  init: usize,
   buf: Vec<Instant>,
   freq: Arc<AtomicF64>,
 }
@@ -52,16 +53,22 @@ impl LoopTimer {
     Self {
       cap: 100,
       cur: 0,
-      buf: vec![Instant::now() - Duration::from_secs(10_000); 100],
+      init: 0,
+      buf: vec![Instant::now(); 100],
       freq: Arc::new(AtomicF64::new(0.0)),
     }
   }
+
   pub fn tick(&mut self) {
     let last = self.buf[self.cur];
     let now = Instant::now();
+    if self.init < 100 {
+      self.init += 1;
+    }
+
     self.buf[self.cur] = now;
 
-    let delta = (now - last) / 100 + Duration::from_micros(1);
+    let delta = (now - last) / (self.init as u32) + Duration::from_micros(1);
     let freq = Duration::from_millis(1000)
       .div_duration_f64(delta)
       .clamp(0.0, 9999.0);
@@ -75,7 +82,8 @@ impl LoopTimer {
 
   #[allow(dead_code)]
   pub fn reset(&mut self) {
-    self.buf = vec![Instant::now() - Duration::from_secs(10); 100];
+    self.init = 0;
+    self.buf = vec![Instant::now(); 100];
     self.cur = 0;
   }
 
