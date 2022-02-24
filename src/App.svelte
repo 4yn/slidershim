@@ -136,6 +136,10 @@
   async function brokenithmQr() {
     await emit("openBrokenithmQr");
   }
+
+  async function repo() {
+    await emit("openRepo");
+  }
 </script>
 
 <div class="titlebar">
@@ -416,6 +420,7 @@
     {#if deviceMode.slice(0, 10) === "brokenithm"}
       <button on:click={async () => await brokenithmQr()}>Brokenithm QR</button>
     {/if}
+    <button on:click={async () => await repo()}>About</button>
   </div>
 </main>
 

@@ -116,6 +116,11 @@ fn main() {
         }
       });
 
+      // Show repo
+      app.listen_global("openRepo", |_| {
+        open::that("https://github.com/4yn/slidershim").ok();
+      });
+
       // UI ready event
       let app_handle = app.handle();
       let config_clone = Arc::clone(&config);
