@@ -342,6 +342,7 @@ impl ThreadJob for DivaSliderJob {
       if bytes_written == 0 {
         warn!("Serial write timeout");
       }
+      serial_port.flush();
       // debug!("Serial write {}/{}", bytes_written, data.len());
     }
 
