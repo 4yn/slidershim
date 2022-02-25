@@ -77,6 +77,13 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 </details>
 
 <details>
+<summary><strong>Keyboard / XBOX Controller output feels sluggish</strong></summary>
+
+- Increase output polling rate. This does not change how fast your controller is updated, but it does reduce lag with keyboard / XBOX controller simulation.
+
+</details>
+
+<details>
 <summary><strong>The Brokenithm controller cannot be loaded</strong></summary>
 
 - Make sure that you can load the controller in your web browser _from the same windows machine that is running slidershim_.
@@ -95,9 +102,10 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 </details>
 
 <details>
-<summary><strong>slidershim 2.0 crashes right after I turn it on</strong></summary>
+<summary><strong>slidershim 0.2.0 crashes right after I turn it on</strong></summary>
 
-I'm not sure why this happens. I suspect some cases are because of windows defender and other antivirus software stopping the process while running. Try disabling antivirus or using an [older version of slidershim](https://github.com/4yn/slidershim/releases/tag/v0.1.4).
+- I'm not sure why this happens. I suspect some cases are because of windows defender and other antivirus software stopping the process while running.
+- Try disabling antivirus or using an [older version of slidershim](https://github.com/4yn/slidershim/releases/tag/v0.1.4).
 
 </details>
 
@@ -121,11 +129,23 @@ I'm not sure why this happens. I suspect some cases are because of windows defen
 - Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [vigem](https://github.com/ViGEm/ViGEmClient)[-client](https://github.com/CasualX/vigem-client), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs), [serialport](https://crates.io/crates/serialport), [dtolnay/cxx](https://github.com/dtolnay/cxx) and [wjwwood/serial](https://github.com/wjwwood/serial)
 - USB device and serial polling is done on a dedicated thread while everything else is done on a async runtime.
 
+### Building from Source
+
+1. Install [Visual Studio Community 2019/2022](https://visualstudio.microsoft.com/vs/) with C++ developer kit
+2. Install [rustup](https://rustup.rs/) with nightly toolchain
+3. Install [node.js](https://nodejs.org/en/download/) and [yarn](https://www.npmjs.com/package/yarn)
+4. (Optional) Setup [VSCode](https://code.visualstudio.com/) with [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=matklad.rust-analyzer)
+5. Clone this repository
+6. (Optional) If using powershell, `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` to whitelist `yarn` script
+7. `yarn install`
+8. `yarn tauri dev` / `yarn tauri build`
+
 ### Repository Layout
 
 - [`public`](./public) / [`src`](./src): Svelte frontend
 - [`src-tauri`](./src-tauri): Tauri adapter between frontend and backend
 - [`src-slider_io`](./src-slider_io): Backend logic for handling usb, brokenithm, output emulation and lighting.
+- [`src-wwserial`](./src-wwserial): FFI to [wjwwood/serial](https://github.com/wjwwood/serial) using [dtolnay/cxx](https://github.com/dtolnay/cxx). For some reason [serialport](https://crates.io/crates/serialport) does not work well with hardware devices, so we use this as an alternative.
 - [`res`](./res): Miscellaneous tools such as Brokenithm QR parser and keyboard layout visualisation.
 
 ## Planned Features
