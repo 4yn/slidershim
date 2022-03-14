@@ -2,7 +2,7 @@
 
 # [slidershim](https://github.com/4yn/slidershim)
 
-Software adapter for various Chunithm slider controllers with a built-in Brokenithm web controller. Has support for keyboard/gamepad output and LED lighting.
+Software adapter for various Chunithm slider controllers with a built-in Brokenithm web controller. Has support for keyboard/gamepad output and LED lighting. Requires Windows 8 or later.
 
 [Download link](https://github.com/4yn/slidershim/releases/latest)
 
@@ -12,11 +12,15 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.2
+  - Retcon serial slider name
+  - Fix crash on some systems due to time math
+  - Add link to repo
 - v0.2.1
   - Reactive + Rainbow mode
-  - Fixed byte order for DIVA slider lights
+  - Fixed byte order for serial slider lights
 - v0.2.0
-  - Added support for Hori Project DIVA slider protocol
+  - Added support for serial slider protocol
   - Added 16 key keyboard layout
 - v0.1.4
   - Initial public release
@@ -63,7 +67,7 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 - slidershim supports the GAMO2 Tasoller and Yuancon Laverita v2 controllers on HID firmware.
   - If you are using a Tasoller controller, make sure it has the correct HID firmware installed.
   - If your hardware controller is not one of these, it will not work.
-- If you have a device that communicates using serial protocol, chances are it will work with the "Diva Slider over Serial" option
+- If you have a device that communicates using serial protocol, chances are it will work with the "Slider over Serial" option
 - Hotplug is not supported. If you plugged in the controller after starting slidershim, re-connect your controller by just clicking the "Apply" button (even if it is grey).
 
 </details>
