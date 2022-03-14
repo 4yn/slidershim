@@ -167,7 +167,7 @@
         <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
         <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
         <option value="yuancon">Yuancon Laverita, HID Firmware</option>
-        <option value="diva">Diva Slider over Serial</option>
+        <option value="diva">Slider over Serial</option>
         <option value="brokenithm">Brokenithm</option>
         <option value="brokenithm-led">Brokenithm + Led</option>
         <option value="brokenithm-ground">Brokenithm, Ground only</option>
@@ -192,7 +192,7 @@
   {/if}
   {#if deviceMode === "diva"}
     <div class="row">
-      <div class="label">Diva Serial Port</div>
+      <div class="label">Slider Serial Port</div>
       <div class="input">
         <select bind:value={divaSerialPort} on:change={markDirty}>
           <option value="COM1">COM1</option>
