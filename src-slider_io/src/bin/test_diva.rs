@@ -1,9 +1,6 @@
 extern crate slider_io;
 
-use std::{
-  io,
-  time::{Duration, Instant},
-};
+use std::io;
 
 use slider_io::{device::diva, shared::worker::ThreadJob, state::SliderState};
 

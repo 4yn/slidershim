@@ -15,7 +15,6 @@ pub enum LightsMode {
     sensitivity: u8,
   },
   Attract,
-  Test,
   Websocket {
     url: String,
   },
@@ -49,7 +48,6 @@ impl LightsMode {
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
       },
       "attract" => LightsMode::Attract,
-      "test" => LightsMode::Test,
       "websocket" => LightsMode::Websocket {
         url: v["ledWebsocketUrl"].as_str()?.to_string(),
       },
