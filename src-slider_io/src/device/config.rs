@@ -12,6 +12,7 @@ pub enum DeviceMode {
   None,
   Hardware {
     spec: HardwareSpec,
+    disable_air: bool,
   },
   Brokenithm {
     ground_only: bool,
@@ -29,31 +30,26 @@ impl DeviceMode {
       "none" => DeviceMode::None,
       "tasoller-one" => DeviceMode::Hardware {
         spec: HardwareSpec::TasollerOne,
+        disable_air: v["disableAirStrings"].as_bool()?,
       },
       "tasoller-two" => DeviceMode::Hardware {
         spec: HardwareSpec::TasollerTwo,
+        disable_air: v["disableAirStrings"].as_bool()?,
       },
       "yuancon" => DeviceMode::Hardware {
         spec: HardwareSpec::Yuancon,
+        disable_air: v["disableAirStrings"].as_bool()?,
       },
       "diva" => DeviceMode::DivaSlider {
         port: v["divaSerialPort"].as_str()?.to_string(),
         brightness: u8::try_from(v["divaBrightness"].as_i64()?).ok()?,
       },
       "brokenithm" => DeviceMode::Brokenithm {
-        ground_only: false,
+        ground_only: v["disableAirStrings"].as_bool()?,
         lights_enabled: false,
       },
       "brokenithm-led" => DeviceMode::Brokenithm {
-        ground_only: false,
-        lights_enabled: true,
-      },
-      "brokenithm-ground" => DeviceMode::Brokenithm {
-        ground_only: true,
-        lights_enabled: false,
-      },
-      "brokenithm-ground-led" => DeviceMode::Brokenithm {
-        ground_only: true,
+        ground_only: v["disableAirStrings"].as_bool()?,
         lights_enabled: true,
       },
       _ => return None,

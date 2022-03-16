@@ -30,12 +30,14 @@ impl Config {
     Self::from_str(
       r#"{
       "deviceMode": "none",
-      "devicePolling": "100",
       "outputMode": "none",
       "ledMode": "none",
+      "disableAirStrings": false,
+      "divaSerialPort": "COM1",
+      "divaBrightness": 63,
       "keyboardSensitivity": 20,
-      "outputWebsocketUrl": "localhost:3000",
       "outputPolling": "100",
+      "outputWebsocketUrl": "localhost:3000",
       "ledSensitivity": 20,
       "ledWebsocketUrl": "localhost:3001",
       "ledSerialPort": "COM5"
@@ -55,12 +57,13 @@ impl Config {
   }
 
   pub fn load() -> Self {
-    Self::load_saved()
-      .or_else(|| {
-        warn!("Config loading from file failed, using default");
-        Some(Self::default())
-      })
-      .unwrap()
+    let t = Self::load_saved();
+    warn!("{:?}", t);
+    t.or_else(|| {
+      warn!("Config loading from file failed, using default");
+      Some(Self::default())
+    })
+    .unwrap()
   }
 
   pub fn save(&self) -> Option<()> {

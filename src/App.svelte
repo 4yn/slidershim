@@ -10,6 +10,7 @@
   let outputMode = "none";
   let ledMode = "none";
 
+  let disableAirStrings = false;
   let divaSerialPort = "COM1";
   let divaBrightness = 63;
   let keyboardSensitivity = 20;
@@ -58,6 +59,7 @@
       outputMode = payload.outputMode || "none";
       ledMode = payload.ledMode || "none";
 
+      disableAirStrings = payload.disableAirStrings || false;
       divaSerialPort = payload.divaSerialPort || "COM1";
       divaBrightness = payload.divaBrightness || 63;
       keyboardSensitivity = payload.keyboardSensitivity || 20;
@@ -101,12 +103,14 @@
 
   async function setConfig() {
     console.log("Updating config");
+    console.log(disableAirStrings);
     await emit(
       "setConfig",
       JSON.stringify({
         deviceMode,
         outputMode,
         ledMode,
+        disableAirStrings,
         divaSerialPort,
         divaBrightness,
         keyboardSensitivity,
@@ -170,13 +174,26 @@
         <option value="diva">Slider over Serial</option>
         <option value="brokenithm">Brokenithm</option>
         <option value="brokenithm-led">Brokenithm + Led</option>
-        <option value="brokenithm-ground">Brokenithm, Ground only</option>
-        <option value="brokenithm-ground-led"
-          >Brokenithm + Led, Ground only</option
-        >
       </select>
     </div>
   </div>
+  {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || deviceMode.slice(0, 10) === "brokenithm"}
+    <div class="row">
+      <div class="label" />
+      <div class="input">
+        <span>
+          <input
+            type="checkbox"
+            id="disable-air"
+            style="width: unset;"
+            bind:checked={disableAirStrings}
+            on:change={markDirty}
+          />
+          <label for="disable-air">Disable Air Strings</label>
+        </span>
+      </div>
+    </div>
+  {/if}
   {#if deviceMode.slice(0, 10) === "brokenithm"}
     <div class="row">
       <div class="label" />

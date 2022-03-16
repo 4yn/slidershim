@@ -32,6 +32,7 @@ pub struct HidJob {
   pid: u16,
   read_endpoint: u8,
   led_endpoint: u8,
+  disable_air: bool,
 
   read_callback: HidReadCallback,
   read_buf: Buffer,
@@ -51,6 +52,7 @@ impl HidJob {
     pid: u16,
     read_endpoint: u8,
     led_endpoint: u8,
+    disable_air: bool,
     read_callback: HidReadCallback,
     led_type: WriteType,
     led_callback: HidLedCallback,
@@ -61,6 +63,7 @@ impl HidJob {
       pid,
       read_endpoint,
       led_endpoint,
+      disable_air,
       read_callback,
       read_buf: Buffer::new(),
       last_read_buf: Buffer::new(),
@@ -71,7 +74,7 @@ impl HidJob {
     }
   }
 
-  pub fn from_config(state: &SliderState, spec: &HardwareSpec) -> Self {
+  pub fn from_config(state: &SliderState, spec: &HardwareSpec, disable_air: &bool) -> Self {
     match spec {
       HardwareSpec::TasollerOne => Self::new(
         state.clone(),
@@ -79,6 +82,7 @@ impl HidJob {
         0x2333,
         0x84,
         0x03,
+        *disable_air,
         |buf, input| {
           if buf.len != 11 {
             return;
@@ -121,6 +125,7 @@ impl HidJob {
         0x2333,
         0x84,
         0x03,
+        *disable_air,
         |buf, input| {
           if buf.len != 36 {
             return;
@@ -157,6 +162,7 @@ impl HidJob {
         0x2001,
         0x81,
         0x02,
+        *disable_air,
         |buf, input| {
           if buf.len != 34 {
             return;
@@ -246,6 +252,10 @@ impl ThreadJob for HidJob {
         work = true;
         let mut input_handle = self.state.input.lock();
         (self.read_callback)(&self.read_buf, input_handle.deref_mut());
+
+        if self.disable_air {
+          input_handle.air.fill(0);
+        }
         swap(&mut self.read_buf, &mut self.last_read_buf);
       }
     }

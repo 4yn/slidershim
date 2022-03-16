@@ -50,13 +50,13 @@ impl Context {
             BrokenithmJob::new(&state, ground_only, lights_enabled),
           )),
         ),
-        DeviceMode::Hardware { spec } => (
+        DeviceMode::Hardware { spec, disable_air } => (
           {
             let timer = LoopTimer::new();
             timers.push(("d", timer.fork()));
             Some(ThreadWorker::new(
               "device",
-              HidJob::from_config(&state, spec),
+              HidJob::from_config(&state, spec, disable_air),
               timer,
             ))
           },
