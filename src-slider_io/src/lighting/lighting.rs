@@ -30,7 +30,15 @@ impl LightsJob {
       mode: mode.clone(),
       serial_port: None,
       started: Instant::now(),
-      timer: interval(Duration::from_micros(33333)),
+      timer: match match mode {
+        LightsMode::Attract { faster, .. } => *faster,
+        LightsMode::Websocket { faster, .. } => *faster,
+        LightsMode::Serial { faster, .. } => *faster,
+        _ => false,
+      } {
+        false => interval(Duration::from_micros(66666)),
+        true => interval(Duration::from_micros(33333)),
+      },
     }
   }
 
@@ -145,7 +153,7 @@ impl LightsJob {
           }
         }
       }
-      LightsMode::Attract => {
+      LightsMode::Attract { .. } => {
         let theta = self
           .started
           .elapsed()
@@ -187,7 +195,7 @@ impl LightsJob {
 impl AsyncJob for LightsJob {
   async fn setup(&mut self) -> bool {
     match &self.mode {
-      LightsMode::Serial { port } => {
+      LightsMode::Serial { port, .. } => {
         info!(
           "Serial port for led opening at {} {:?}",
           port.as_str(),

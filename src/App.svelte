@@ -16,6 +16,7 @@
   let keyboardSensitivity = 20;
   let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
+  let ledFaster = false;
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
   let ledSerialPort = "COM5";
@@ -66,6 +67,7 @@
       outputPolling = payload.outputPolling || "100";
       outputWebsocketUrl =
         payload.outputWebsocketUrl || "http://localhost:3000/";
+      ledFaster = payload.ledFaster || false;
       ledSensitivity = payload.ledSensitivity || 20;
       ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
       ledSerialPort = payload.ledSerialPort || "COM5";
@@ -116,6 +118,7 @@
         keyboardSensitivity,
         outputPolling,
         outputWebsocketUrl,
+        ledFaster,
         ledSensitivity,
         ledWebsocketUrl,
         ledSerialPort,
@@ -298,7 +301,7 @@
       </div>
     </div>
   {/if}
-  {#if outputMode.slice(0, 2) === "kb" && deviceMode.slice(0, 10) !== "brokenithm"}
+  {#if (outputMode.slice(0, 2) === "kb" || outputMode.slice(0, 7) === "gamepad") && deviceMode.slice(0, 10) !== "brokenithm"}
     <div class="row">
       <div class="label" title="Larger means harder to trigger">
         Sensitivity
@@ -357,6 +360,23 @@
       </select>
     </div>
   </div>
+  {#if ledMode !== "none"}
+    <div class="row">
+      <div class="label" />
+      <div class="input">
+        <span>
+          <input
+            type="checkbox"
+            id="led-faster"
+            style="width: unset;"
+            bind:checked={ledFaster}
+            on:change={markDirty}
+          />
+          <label for="led-faster">Update LED data faster</label>
+        </span>
+      </div>
+    </div>
+  {/if}
   {#if ledMode.slice(0, 8) === "reactive" && deviceMode.slice(0, 10) !== "brokenithm"}
     <div class="row">
       <div class="label" title="Larger means harder to trigger">

@@ -38,6 +38,7 @@ impl Config {
       "keyboardSensitivity": 20,
       "outputPolling": "100",
       "outputWebsocketUrl": "localhost:3000",
+      "ledFaster": false,
       "ledSensitivity": 20,
       "ledWebsocketUrl": "localhost:3001",
       "ledSerialPort": "COM5"
