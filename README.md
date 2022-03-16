@@ -12,6 +12,10 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.3
+  - Fix first and last buttons not working with brokenithm
+  - Add option to disable air strings for controllers
+  - Add option to slow down lighting updates
 - v0.2.2
   - Retcon serial slider name
   - Fix crash on some systems due to time math
@@ -28,7 +32,7 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 ## Setup Instructions
 
 1. [Download here](https://github.com/4yn/slidershim/releases/latest)
-2. Extract to any location you like.
+2. Run the msi installer (recommended for first run) or extract zip to any location you like.
 3. Run `slidershim.exe`.
 4. Pick your input device, output method and preferred lighting.
 5. Click apply.
@@ -46,6 +50,7 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 1. Set the device option to "Brokenithm" and apply.
 2. Allow firewall access to `slidershim.exe`
+   > For more info on setting up firewall, check out [instructions at brokenithm-kb](https://github.com/4yn/brokenithm-kb#setup)
 3. Connect a touch device to the same wifi or local network as your windows machine
    > Windows hotspot works too, but make sure to give "public" firewall access
 4. Open the web controller in your tablet device web browser. One of the links should work.
@@ -60,6 +65,13 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 Voltex layout disables air tower, Neardayo layout enables air tower.
 
 ## Troubleshooting
+
+<details>
+<summary><strong>slidershim crashes when I am running it for the first time</strong></summary>
+
+- Use the .msi installer file instead of the .zip. You may be missing some windows addons that the installer will take care of (specifically Edge WebView).
+
+</details>
 
 <details>
 <summary><strong>My controller is not recognised</strong></summary>

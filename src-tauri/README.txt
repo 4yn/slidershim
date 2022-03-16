@@ -2,13 +2,17 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.2
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.3
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.2.3
+  - Fix first and last buttons not working with brokenithm
+  - Add option to disable air strings for controllers
+  - Add option to slow down lighting updates
 - v0.2.2
   - Retcon serial slider name
   - Fix crash on some systems due to time math
