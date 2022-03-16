@@ -115,13 +115,13 @@ async fn handle_brokenithm(
                 39 => {
                   if chars[0] == 'b' {
                     let mut input_handle = state_handle.input.lock();
-                    for (idx, c) in chars[0..32].iter().enumerate() {
+                    for (idx, c) in chars[1..33].iter().enumerate() {
                       input_handle.ground[idx] = match *c == '1' {
                         false => 0,
                         true => 255,
                       }
                     }
-                    for (idx, c) in chars[32..38].iter().enumerate() {
+                    for (idx, c) in chars[33..39].iter().enumerate() {
                       input_handle.air[idx] = match *c == '1' {
                         false => 0,
                         true => 1,
