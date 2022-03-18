@@ -13,7 +13,8 @@ use std::sync::Arc;
 use log::info;
 
 use tauri::{
-  AppHandle, CustomMenuItem, Event, Manager, Runtime, SystemTray, SystemTrayEvent, SystemTrayMenu,
+  AppHandle, CustomMenuItem, Manager, RunEvent, Runtime, SystemTray, SystemTrayEvent,
+  SystemTrayMenu,
 };
 
 fn show_window<R: Runtime>(handle: &AppHandle<R>) {
@@ -185,7 +186,7 @@ fn main() {
     .expect("error while running tauri application")
     .run(|app_handle, event| match event {
       // After app starts
-      Event::CloseRequested { label, api, .. } if label.as_str() == "main" => {
+      RunEvent::CloseRequested { label, api, .. } if label.as_str() == "main" => {
         api.prevent_close();
         hide_window(app_handle);
       }

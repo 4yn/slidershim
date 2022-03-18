@@ -51,7 +51,10 @@
       "active": false
     },
     "allowlist": {
-      "all": false
+      "all": false,
+      "window": {
+        "startDragging": true
+      }
     },
     "windows": [
       {

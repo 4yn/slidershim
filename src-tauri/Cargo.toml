@@ -10,7 +10,7 @@ edition = "2018"
 build = "src/build.rs"
 
 [build-dependencies]
-tauri-build = { version = "1.0.0-beta.4" }
+tauri-build = { version = "1.0.0-rc.4", features = [] }
 
 [dependencies]
 log = "0.4.14"
@@ -19,7 +19,7 @@ env_logger = "0.9.0"
 
 parking_lot = "0.12.0"
 
-tauri = { version = "1.0.0-beta.8", features = ["shell-open", "system-tray"] }
+tauri = { version = "1.0.0-rc.4", features = ["system-tray", "window-start-dragging"] }
 open = "2.0.2"
 
 slider_io =  {path = "../src-slider_io" }
