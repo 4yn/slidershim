@@ -3,7 +3,9 @@ extern crate slider_io;
 use std::io;
 
 use slider_io::{
-  device::brokenithm::BrokenithmJob, shared::worker::AsyncHaltableWorker, state::SliderState,
+  device::{brokenithm::BrokenithmJob, config::BrokenithmSpec},
+  shared::worker::AsyncHaltableWorker,
+  state::SliderState,
 };
 
 #[tokio::main]
@@ -14,7 +16,10 @@ async fn main() {
 
   let state = SliderState::new();
 
-  let _worker = AsyncHaltableWorker::new("brokenithm", BrokenithmJob::new(&state, &false, &false));
+  let _worker = AsyncHaltableWorker::new(
+    "brokenithm",
+    BrokenithmJob::new(&state, &BrokenithmSpec::Nostalgia, &false),
+  );
   let mut input = String::new();
   io::stdin().read_line(&mut input).unwrap();
 }

@@ -18,7 +18,7 @@ use tokio::{
 use tokio_tungstenite::WebSocketStream;
 use tungstenite::{handshake, Message};
 
-use crate::{shared::worker::AsyncHaltableJob, state::SliderState};
+use crate::{device::config::BrokenithmSpec, shared::worker::AsyncHaltableJob, state::SliderState};
 
 // https://levelup.gitconnected.com/handling-websocket-and-http-on-the-same-port-with-rust-f65b770722c9
 
@@ -36,6 +36,7 @@ async fn error_response() -> Result<Response<Body>, Infallible> {
 static BROKENITHM_STR_FILES: phf::Map<&'static str, (&'static str, &'static str)> = phf_map! {
   "app.js" => (include_str!("./brokenithm-www/app.js"), "text/javascript"),
   "config.js" => (include_str!("./brokenithm-www/config.js"), "text/javascript"),
+  "index-ns.html" => (include_str!("./brokenithm-www/index-ns.html"), "text/html"),
   "index-go.html" => (include_str!("./brokenithm-www/index-go.html"), "text/html"),
   "index.html" => (include_str!("./brokenithm-www/index.html"), "text/html"),
 };
@@ -234,7 +235,7 @@ async fn handle_request(
   request: Request<Body>,
   remote_addr: SocketAddr,
   state: SliderState,
-  ground_only: bool,
+  spec: BrokenithmSpec,
   lights_enabled: bool,
 ) -> Result<Response<Body>, Infallible> {
   let method = request.method();
@@ -252,9 +253,10 @@ async fn handle_request(
     request.uri().path(),
     request.headers().contains_key(header::UPGRADE),
   ) {
-    ("/", false) | ("/index.html", false) => match ground_only {
-      false => serve_file("index.html").await,
-      true => serve_file("index-go.html").await,
+    ("/", false) | ("/index.html", false) => match spec {
+      BrokenithmSpec::Basic => serve_file("index.html").await,
+      BrokenithmSpec::GroundOnly => serve_file("index-go.html").await,
+      BrokenithmSpec::Nostalgia => serve_file("index-ns.html").await,
     },
     (filename, false) => serve_file(&filename[1..]).await,
     ("/ws", true) => handle_websocket(request, state, lights_enabled).await,
@@ -264,15 +266,15 @@ async fn handle_request(
 
 pub struct BrokenithmJob {
   state: SliderState,
-  ground_only: bool,
+  spec: BrokenithmSpec,
   lights_enabled: bool,
 }
 
 impl BrokenithmJob {
-  pub fn new(state: &SliderState, ground_only: &bool, lights_enabled: &bool) -> Self {
+  pub fn new(state: &SliderState, spec: &BrokenithmSpec, lights_enabled: &bool) -> Self {
     Self {
       state: state.clone(),
-      ground_only: *ground_only,
+      spec: spec.clone(),
       lights_enabled: *lights_enabled,
     }
   }
@@ -282,15 +284,17 @@ impl BrokenithmJob {
 impl AsyncHaltableJob for BrokenithmJob {
   async fn run<F: Future<Output = ()> + Send>(self, stop_signal: F) {
     let state = self.state.clone();
-    let ground_only = self.ground_only;
+    let spec = self.spec.clone();
     let lights_enabled = self.lights_enabled;
     let make_svc = make_service_fn(|conn: &AddrStream| {
       let remote_addr = conn.remote_addr();
       let make_svc_state = state.clone();
+      let make_spec = spec.clone();
       async move {
         Ok::<_, Infallible>(service_fn(move |request: Request<Body>| {
           let svc_state = make_svc_state.clone();
-          handle_request(request, remote_addr, svc_state, ground_only, lights_enabled)
+          let spec = make_spec.clone();
+          handle_request(request, remote_addr, svc_state, spec, lights_enabled)
         }))
       }
     });

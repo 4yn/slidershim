@@ -177,10 +177,11 @@
         <option value="diva">Slider over Serial</option>
         <option value="brokenithm">Brokenithm</option>
         <option value="brokenithm-led">Brokenithm + Led</option>
+        <option value="brokenithm-nostalgia">Brokestalgia (28k)</option>
       </select>
     </div>
   </div>
-  {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || deviceMode.slice(0, 10) === "brokenithm"}
+  {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || (deviceMode.slice(0, 10) === "brokenithm" && deviceMode !== "brokenithm-nostalgia")}
     <div class="row">
       <div class="label" />
       <div class="input">

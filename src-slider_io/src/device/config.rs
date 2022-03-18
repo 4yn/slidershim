@@ -8,6 +8,13 @@ pub enum HardwareSpec {
 }
 
 #[derive(Debug, Clone)]
+pub enum BrokenithmSpec {
+  Basic,
+  GroundOnly,
+  Nostalgia,
+}
+
+#[derive(Debug, Clone)]
 pub enum DeviceMode {
   None,
   Hardware {
@@ -15,7 +22,7 @@ pub enum DeviceMode {
     disable_air: bool,
   },
   Brokenithm {
-    ground_only: bool,
+    spec: BrokenithmSpec,
     lights_enabled: bool,
   },
   DivaSlider {
@@ -45,12 +52,22 @@ impl DeviceMode {
         brightness: u8::try_from(v["divaBrightness"].as_i64()?).ok()?,
       },
       "brokenithm" => DeviceMode::Brokenithm {
-        ground_only: v["disableAirStrings"].as_bool()?,
+        spec: match v["disableAirStrings"].as_bool()? {
+          false => BrokenithmSpec::Basic,
+          true => BrokenithmSpec::GroundOnly,
+        },
         lights_enabled: false,
       },
       "brokenithm-led" => DeviceMode::Brokenithm {
-        ground_only: v["disableAirStrings"].as_bool()?,
+        spec: match v["disableAirStrings"].as_bool()? {
+          false => BrokenithmSpec::Basic,
+          true => BrokenithmSpec::GroundOnly,
+        },
         lights_enabled: true,
+      },
+      "brokenithm-nostalgia" => DeviceMode::Brokenithm {
+        spec: BrokenithmSpec::Nostalgia,
+        lights_enabled: false,
       },
       _ => return None,
     })

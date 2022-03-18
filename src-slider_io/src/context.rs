@@ -40,14 +40,14 @@ impl Context {
       match &config.device_mode {
         DeviceMode::None => (None, None, None),
         DeviceMode::Brokenithm {
-          ground_only,
+          spec,
           lights_enabled,
         } => (
           None,
           None,
           Some(AsyncHaltableWorker::new(
             "brokenithm",
-            BrokenithmJob::new(&state, ground_only, lights_enabled),
+            BrokenithmJob::new(&state, spec, lights_enabled),
           )),
         ),
         DeviceMode::Hardware { spec, disable_air } => (

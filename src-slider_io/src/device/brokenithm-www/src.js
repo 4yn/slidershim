@@ -46,7 +46,7 @@ const compileKey = (key) => {
     almostLeft: !!prev ? key.offsetLeft + key.offsetWidth / 4 : -99999,
     almostRight: !!next ? key.offsetLeft + (key.offsetWidth * 3) / 4 : 99999,
     kflag: parseInt(key.dataset.kflag) + (parseInt(key.dataset.air) ? 32 : 0),
-    isAir: parseInt(key.dataset.air) ? true : false,
+    isAir: parseInt(key.dataset.air) ? true : window.allAir || false,
     prevKeyRef: prev,
     prevKeyKflag: prev
       ? parseInt(prev.dataset.kflag) + (parseInt(prev.dataset.air) ? 32 : 0)
@@ -70,14 +70,46 @@ const compileKeys = () => {
   keys = document.getElementsByClassName("key");
   airKeys = [];
   touchKeys = [];
-  for (var i = 0, key; i < keys.length; i++) {
+  for (var i = 0; i < keys.length; i++) {
     const compiledKey = compileKey(keys[i]);
-    if (!compiledKey.isAir) {
+    if (compiledKey.kflag < 32) {
       touchKeys.push(compiledKey);
     } else {
       airKeys.push(compiledKey);
     }
     allKeys.push(compiledKey);
+  }
+
+  touchKeys.memo = {};
+  airKeys.memo = {};
+
+  touchKeys.getAxis = (x, y) => x;
+  airKeys.getAxis = (x, y) => y;
+
+  var getKey = function (x, y) {
+    var c = this.getAxis(x, y);
+    var res = this.memo[c];
+    if (res === undefined) {
+      for (var i = 0; i < this.length; i++) {
+        if (isInside(x, y, this[i])) {
+          res = this[i];
+          break;
+        }
+      }
+      this.memo[c] = res;
+    }
+    return res;
+  };
+
+  touchKeys.getKey = getKey;
+  airKeys.getKey = getKey;
+
+  for (var i = 0; i < window.outerWidth; i++) {
+    touchKeys.getKey(i, touchKeys[0].top);
+  }
+
+  for (var i = 0; i < window.outerHeight; i++) {
+    airKeys.getKey(airKeys[0].left, i);
   }
 
   if (!config.invert) {
@@ -95,15 +127,9 @@ const compileKeys = () => {
 
 const getKey = (x, y) => {
   if (y < midline) {
-    for (var i = 0; i < topKeys.length; i++) {
-      if (isInside(x, y, topKeys[i])) return topKeys[i];
-    }
+    return topKeys.getKey(x, y);
   } else {
-    for (var i = 0; i < bottomKeys.length; i++) {
-      if (isInside(x, y, bottomKeys[i])) {
-        return bottomKeys[i];
-      }
-    }
+    return bottomKeys.getKey(x, y);
   }
   return null;
 };
@@ -241,9 +267,9 @@ const updateLed = (data) => {
     canvasData.data[i * 4 + 5] = buf[i * 3 + 1]; // g
     canvasData.data[i * 4 + 6] = buf[i * 3 + 2]; // b
   }
-  canvasData.data[0] = buf[0]
-  canvasData.data[1] = buf[1]
-  canvasData.data[2] = buf[2]
+  canvasData.data[0] = buf[0];
+  canvasData.data[1] = buf[1];
+  canvasData.data[2] = buf[2];
   canvasData.data[128] = buf[90];
   canvasData.data[129] = buf[91];
   canvasData.data[130] = buf[92];
