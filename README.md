@@ -12,6 +12,10 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.4
+  - Restore support for older tablet devices for brokenithm by compiling brokenithm JS with older babel preset
+  - Fix keys staying pressed even after brokenithm controller is closed
+  - New Brokestalgia 28k web touch controller option
 - v0.2.3
   - Fix first and last buttons not working with brokenithm
   - Add option to disable air strings for controllers
@@ -53,7 +57,7 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
    > For more info on setting up firewall, check out [instructions at brokenithm-kb](https://github.com/4yn/brokenithm-kb#setup)
 3. Connect a touch device to the same wifi or local network as your windows machine
    > Windows hotspot works too, but make sure to give "public" firewall access
-4. Open the web controller in your tablet device web browser. One of the links should work.
+4. Open the web controller in your touch device web browser. One of the links should work.
    1. Either manually type in the IP address if you know what IP it is;
    2. Or scan the generated "Broknenithm QR" to get a list of clickable links and save some typing.
 5. (Optional) Add the webpage to home screen and/or enable guided access to avoid accidentally exiting the web controller.
