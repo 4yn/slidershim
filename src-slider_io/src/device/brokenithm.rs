@@ -136,12 +136,18 @@ async fn handle_brokenithm(
             }
             Message::Close(_) => {
               info!("Websocket connection closed");
+              let mut input_handle = state_handle.input.lock();
+              input_handle.ground.fill(0);
+              input_handle.air.fill(0);
               break;
             }
             _ => {}
           },
           Err(e) => {
             error!("Websocket connection error: {}", e);
+            let mut input_handle = state_handle.input.lock();
+            input_handle.ground.fill(0);
+            input_handle.air.fill(0);
             break;
           }
         },
