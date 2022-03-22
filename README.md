@@ -4,7 +4,7 @@
 
 Software adapter for various Chunithm slider controllers with a built-in Brokenithm web controller. Has support for keyboard/gamepad output and LED lighting. Requires Windows 8 or later.
 
-[Download link](https://github.com/4yn/slidershim/releases/latest)
+[Download link](https://github.com/4yn/slidershim/releases/latest) | [Demo Video (Brokestalgia)](https://youtu.be/1PEtBP3cOew)
 
 > Starting 0.2.0, there are reports that windows defender may block this software. You may need to disable windows defender the first time you run slidershim. If you are not comfortable with this, you can [download an older version here](https://github.com/4yn/slidershim/releases/tag/v0.1.4) that is known to be OK with windows defender.
 
@@ -12,6 +12,9 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.5
+  - Add 6k and 4k keyboard output options
+  - Add settings for reactive LED colors
 - v0.2.4
   - Restore support for older tablet devices for brokenithm by compiling brokenithm JS with older babel preset
   - Fix keys staying pressed even after brokenithm controller is closed

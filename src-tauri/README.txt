@@ -2,13 +2,16 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.4
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.5
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.2.5
+  - Add 6k and 4k keyboard output options
+  - Add settings for reactive LED colors
 - v0.2.4
   - Restore support for older tablet devices for brokenithm by compiling brokenithm JS with older babel preset
   - Fix keys staying pressed even after brokenithm controller is closed
