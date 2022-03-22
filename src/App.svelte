@@ -210,12 +210,12 @@
       <div class="input">
         <div class="serverlist">
           Brokenithm server running, access at one of:
-          <pre>
+          <div class="iplist">
             {ips
               .map((x) => `http://${x}:1606/`)
               .join("\n")
               .trim()}
-          </pre>
+          </div>
         </div>
       </div>
     </div>

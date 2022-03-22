@@ -60,7 +60,7 @@
       {
         "title": "slidershim",
         "width": 500,
-        "height": 550,
+        "height": 600,
         "resizable": false,
         "fullscreen": false,
         "decorations": false,

@@ -16,10 +16,6 @@ body {
   user-select: none;
 }
 
-pre {
-  font-family: monospace;
-}
-
 body {
   margin: 0;
   padding: 1rem;
@@ -111,6 +107,11 @@ body {
   max-height: 5rem;
   overflow-x: auto;
   font-size: 0.75rem;
+}
+
+.iplist {
+  font-family: monospace;
+  white-space: pre;
 }
 
 input,
