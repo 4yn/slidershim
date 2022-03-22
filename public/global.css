@@ -71,10 +71,31 @@ body {
 
 .main {
   margin-top: 2rem;
+  height: calc(100% - 2rem);
   display: flex;
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
+}
+
+.preview-row {
+  flex: 0 1;
+}
+
+.options {
+  padding: 0.5rem 0;
+
+  flex: 1 1;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+
+  overflow-y: auto;
+}
+
+.buttons-row {
+  flex: 0 1;
 }
 
 .row,
@@ -100,6 +121,10 @@ body {
 
 .row .input {
   flex: 2 2 0;
+}
+
+.comment {
+  font-size: 0.75rem;
 }
 
 .serverlist {

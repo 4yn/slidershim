@@ -169,313 +169,337 @@
 </div>
 <div data-tauri-drag-region class="titlebar titlebar-front" />
 <main class="main">
-  <div class="row">
+  <div class="preview-row">
     <Preview data={previewData} />
   </div>
-  <div class="row">
-    <div class="label">Input Device</div>
-    <div class="input">
-      <select bind:value={deviceMode} on:change={markDirty}>
-        <option value="none">None</option>
-        <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
-        <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
-        <option value="yuancon">Yuancon Laverita, HID Firmware</option>
-        <option value="diva">Slider over Serial</option>
-        <option value="brokenithm">Brokenithm</option>
-        <option value="brokenithm-led">Brokenithm + Led</option>
-        <option value="brokenithm-nostalgia">Brokestalgia (28k)</option>
-      </select>
-    </div>
-  </div>
-  {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || (deviceMode.slice(0, 10) === "brokenithm" && deviceMode !== "brokenithm-nostalgia")}
+  <div class="options">
     <div class="row">
-      <div class="label" />
+      <div class="label">Input Device</div>
       <div class="input">
-        <span>
-          <input
-            type="checkbox"
-            id="disable-air"
-            style="width: unset;"
-            bind:checked={disableAirStrings}
-            on:change={markDirty}
-          />
-          <label for="disable-air">Disable Air Strings</label>
-        </span>
+        <select bind:value={deviceMode} on:change={markDirty}>
+          <option value="none">None</option>
+          <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
+          <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
+          <option value="yuancon">Yuancon Laverita, HID Firmware</option>
+          <option value="diva">Slider over Serial</option>
+          <option value="brokenithm">Brokenithm</option>
+          <option value="brokenithm-led">Brokenithm + Led</option>
+          <option value="brokenithm-nostalgia">Brokestalgia (28k)</option>
+        </select>
       </div>
     </div>
-  {/if}
-  {#if deviceMode.slice(0, 10) === "brokenithm"}
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        <div class="serverlist">
-          Brokenithm server running, access at one of:
-          <div class="iplist">
-            {ips
-              .map((x) => `http://${x}:1606/`)
-              .join("\n")
-              .trim()}
+    {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || (deviceMode.slice(0, 10) === "brokenithm" && deviceMode !== "brokenithm-nostalgia")}
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <span>
+            <input
+              type="checkbox"
+              id="disable-air"
+              style="width: unset;"
+              bind:checked={disableAirStrings}
+              on:change={markDirty}
+            />
+            <label for="disable-air">Disable Air Strings</label>
+          </span>
+        </div>
+      </div>
+    {/if}
+    {#if deviceMode.slice(0, 10) === "brokenithm"}
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <div class="serverlist">
+            Brokenithm server running, access at one of:
+            <div class="iplist">
+              {ips
+                .map((x) => `http://${x}:1606/`)
+                .join("\n")
+                .trim()}
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  {/if}
-  {#if deviceMode === "diva"}
-    <div class="row">
-      <div class="label">Slider Serial Port</div>
-      <div class="input">
-        <select bind:value={divaSerialPort} on:change={markDirty}>
-          <option value="COM1">COM1</option>
-          <option value="COM2">COM2</option>
-          <option value="COM3">COM3</option>
-          <option value="COM4">COM4</option>
-          <option value="COM5">COM5</option>
-          <option value="COM6">COM6</option>
-          <option value="COM7">COM7</option>
-          <option value="COM8">COM8</option>
-          <option value="COM9">COM9</option>
-        </select>
+    {/if}
+    {#if deviceMode === "diva"}
+      <div class="row">
+        <div class="label">Slider Serial Port</div>
+        <div class="input">
+          <select bind:value={divaSerialPort} on:change={markDirty}>
+            <option value="COM1">COM1</option>
+            <option value="COM2">COM2</option>
+            <option value="COM3">COM3</option>
+            <option value="COM4">COM4</option>
+            <option value="COM5">COM5</option>
+            <option value="COM6">COM6</option>
+            <option value="COM7">COM7</option>
+            <option value="COM8">COM8</option>
+            <option value="COM9">COM9</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="label">Brightness</div>
-      <div class="input">
-        <input
-          type="number"
-          min="1"
-          max="255"
-          step="1"
-          bind:value={divaBrightness}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        <input
-          type="range"
-          min="1"
-          max="255"
-          step="1"
-          bind:value={divaBrightness}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-  {/if}
-
-  <div class="row">
-    <div class="label">Output Mode</div>
-    <div class="input">
-      <select bind:value={outputMode} on:change={markDirty}>
-        <option value="none">None</option>
-        <option value="kb-32-tasoller">Keyboard 32-zone, Tasoller Layout</option
-        >
-        <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option>
-        <option value="kb-16">Keyboard 16-zone, Linear</option>
-        <option value="kb-8">Keyboard 8-zone, Linear</option>
-        <option value="kb-6">Keyboard 6-zone, Linear</option>
-        <option value="kb-4">Keyboard 4-zone, Linear</option>
-        <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
-        <option value="kb-neardayo">Keyboard 10-zone, Neardayo Layout</option>
-        <option value="gamepad-voltex">XBOX 360 Gamepad, Voltex Layout</option>
-        <option value="gamepad-neardayo"
-          >XBOX 360 Gamepad, Neardayo Layout</option
-        >
-        <!-- <option value="websocket">Websocket</option> -->
-      </select>
-    </div>
-  </div>
-  {#if outputMode !== "none"}
-    <div class="row">
-      <div class="label">Output Polling</div>
-      <div class="input">
-        <select bind:value={outputPolling} on:change={markDirty}>
-          <option value="60">60 Hz</option>
-          <option value="100">100 Hz</option>
-          <option value="250">250 Hz</option>
-          <option value="500">500 Hz</option>
-          <option value="1000">1000 Hz</option>
-        </select>
-      </div>
-    </div>
-  {/if}
-  {#if outputMode.slice(0, 7) === "gamepad"}
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        Gamepad emulation requires <Link
-          href="https://github.com/ViGEm/ViGEmBus/releases">ViGEMBus</Link
-        >
-      </div>
-    </div>
-  {/if}
-  {#if (outputMode.slice(0, 2) === "kb" || outputMode.slice(0, 7) === "gamepad") && deviceMode.slice(0, 10) !== "brokenithm"}
-    <div class="row">
-      <div class="label" title="Larger means harder to trigger">
-        Sensitivity
-      </div>
-      <div class="input">
-        <input
-          type="number"
-          min="1"
-          max="255"
-          step="1"
-          bind:value={keyboardSensitivity}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        <input
-          type="range"
-          min="1"
-          max="255"
-          step="1"
-          bind:value={keyboardSensitivity}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-  {/if}
-  {#if outputMode === "websocket"}
-    <div class="row">
-      <div class="label">Output URL</div>
-      <div class="input">
-        <input
-          placeholder="URL"
-          bind:value={outputWebsocketUrl}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-  {/if}
-
-  <div class="row">
-    <div class="label">LED Mode</div>
-    <div class="input">
-      <select bind:value={ledMode} on:change={markDirty}>
-        <option value="none">None</option>
-        <option value="reactive-16">Reactive, 16-Zone</option>
-        <option value="reactive-8">Reactive, 8-Zone</option>
-        <option value="reactive-6">Reactive, 6-Zone</option>
-        <option value="reactive-4">Reactive, 4-Zone</option>
-        <option value="reactive-rainbow">Reactive, 16-Zone Rainbow</option>
-        <option value="reactive-voltex">Reactive, Voltex Layout</option>
-        <option value="attract">Rainbow Attract Mode</option>
-        <!-- <option value="websocket">Websocket</option> -->
-        <option value="serial">Serial</option>
-      </select>
-    </div>
-  </div>
-  {#if ledMode !== "none"}
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        <span>
+      <div class="row">
+        <div class="label">Brightness</div>
+        <div class="input">
           <input
-            type="checkbox"
-            id="led-faster"
-            style="width: unset;"
-            bind:checked={ledFaster}
+            type="number"
+            min="1"
+            max="255"
+            step="1"
+            bind:value={divaBrightness}
             on:change={markDirty}
           />
-          <label for="led-faster">Update LED data faster</label>
-        </span>
+        </div>
       </div>
-    </div>
-  {/if}
-  {#if ledMode.slice(0, 8) === "reactive" && ["16", "8", "6", "4"].includes(ledMode.slice(9))}
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <input
+            type="range"
+            min="1"
+            max="255"
+            step="1"
+            bind:value={divaBrightness}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+
     <div class="row">
-      <div class="label">Active Color</div>
+      <div class="label">Output Mode</div>
       <div class="input">
-        <input type="color" bind:value={ledColorActive} on:change={markDirty} />
-      </div>
-    </div>
-    <div class="row">
-      <div class="label">Base Color</div>
-      <div class="input">
-        <input
-          type="color"
-          bind:value={ledColorInactive}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-  {/if}
-  {#if ledMode.slice(0, 8) === "reactive" && deviceMode.slice(0, 10) !== "brokenithm"}
-    <div class="row">
-      <div class="label" title="Larger means harder to trigger">
-        Sensitivity
-      </div>
-      <div class="input">
-        <input
-          type="number"
-          min="1"
-          max="255"
-          step="1"
-          bind:value={ledSensitivity}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        <input
-          type="range"
-          min="1"
-          max="255"
-          step="1"
-          bind:value={ledSensitivity}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-  {/if}
-  {#if ledMode === "websocket"}
-    <div class="row">
-      <div class="label">LED URL</div>
-      <div class="input">
-        <input
-          placeholder="URL"
-          bind:value={ledWebsocketUrl}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-  {/if}
-  {#if ledMode === "serial"}
-    <div class="row">
-      <div class="label" />
-      <div class="input">
-        Serial LED may require <Link
-          href="https://sourceforge.net/projects/com0com/files/com0com/2.2.2.0/com0com-2.2.2.0-x64-fre-signed.zip/download"
-          >com0com</Link
-        >
-      </div>
-    </div>
-    <div class="row">
-      <div class="label">LED Serial Port</div>
-      <div class="input">
-        <select bind:value={ledSerialPort} on:change={markDirty}>
-          <option value="COM1">COM1</option>
-          <option value="COM2">COM2</option>
-          <option value="COM3">COM3</option>
-          <option value="COM4">COM4</option>
-          <option value="COM5">COM5</option>
-          <option value="COM6">COM6</option>
-          <option value="COM7">COM7</option>
-          <option value="COM8">COM8</option>
-          <option value="COM9">COM9</option>
+        <select bind:value={outputMode} on:change={markDirty}>
+          <option value="none">None</option>
+          <option value="kb-32-tasoller"
+            >Keyboard 32-zone, Tasoller Layout</option
+          >
+          <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option
+          >
+          <option value="kb-16">Keyboard 16-zone, Linear</option>
+          <option value="kb-8">Keyboard 8-zone, Linear</option>
+          <option value="kb-6">Keyboard 6-zone, Linear</option>
+          <option value="kb-4">Keyboard 4-zone, Linear</option>
+          <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
+          <option value="kb-neardayo">Keyboard 10-zone, Neardayo Layout</option>
+          <option value="gamepad-voltex">XBOX 360 Gamepad, Voltex Layout</option
+          >
+          <option value="gamepad-neardayo"
+            >XBOX 360 Gamepad, Neardayo Layout</option
+          >
+          <!-- <option value="websocket">Websocket</option> -->
         </select>
       </div>
     </div>
-  {/if}
-  <div class="row">
+    {#if deviceMode === "brokenithm-nostalgia" && outputMode !== "none" && outputMode.slice(0, 5) !== "kb-32"}
+      <div class="row">
+        <div class="label" />
+        <div class="input comment">
+          32 key layout is recommended for Brokestalgia controllers
+        </div>
+      </div>
+    {:else if deviceMode.slice(0, 10) === "brokenithm" && ["kb-voltex", "kb-neardayo", "gamepad-voltex", "gamepad-neardayo"].includes(outputMode)}
+      <div class="row">
+        <div class="label" />
+        <div class="input comment">
+          Voltex-like layouts are not recommended for Brokenithm controllers
+        </div>
+      </div>
+    {/if}
+    {#if outputMode.slice(0, 7) === "gamepad"}
+      <div class="row">
+        <div class="label" />
+        <div class="input comment">
+          Gamepad emulation requires <Link
+            href="https://github.com/ViGEm/ViGEmBus/releases">ViGEMBus</Link
+          >
+        </div>
+      </div>
+    {/if}
+    {#if outputMode !== "none"}
+      <div class="row">
+        <div class="label">Output Polling</div>
+        <div class="input">
+          <select bind:value={outputPolling} on:change={markDirty}>
+            <option value="60">60 Hz</option>
+            <option value="100">100 Hz</option>
+            <option value="250">250 Hz</option>
+            <option value="500">500 Hz</option>
+            <option value="1000">1000 Hz</option>
+          </select>
+        </div>
+      </div>
+    {/if}
+    {#if (outputMode.slice(0, 2) === "kb" || outputMode.slice(0, 7) === "gamepad") && deviceMode.slice(0, 10) !== "brokenithm"}
+      <div class="row">
+        <div class="label" title="Larger means harder to trigger">
+          Sensitivity
+        </div>
+        <div class="input">
+          <input
+            type="number"
+            min="1"
+            max="255"
+            step="1"
+            bind:value={keyboardSensitivity}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <input
+            type="range"
+            min="1"
+            max="255"
+            step="1"
+            bind:value={keyboardSensitivity}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+    {#if outputMode === "websocket"}
+      <div class="row">
+        <div class="label">Output URL</div>
+        <div class="input">
+          <input
+            placeholder="URL"
+            bind:value={outputWebsocketUrl}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+
+    <div class="row">
+      <div class="label">LED Mode</div>
+      <div class="input">
+        <select bind:value={ledMode} on:change={markDirty}>
+          <option value="none">None</option>
+          <option value="reactive-16">Reactive, 16-Zone</option>
+          <option value="reactive-8">Reactive, 8-Zone</option>
+          <option value="reactive-6">Reactive, 6-Zone</option>
+          <option value="reactive-4">Reactive, 4-Zone</option>
+          <option value="reactive-rainbow">Reactive, 16-Zone Rainbow</option>
+          <option value="reactive-voltex">Reactive, Voltex Layout</option>
+          <option value="attract">Rainbow Attract Mode</option>
+          <!-- <option value="websocket">Websocket</option> -->
+          <option value="serial">Serial</option>
+        </select>
+      </div>
+    </div>
+    {#if ledMode !== "none"}
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <span>
+            <input
+              type="checkbox"
+              id="led-faster"
+              style="width: unset;"
+              bind:checked={ledFaster}
+              on:change={markDirty}
+            />
+            <label for="led-faster">Update LED data faster</label>
+          </span>
+        </div>
+      </div>
+    {/if}
+    {#if ledMode.slice(0, 8) === "reactive" && ["16", "8", "6", "4"].includes(ledMode.slice(9))}
+      <div class="row">
+        <div class="label">Active Color</div>
+        <div class="input">
+          <input
+            type="color"
+            bind:value={ledColorActive}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">Base Color</div>
+        <div class="input">
+          <input
+            type="color"
+            bind:value={ledColorInactive}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+    {#if ledMode.slice(0, 8) === "reactive" && deviceMode.slice(0, 10) !== "brokenithm"}
+      <div class="row">
+        <div class="label" title="Larger means harder to trigger">
+          Sensitivity
+        </div>
+        <div class="input">
+          <input
+            type="number"
+            min="1"
+            max="255"
+            step="1"
+            bind:value={ledSensitivity}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <input
+            type="range"
+            min="1"
+            max="255"
+            step="1"
+            bind:value={ledSensitivity}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+    {#if ledMode === "websocket"}
+      <div class="row">
+        <div class="label">LED URL</div>
+        <div class="input">
+          <input
+            placeholder="URL"
+            bind:value={ledWebsocketUrl}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+    {#if ledMode === "serial"}
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          Serial LED may require <Link
+            href="https://sourceforge.net/projects/com0com/files/com0com/2.2.2.0/com0com-2.2.2.0-x64-fre-signed.zip/download"
+            >com0com</Link
+          >
+        </div>
+      </div>
+      <div class="row">
+        <div class="label">LED Serial Port</div>
+        <div class="input">
+          <select bind:value={ledSerialPort} on:change={markDirty}>
+            <option value="COM1">COM1</option>
+            <option value="COM2">COM2</option>
+            <option value="COM3">COM3</option>
+            <option value="COM4">COM4</option>
+            <option value="COM5">COM5</option>
+            <option value="COM6">COM6</option>
+            <option value="COM7">COM7</option>
+            <option value="COM8">COM8</option>
+            <option value="COM9">COM9</option>
+          </select>
+        </div>
+      </div>
+    {/if}
+  </div>
+  <div class="buttons-row">
     <button
       on:click={async () => await setConfig()}
       class={`${dirty && "primary"}`}>Apply</button
