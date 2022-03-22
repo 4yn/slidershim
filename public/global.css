@@ -76,6 +76,7 @@ body {
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
+  width: 100%;
 }
 
 .preview-row {
@@ -83,7 +84,7 @@ body {
 }
 
 .options {
-  padding: 0.5rem 0;
+  padding: 0.5rem 0.25rem;
 
   flex: 1 1;
   display: flex;
