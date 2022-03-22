@@ -28,7 +28,7 @@ impl Config {
 
   fn default() -> Self {
     Self::from_str(
-      r#"{
+      r##"{
       "deviceMode": "none",
       "outputMode": "none",
       "ledMode": "none",
@@ -39,10 +39,12 @@ impl Config {
       "outputPolling": "100",
       "outputWebsocketUrl": "localhost:3000",
       "ledFaster": false,
+      "ledColorActive": "#ff00ff",
+      "ledColorInactive": "#ffff00",
       "ledSensitivity": 20,
       "ledWebsocketUrl": "localhost:3001",
       "ledSerialPort": "COM5"
-    }"#,
+    }"##,
     )
     .unwrap()
   }
