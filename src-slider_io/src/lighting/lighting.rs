@@ -48,8 +48,8 @@ impl LightsJob {
     serial_buffer: Option<&Buffer>,
     lights: &mut SliderLights,
   ) {
-    match self.mode {
-      LightsMode::Reactive { layout, .. } => {
+    match &self.mode {
+      LightsMode::Reactive { layout, color, .. } => {
         let flat_input = flat_input.unwrap();
 
         match layout {
@@ -58,21 +58,53 @@ impl LightsJob {
 
             let banks: Vec<bool> = flat_input
               .chunks(32 / splits)
-              .take(splits)
+              .take(*splits)
               .map(|x| x.contains(&true))
               .collect();
 
             for idx in 0..31 {
               lights.paint(
                 idx,
-                match (idx + 1) % buttons_per_split {
-                  0 => &[255, 0, 255],
+                match ((idx + 1) % buttons_per_split, (idx + 1) % 2) {
+                  (0, _) => &color.active,
+                  (_, 0) => &color.inactive,
                   _ => match banks[idx / buttons_per_split] {
-                    true => &[255, 0, 255],
-                    false => &[255, 255, 0],
+                    true => &color.active,
+                    false => &color.inactive,
                   },
                 },
               );
+            }
+          }
+          ReactiveLayout::Six => {
+            let banks: Vec<bool> = [0..6, 6..10, 10..16, 16..22, 22..26, 26..32]
+              .into_iter()
+              .map(|x| flat_input[x].contains(&true))
+              .collect();
+
+            for idx in (1..31).step_by(2) {
+              lights.paint(
+                idx,
+                match idx {
+                  5 | 9 | 15 | 21 | 25 => &color.active,
+                  _ => &color.inactive,
+                },
+              );
+            }
+
+            for (bank_idxs, bank_val) in [0..6, 6..10, 10..16, 16..22, 22..26, 26..32]
+              .into_iter()
+              .zip(banks)
+            {
+              for idx in bank_idxs.step_by(2) {
+                lights.paint(
+                  idx,
+                  match bank_val {
+                    true => &color.active,
+                    false => &color.inactive,
+                  },
+                )
+              }
             }
           }
           ReactiveLayout::Voltex => {

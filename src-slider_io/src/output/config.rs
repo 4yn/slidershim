@@ -14,7 +14,9 @@ pub enum KeyboardLayout {
   Tasoller,
   Yuancon,
   TasollerHalf,
-  Deemo,
+  EightK,
+  SixK,
+  FourK,
   Voltex,
   Neardayo,
 }
@@ -81,13 +83,23 @@ impl OutputMode {
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },
-      "kb-16-tasoller" => OutputMode::Keyboard {
+      "kb-16" => OutputMode::Keyboard {
         layout: KeyboardLayout::TasollerHalf,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },
-      "kb-8-deemo" => OutputMode::Keyboard {
-        layout: KeyboardLayout::Deemo,
+      "kb-8" => OutputMode::Keyboard {
+        layout: KeyboardLayout::EightK,
+        polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+        sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+      },
+      "kb-6" => OutputMode::Keyboard {
+        layout: KeyboardLayout::SixK,
+        polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+        sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+      },
+      "kb-4" => OutputMode::Keyboard {
+        layout: KeyboardLayout::FourK,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },

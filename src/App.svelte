@@ -17,6 +17,8 @@
   let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
   let ledFaster = false;
+  let ledColorActive = "#ff00ff";
+  let ledColorInactive = "#ffff00";
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
   let ledSerialPort = "COM5";
@@ -68,6 +70,8 @@
       outputWebsocketUrl =
         payload.outputWebsocketUrl || "http://localhost:3000/";
       ledFaster = payload.ledFaster || false;
+      ledColorActive = payload.ledColorActive || "#ff00ff";
+      ledColorInactive = payload.ledColorInactive || "#ffff00";
       ledSensitivity = payload.ledSensitivity || 20;
       ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
       ledSerialPort = payload.ledSerialPort || "COM5";
@@ -119,6 +123,8 @@
         outputPolling,
         outputWebsocketUrl,
         ledFaster,
+        ledColorActive,
+        ledColorInactive,
         ledSensitivity,
         ledWebsocketUrl,
         ledSerialPort,
@@ -205,7 +211,10 @@
         <div class="serverlist">
           Brokenithm server running, access at one of:
           <pre>
-            {ips.map((x) => `http://${x}:1606/`).join("\n")}
+            {ips
+              .map((x) => `http://${x}:1606/`)
+              .join("\n")
+              .trim()}
           </pre>
         </div>
       </div>
@@ -264,10 +273,10 @@
         <option value="kb-32-tasoller">Keyboard 32-zone, Tasoller Layout</option
         >
         <option value="kb-32-yuancon">Keyboard 32-zone, Yuancon Layout</option>
-        <option value="kb-16-tasoller"
-          >Keyboard 16-zone, Tasoller (Bottom Half) Layout</option
-        >
-        <option value="kb-8-deemo">Keyboard 8-zone, Deemo Layout</option>
+        <option value="kb-16">Keyboard 16-zone, Linear</option>
+        <option value="kb-8">Keyboard 8-zone, Linear</option>
+        <option value="kb-6">Keyboard 6-zone, Linear</option>
+        <option value="kb-4">Keyboard 4-zone, Linear</option>
         <option value="kb-voltex">Keyboard 10-zone, Voltex Layout</option>
         <option value="kb-neardayo">Keyboard 10-zone, Neardayo Layout</option>
         <option value="gamepad-voltex">XBOX 360 Gamepad, Voltex Layout</option>
@@ -350,9 +359,10 @@
     <div class="input">
       <select bind:value={ledMode} on:change={markDirty}>
         <option value="none">None</option>
-        <option value="reactive-4">Reactive, 4-Zone</option>
-        <option value="reactive-8">Reactive, 8-Zone</option>
         <option value="reactive-16">Reactive, 16-Zone</option>
+        <option value="reactive-8">Reactive, 8-Zone</option>
+        <option value="reactive-6">Reactive, 6-Zone</option>
+        <option value="reactive-4">Reactive, 4-Zone</option>
         <option value="reactive-rainbow">Reactive, 16-Zone Rainbow</option>
         <option value="reactive-voltex">Reactive, Voltex Layout</option>
         <option value="attract">Rainbow Attract Mode</option>
@@ -375,6 +385,24 @@
           />
           <label for="led-faster">Update LED data faster</label>
         </span>
+      </div>
+    </div>
+  {/if}
+  {#if ledMode.slice(0, 8) === "reactive" && ["16", "8", "6", "4"].includes(ledMode.slice(9))}
+    <div class="row">
+      <div class="label">Active Color</div>
+      <div class="input">
+        <input type="color" bind:value={ledColorActive} on:change={markDirty} />
+      </div>
+    </div>
+    <div class="row">
+      <div class="label">Base Color</div>
+      <div class="input">
+        <input
+          type="color"
+          bind:value={ledColorInactive}
+          on:change={markDirty}
+        />
       </div>
     </div>
   {/if}
