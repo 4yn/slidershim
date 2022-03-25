@@ -1,5 +1,6 @@
 use directories::ProjectDirs;
 use image::Luma;
+use log::info;
 use qrcode::QrCode;
 use std::{error::Error, fs, path::PathBuf};
 
@@ -25,7 +26,7 @@ fn get_config_dir() -> Option<Box<PathBuf>> {
 }
 
 /// Generates a helper QR for connecting with brokenithm
-pub fn get_brokenithm_qr_path() -> Option<Box<PathBuf>> {
+pub fn get_brokenithm_qr_path(port: Option<u16>) -> Option<Box<PathBuf>> {
   let config_dir = get_config_dir()?;
   let brokenithm_qr_path = config_dir.join("brokenithm.png");
 
@@ -36,7 +37,10 @@ pub fn get_brokenithm_qr_path() -> Option<Box<PathBuf>> {
       .filter(|s| s.as_str().chars().filter(|x| *x == '.').count() == 3)
       .map(|s| base64::encode_config(s, base64::URL_SAFE_NO_PAD))
       .collect::<Vec<String>>()
-      .join(";");
+      .join(";")
+    + "&p="
+    + port.or(Some(1606)).unwrap().to_string().as_str();
+  info!("Url generated {}", link);
   let qr = QrCode::new(link).ok()?;
   let image = qr.render::<Luma<u8>>().build();
   image.save(brokenithm_qr_path.as_path()).ok()?;

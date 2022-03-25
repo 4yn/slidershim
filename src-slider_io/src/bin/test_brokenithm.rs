@@ -18,7 +18,7 @@ async fn main() {
 
   let _worker = AsyncHaltableWorker::new(
     "brokenithm",
-    BrokenithmJob::new(&state, &BrokenithmSpec::Nostalgia, &false),
+    BrokenithmJob::new(&state, &BrokenithmSpec::Nostalgia, &false, &1606),
   );
   let mut input = String::new();
   io::stdin().read_line(&mut input).unwrap();

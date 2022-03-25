@@ -268,14 +268,21 @@ pub struct BrokenithmJob {
   state: SliderState,
   spec: BrokenithmSpec,
   lights_enabled: bool,
+  port: u16,
 }
 
 impl BrokenithmJob {
-  pub fn new(state: &SliderState, spec: &BrokenithmSpec, lights_enabled: &bool) -> Self {
+  pub fn new(
+    state: &SliderState,
+    spec: &BrokenithmSpec,
+    lights_enabled: &bool,
+    port: &u16,
+  ) -> Self {
     Self {
       state: state.clone(),
       spec: spec.clone(),
       lights_enabled: *lights_enabled,
+      port: *port,
     }
   }
 }
@@ -299,7 +306,7 @@ impl AsyncHaltableJob for BrokenithmJob {
       }
     });
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 1606));
+    let addr = SocketAddr::from(([0, 0, 0, 0], self.port));
     info!("Brokenithm server listening on {}", addr);
 
     let server = Server::bind(&addr)

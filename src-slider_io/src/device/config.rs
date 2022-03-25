@@ -25,6 +25,7 @@ pub enum DeviceMode {
   Brokenithm {
     spec: BrokenithmSpec,
     lights_enabled: bool,
+    port: u16,
   },
   DivaSlider {
     port: String,
@@ -62,6 +63,9 @@ impl DeviceMode {
           true => BrokenithmSpec::GroundOnly,
         },
         lights_enabled: false,
+        port: u16::try_from(v["brokenithmPort"].as_i64()?)
+          .ok()
+          .or(Some(1606))?,
       },
       "brokenithm-led" => DeviceMode::Brokenithm {
         spec: match v["disableAirStrings"].as_bool()? {
@@ -69,12 +73,25 @@ impl DeviceMode {
           true => BrokenithmSpec::GroundOnly,
         },
         lights_enabled: true,
+        port: u16::try_from(v["brokenithmPort"].as_i64()?)
+          .ok()
+          .or(Some(1606))?,
       },
       "brokenithm-nostalgia" => DeviceMode::Brokenithm {
         spec: BrokenithmSpec::Nostalgia,
         lights_enabled: false,
+        port: u16::try_from(v["brokenithmPort"].as_i64()?)
+          .ok()
+          .or(Some(1606))?,
       },
       _ => return None,
     })
+  }
+
+  pub fn get_port(&self) -> Option<u16> {
+    match self {
+      DeviceMode::Brokenithm { port, .. } => Some(*port),
+      _ => None,
+    }
   }
 }

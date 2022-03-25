@@ -42,12 +42,13 @@ impl Context {
         DeviceMode::Brokenithm {
           spec,
           lights_enabled,
+          port,
         } => (
           None,
           None,
           Some(AsyncHaltableWorker::new(
             "brokenithm",
-            BrokenithmJob::new(&state, spec, lights_enabled),
+            BrokenithmJob::new(&state, spec, lights_enabled, port),
           )),
         ),
         DeviceMode::Hardware { spec, disable_air } => (

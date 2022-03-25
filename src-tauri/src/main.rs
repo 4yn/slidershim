@@ -110,8 +110,15 @@ fn main() {
       });
 
       // Show brokenithm qr
-      app.listen_global("openBrokenithmQr", |_| {
-        let brokenithm_qr_path = slider_io::get_brokenithm_qr_path();
+      let config_clone = Arc::clone(&config);
+      app.listen_global("openBrokenithmQr", move |_| {
+        let config_handle = config_clone.lock();
+        let brokenithm_qr_path = slider_io::get_brokenithm_qr_path(
+          config_handle
+            .as_ref()
+            .map(|c| c.device_mode.get_port())
+            .unwrap_or(None),
+        );
         if let Some(brokenithm_qr_path) = brokenithm_qr_path {
           open::that(brokenithm_qr_path.as_path()).ok();
         }

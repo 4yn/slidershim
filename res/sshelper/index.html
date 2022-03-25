@@ -39,25 +39,22 @@
     <ul class="links"></ul>
     <script>
       (function () {
-        const search = window.location.search;
-        if (search.slice(0, 3) !== "?d=" || search.length <= 3) {
-          return;
-        }
-        const ul = document.querySelector(".links");
-        search
-          .slice(3)
-          .split(";")
-          .map((x) => atob(x))
-          .forEach((ip) => {
-            const li = document.createElement("li");
-            const a = document.createElement("a");
-            a.innerText = ip;
-            a.setAttribute("target", "_blank");
-            a.setAttribute("rel", "noopener");
-            a.href = `http://${ip}:1606/`;
-            li.appendChild(a);
-            ul.appendChild(li);
-          });
+        var params = new URLSearchParams(window.location.search);
+        var d = params.get("d") || "";
+        var p = params.get("p") || "1606";
+        var ul = document.querySelector(".links");
+        d.split(";").forEach(function (aip) {
+          var ip = atob(aip);
+          console.log(aip, ip);
+          var li = document.createElement("li");
+          var a = document.createElement("a");
+          a.innerText = "".concat(ip, ":").concat(p);
+          a.setAttribute("target", "_blank");
+          a.setAttribute("rel", "noopener");
+          a.href = "http://".concat(ip, ":").concat(p, "/");
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
       })();
     </script>
   </body>

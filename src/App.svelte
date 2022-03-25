@@ -13,6 +13,7 @@
   let disableAirStrings = false;
   let divaSerialPort = "COM1";
   let divaBrightness = 63;
+  let brokenithmPort = 1606;
   let keyboardSensitivity = 20;
   let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
@@ -65,6 +66,7 @@
       disableAirStrings = payload.disableAirStrings || false;
       divaSerialPort = payload.divaSerialPort || "COM1";
       divaBrightness = payload.divaBrightness || 63;
+      brokenithmPort = payload.brokenithmPort || 1606;
       keyboardSensitivity = payload.keyboardSensitivity || 20;
       outputPolling = payload.outputPolling || "100";
       outputWebsocketUrl =
@@ -119,6 +121,7 @@
         disableAirStrings,
         divaSerialPort,
         divaBrightness,
+        brokenithmPort,
         keyboardSensitivity,
         outputPolling,
         outputWebsocketUrl,
@@ -208,13 +211,26 @@
     {/if}
     {#if deviceMode.slice(0, 10) === "brokenithm"}
       <div class="row">
+        <div class="label">Brokenithm Port</div>
+        <div class="input">
+          <input
+            type="number"
+            min="1024"
+            max="65535"
+            step="1"
+            bind:value={brokenithmPort}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+      <div class="row">
         <div class="label" />
         <div class="input">
           <div class="serverlist">
-            Brokenithm server running, access at one of:
+            Brokenithm will be running at one of:
             <div class="iplist">
               {ips
-                .map((x) => `http://${x}:1606/`)
+                .map((x) => `http://${x}:${brokenithmPort || 1606}/`)
                 .join("\n")
                 .trim()}
             </div>

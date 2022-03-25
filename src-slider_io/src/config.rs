@@ -35,6 +35,7 @@ impl Config {
       "disableAirStrings": false,
       "divaSerialPort": "COM1",
       "divaBrightness": 63,
+      "brokenithmPort": 1606,
       "keyboardSensitivity": 20,
       "outputPolling": "100",
       "outputWebsocketUrl": "localhost:3000",
