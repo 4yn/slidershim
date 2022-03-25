@@ -2,13 +2,16 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.5
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.6
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.2.6
+  - Add Yubideck controller support
+  - Add option to change Brokenithm sever port
 - v0.2.5
   - Add 6k and 4k keyboard output options
   - Add settings for reactive LED colors

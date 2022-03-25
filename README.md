@@ -12,6 +12,9 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.6
+  - Add Yubideck controller support
+  - Add option to change Brokenithm sever port
 - v0.2.5
   - Add 6k and 4k keyboard output options
   - Add settings for reactive LED colors
@@ -83,7 +86,7 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 <details>
 <summary><strong>My controller is not recognised</strong></summary>
 
-- slidershim supports the GAMO2 Tasoller and Yuancon Laverita v2 controllers on HID firmware.
+- slidershim supports the GAMO2 Tasoller, Yuancon Laverita v2 and ZhouSensor 大四 / Yubideck controllers on HID firmware.
   - If you are using a Tasoller controller, make sure it has the correct HID firmware installed.
   - If your hardware controller is not one of these, it will not work.
 - If you have a device that communicates using serial protocol, chances are it will work with the "Slider over Serial" option
