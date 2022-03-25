@@ -190,6 +190,49 @@ impl HidJob {
           }
         },
       ),
+      HardwareSpec::Yubideck => Self::new(
+        state.clone(),
+        0x1973,
+        0x2001,
+        0x81, // Need to confirm
+        0x02, // Need to confirm
+        *disable_air,
+        |buf, input| {
+          if buf.len != 45 {
+            return;
+          }
+
+          input.ground.copy_from_slice(&buf.data[2..34]);
+          for i in 0..6 {
+            input.air[i ^ 1] = (buf.data[0] >> i) & 1;
+          }
+          for i in 0..3 {
+            input.extra[2 - i] = (buf.data[1] >> i) & 1;
+          }
+        },
+        WriteType::Interrupt,
+        |buf, lights| {
+          buf.len = 62;
+          let lights_nibbles: Vec<u8> = lights
+            .ground
+            .chunks(3)
+            .rev()
+            .flat_map(|x| x.iter().map(|y| *y >> 4))
+            .chain([0, 0, 0])
+            .collect();
+
+          for (buf_chunk, state_chunk) in buf
+            .data
+            .chunks_mut(3)
+            .take(16)
+            .zip(lights_nibbles.chunks(6))
+          {
+            buf_chunk[0] = (state_chunk[0]) | (state_chunk[1] << 4);
+            buf_chunk[1] = (state_chunk[2]) | (state_chunk[3] << 4);
+            buf_chunk[2] = (state_chunk[4]) | (state_chunk[5] << 4);
+          }
+        },
+      ),
     }
   }
 

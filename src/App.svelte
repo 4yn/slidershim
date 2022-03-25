@@ -181,6 +181,7 @@
           <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
           <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
           <option value="yuancon">Yuancon Laverita, HID Firmware</option>
+          <option value="yubideck">大四 / Yubideck, HID Firmware</option>
           <option value="diva">Slider over Serial</option>
           <option value="brokenithm">Brokenithm</option>
           <option value="brokenithm-led">Brokenithm + Led</option>
@@ -188,7 +189,7 @@
         </select>
       </div>
     </div>
-    {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || (deviceMode.slice(0, 10) === "brokenithm" && deviceMode !== "brokenithm-nostalgia")}
+    {#if deviceMode.slice(0, 8) === "tasoller" || deviceMode.slice(0, 7) === "yuancon" || deviceMode.slice(0, 8) === "yubideck" || (deviceMode.slice(0, 10) === "brokenithm" && deviceMode !== "brokenithm-nostalgia")}
       <div class="row">
         <div class="label" />
         <div class="input">
