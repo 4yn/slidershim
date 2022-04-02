@@ -12,6 +12,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.7
+  - Add HORI Project Diva gamepad output and lighting mode
 - v0.2.6
   - Add Yubideck controller support
   - Add option to change Brokenithm sever port

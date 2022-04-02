@@ -108,6 +108,13 @@
           "ll lr fl fl fr fr rl rr";
       }
 
+      .ground.ground-diva {
+        grid: repeat(2, 1fr) / repeat(4, 1fr);
+        grid-template-areas:
+          "sl sl sl sl"
+          "a b c d";
+      }
+
       .air {
         grid-area: a;
 
@@ -415,6 +422,26 @@
         <div>[start]</div>
         <div>[back]</div>
         <div>[guide]</div>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="name">PS4, HORI DIVA Future Tone ASC Layout</div>
+      <div class="ground ground-diva">
+        <div style="grid-area: sl">[slider]</div>
+        <div style="grid-area: a">Triangle</div>
+        <div style="grid-area: b">Square</div>
+        <div style="grid-area: c">Cross</div>
+        <div style="grid-area: d">Circle</div>
+      </div>
+      <div class="air air-single">
+        <div>
+          <span style="writing-mode: vertical-lr">[disabled]</span>
+        </div>
+      </div>
+      <div class="extra">
+        <div>[disabled]</div>
+        <div>[disabled]</div>
+        <div>[disabled]</div>
       </div>
     </div>
   </body>

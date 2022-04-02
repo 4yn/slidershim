@@ -1,6 +1,6 @@
 [package]
 name = "slidershim"
-version = "0.2.6"
+version = "0.2.7"
 description = "slidershim"
 authors = ["4yn"]
 license = ""

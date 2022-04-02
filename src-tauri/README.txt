@@ -2,13 +2,15 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.6
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.7
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.2.7
+  - Add HORI Project Diva gamepad output and lighting mode
 - v0.2.6
   - Add Yubideck controller support
   - Add option to change Brokenithm sever port
