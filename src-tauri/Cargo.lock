@@ -3753,9 +3753,9 @@ checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
 
 [[package]]
 name = "vigem-client"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "965e349c8ec4eb36c06878b99952f35b9f459e6912419837ecb85fb5502a6de3"
+checksum = "5d886912e88b1d3b02a97d933df7829db8fb8561920410805794a48680c212d5"
 dependencies = [
  "winapi",
 ]

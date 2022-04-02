@@ -5,6 +5,7 @@ pub enum ReactiveLayout {
   Even { splits: usize },
   Six,
   Voltex,
+  Hori,
   Rainbow,
 }
 
@@ -106,6 +107,12 @@ impl LightsMode {
       "reactive-voltex" => LightsMode::Reactive {
         faster: v["ledFaster"].as_bool()?,
         layout: ReactiveLayout::Voltex,
+        sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
+        color: ColorScheme::default(),
+      },
+      "reactive-hori" => LightsMode::Reactive {
+        faster: v["ledFaster"].as_bool()?,
+        layout: ReactiveLayout::Hori,
         sensitivity: u8::try_from(v["ledSensitivity"].as_i64()?).ok()?,
         color: ColorScheme::default(),
       },

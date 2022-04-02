@@ -1,0 +1,27 @@
+pub struct HoriState {
+  pub slider: [bool; 16],
+  pub bt: [bool; 4],
+}
+
+impl HoriState {
+  pub fn from_flat(flat_input: &Vec<bool>) -> Self {
+    let mut hori_state = Self {
+      slider: [false; 16],
+      bt: [false; 4],
+    };
+
+    for (idx, i) in flat_input[0..32].iter().enumerate() {
+      match idx % 2 {
+        0 => {
+          hori_state.bt[idx / 8] |= *i;
+        }
+        1 => {
+          hori_state.slider[idx / 2] |= *i;
+        }
+        _ => unreachable!(),
+      }
+    }
+
+    hori_state
+  }
+}

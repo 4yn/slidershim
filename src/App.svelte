@@ -304,6 +304,9 @@
           <option value="gamepad-neardayo"
             >XBOX 360 Gamepad, Neardayo Layout</option
           >
+          <option value="gamepad-hori"
+            >DS4, HORI DIVA Future Tone ASC Layout</option
+          >
           <!-- <option value="websocket">Websocket</option> -->
         </select>
       </div>
@@ -315,11 +318,11 @@
           32 key layout is recommended for Brokestalgia controllers
         </div>
       </div>
-    {:else if deviceMode.slice(0, 10) === "brokenithm" && ["kb-voltex", "kb-neardayo", "gamepad-voltex", "gamepad-neardayo"].includes(outputMode)}
+    {:else if deviceMode.slice(0, 10) === "brokenithm" && ["kb-voltex", "kb-neardayo", "gamepad-voltex", "gamepad-neardayo", "gamepad-hori"].includes(outputMode)}
       <div class="row">
         <div class="label" />
         <div class="input comment">
-          Voltex-like layouts are not recommended for Brokenithm controllers
+          Gamepad layouts are not recommended for Brokenithm controllers
         </div>
       </div>
     {/if}
@@ -401,6 +404,9 @@
           <option value="reactive-4">Reactive, 4-Zone</option>
           <option value="reactive-rainbow">Reactive, 16-Zone Rainbow</option>
           <option value="reactive-voltex">Reactive, Voltex Layout</option>
+          <option value="reactive-hori"
+            >Reactive, DIVA Future Tone Layout</option
+          >
           <option value="attract">Rainbow Attract Mode</option>
           <!-- <option value="websocket">Websocket</option> -->
           <option value="serial">Serial</option>

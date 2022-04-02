@@ -9,7 +9,7 @@ use std::{
 use tokio::time::{interval, Interval};
 
 use crate::{
-  shared::{utils::Buffer, voltex::VoltexState, worker::AsyncJob},
+  shared::{hori::HoriState, utils::Buffer, voltex::VoltexState, worker::AsyncJob},
   state::{SliderLights, SliderState},
 };
 
@@ -151,6 +151,48 @@ impl LightsJob {
                 lights.paint(9 + idx * 8, &[250, 100, 30]);
                 lights.paint(11 + idx * 8, &[250, 100, 30]);
                 lights.paint(13 + idx * 8, &[250, 100, 30]);
+              }
+            }
+          }
+          ReactiveLayout::Hori => {
+            lights.ground.fill(0);
+
+            // Fixed
+            for idx in [7, 15, 23] {
+              lights.paint(idx, &[64, 64, 64]);
+            }
+
+            let hori_state = HoriState::from_flat(flat_input);
+
+            for (idx, (bt, color)) in hori_state
+              .bt
+              .iter()
+              .zip([
+                &[64, 226, 160],
+                &[255, 105, 248],
+                &[124, 178, 232],
+                &[255, 102, 102],
+              ])
+              .enumerate()
+            {
+              let color_f = match bt {
+                true => 1,
+                false => 4,
+              };
+              let adjcolor = [color[0] / color_f, color[1] / color_f, color[2] / color_f];
+              for i in 0..4 {
+                lights.paint(idx * 8 + i * 2, &adjcolor);
+              }
+            }
+
+            for (idx, (a, b)) in hori_state
+              .slider
+              .iter()
+              .zip(hori_state.slider.iter().skip(1))
+              .enumerate()
+            {
+              if *a || *b {
+                lights.paint(1 + idx * 2, &[200, 200, 200]);
               }
             }
           }

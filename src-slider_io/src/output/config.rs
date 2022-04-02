@@ -40,6 +40,10 @@ pub enum OutputMode {
     polling: PollingRate,
     sensitivity: u8,
   },
+  Hori {
+    polling: PollingRate,
+    sensitivity: u8,
+  },
   Websocket {
     url: String,
     polling: PollingRate,
@@ -120,6 +124,10 @@ impl OutputMode {
       },
       "gamepad-neardayo" => OutputMode::Gamepad {
         layout: GamepadLayout::Neardayo,
+        polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+        sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+      },
+      "gamepad-hori" => OutputMode::Hori {
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },

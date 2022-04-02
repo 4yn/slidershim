@@ -5,7 +5,9 @@ use tokio::time::{interval, Interval};
 
 use crate::{shared::worker::AsyncJob, state::SliderState};
 
-use super::{config::OutputMode, gamepad::GamepadOutput, keyboard::KeyboardOutput};
+use super::{
+  config::OutputMode, gamepad::GamepadOutput, hori::HoriOutput, keyboard::KeyboardOutput,
+};
 
 pub trait OutputHandler: Send {
   fn tick(&mut self, flat_input: &Vec<bool>) -> bool;
@@ -54,6 +56,22 @@ impl AsyncJob for OutputJob {
       } => {
         self.sensitivity = sensitivity;
         let handler = GamepadOutput::new(layout.clone());
+        self.timer = interval(Duration::from_micros(polling.to_t_u64()));
+
+        match handler {
+          Some(handler) => {
+            self.handler = Some(Box::new(handler));
+            true
+          }
+          None => false,
+        }
+      }
+      OutputMode::Hori {
+        polling,
+        sensitivity,
+      } => {
+        self.sensitivity = sensitivity;
+        let handler = HoriOutput::new();
         self.timer = interval(Duration::from_micros(polling.to_t_u64()));
 
         match handler {
