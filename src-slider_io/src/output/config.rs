@@ -27,6 +27,12 @@ pub enum GamepadLayout {
   Neardayo,
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum HoriLayout {
+  Full,
+  SliderOnly,
+}
+
 #[derive(Debug, Clone)]
 pub enum OutputMode {
   None,
@@ -41,6 +47,7 @@ pub enum OutputMode {
     sensitivity: u8,
   },
   Hori {
+    layout: HoriLayout,
     polling: PollingRate,
     sensitivity: u8,
   },
@@ -128,6 +135,12 @@ impl OutputMode {
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },
       "gamepad-hori" => OutputMode::Hori {
+        layout: HoriLayout::Full,
+        polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+        sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+      },
+      "gamepad-hori-wide" => OutputMode::Hori {
+        layout: HoriLayout::SliderOnly,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },

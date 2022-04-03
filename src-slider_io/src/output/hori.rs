@@ -4,20 +4,27 @@ use vigem_client::{Client, DS4Report, DualShock4Wired, TargetId};
 
 use crate::shared::hori::HoriState;
 
-use super::output::OutputHandler;
+use super::{config::HoriLayout, output::OutputHandler};
 
 pub struct HoriOutput {
   target: DualShock4Wired<Client>,
+  slider_only: bool,
   gamepad: DS4Report,
 }
 
 impl HoriOutput {
-  pub fn new() -> Option<Self> {
+  pub fn new(layout: HoriLayout) -> Option<Self> {
     let target = Self::get_target();
+
+    let slider_only = match layout {
+      HoriLayout::Full => false,
+      HoriLayout::SliderOnly => true,
+    };
 
     match target {
       Ok(target) => Some(Self {
         target,
+        slider_only,
         gamepad: DS4Report::default(),
       }),
       Err(e) => {
@@ -50,7 +57,10 @@ impl HoriOutput {
 
 impl OutputHandler for HoriOutput {
   fn tick(&mut self, flat_input: &Vec<bool>) -> bool {
-    let hori_state = HoriState::from_flat(flat_input);
+    let hori_state = match self.slider_only {
+      false => HoriState::from_flat(flat_input),
+      true => HoriState::from_flat_to_wide(flat_input)
+    };
 
     let buttons: u16 = hori_state
       .bt

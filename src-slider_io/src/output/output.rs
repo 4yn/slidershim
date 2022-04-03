@@ -67,11 +67,12 @@ impl AsyncJob for OutputJob {
         }
       }
       OutputMode::Hori {
+        layout,
         polling,
         sensitivity,
       } => {
         self.sensitivity = sensitivity;
-        let handler = HoriOutput::new();
+        let handler = HoriOutput::new(layout.clone());
         self.timer = interval(Duration::from_micros(polling.to_t_u64()));
 
         match handler {

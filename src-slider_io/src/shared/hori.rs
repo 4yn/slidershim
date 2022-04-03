@@ -24,4 +24,17 @@ impl HoriState {
 
     hori_state
   }
+
+  pub fn from_flat_to_wide(flat_input: &Vec<bool>) -> Self {
+    let mut hori_state = Self {
+      slider: [false; 16],
+      bt: [false; 4],
+    };
+
+    for (idx, i) in flat_input[0..32].iter().enumerate() {
+      hori_state.slider[idx / 2] |= *i;
+    }
+
+    hori_state
+  }
 }
