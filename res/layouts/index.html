@@ -7,8 +7,8 @@
     <style>
       body {
         max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 10px;
+        margin: 2rem auto;
+        padding: 0 1rem;
         font: 18px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
           "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -16,7 +16,7 @@
 
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
+        gap: 1rem;
       }
       h1,
       h2,
@@ -41,7 +41,7 @@
 
         width: 36rem;
         height: 13rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1rem;
 
         gap: 0.5rem;
 
@@ -99,6 +99,10 @@
 
       .ground.ground-4 {
         grid: repeat(1, 1fr) / repeat(4, 1fr);
+      }
+
+      .ground.ground-1 {
+        grid: repeat(1, 1fr) / repeat(1, 1fr);
       }
 
       .ground.ground-voltex {
@@ -425,7 +429,7 @@
       </div>
     </div>
     <div class="layout">
-      <div class="name">PS4, HORI DIVA Future Tone ASC Layout</div>
+      <div class="name">DS4, HORI DIVA FT ASC Layout</div>
       <div class="ground ground-diva">
         <div style="grid-area: sl">[slider]</div>
         <div style="grid-area: a">Triangle</div>
@@ -439,7 +443,23 @@
         </div>
       </div>
       <div class="extra">
+        <div>[options]</div>
         <div>[disabled]</div>
+        <div>[disabled]</div>
+      </div>
+    </div>
+    <div class="layout">
+      <div class="name">DS4, HORI DIVA FT ASC Slider Only Layout</div>
+      <div class="ground ground-1">
+        <div>[slider]</div>
+      </div>
+      <div class="air air-single">
+        <div>
+          <span style="writing-mode: vertical-lr">[disabled]</span>
+        </div>
+      </div>
+      <div class="extra">
+        <div>[options]</div>
         <div>[disabled]</div>
         <div>[disabled]</div>
       </div>

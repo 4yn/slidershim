@@ -12,6 +12,9 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.2.8
+  - Add slider only layout (no buttons) for Project Diva gamepad output
+  - Add options button to Project Diva gamepad output
 - v0.2.7
   - Add HORI Project Diva gamepad output and lighting mode
 - v0.2.6

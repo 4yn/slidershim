@@ -2,13 +2,16 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.7
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.2.8
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.2.8
+  - Add slider only layout (no buttons) for Project Diva gamepad output
+  - Add options button to Project Diva gamepad output
 - v0.2.7
   - Add HORI Project Diva gamepad output and lighting mode
 - v0.2.6
