@@ -59,7 +59,7 @@ impl OutputHandler for HoriOutput {
   fn tick(&mut self, flat_input: &Vec<bool>) -> bool {
     let hori_state = match self.slider_only {
       false => HoriState::from_flat(flat_input),
-      true => HoriState::from_flat_to_wide(flat_input)
+      true => HoriState::from_flat_to_wide(flat_input),
     };
 
     let buttons: u16 = hori_state
@@ -78,7 +78,11 @@ impl OutputHandler for HoriOutput {
             true => code,
             false => 0,
           }
-      });
+      })
+      | match hori_state.extra[0] {
+        true => 1 << 13, // options
+        false => 0,
+      };
 
     let axis: u32 = hori_state
       .slider

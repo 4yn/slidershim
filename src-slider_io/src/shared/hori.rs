@@ -1,6 +1,7 @@
 pub struct HoriState {
   pub slider: [bool; 16],
   pub bt: [bool; 4],
+  pub extra: [bool; 1],
 }
 
 impl HoriState {
@@ -8,6 +9,7 @@ impl HoriState {
     let mut hori_state = Self {
       slider: [false; 16],
       bt: [false; 4],
+      extra: [false; 1],
     };
 
     for (idx, i) in flat_input[0..32].iter().enumerate() {
@@ -22,6 +24,8 @@ impl HoriState {
       }
     }
 
+    hori_state.extra[0] = flat_input[38];
+
     hori_state
   }
 
@@ -29,11 +33,14 @@ impl HoriState {
     let mut hori_state = Self {
       slider: [false; 16],
       bt: [false; 4],
+      extra: [false; 1],
     };
 
     for (idx, i) in flat_input[0..32].iter().enumerate() {
       hori_state.slider[idx / 2] |= *i;
     }
+
+    hori_state.extra[0] = flat_input[38];
 
     hori_state
   }
