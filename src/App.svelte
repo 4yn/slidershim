@@ -22,6 +22,7 @@
   let ledColorInactive = "#ffff00";
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
+  let ledUmgrWebsocketPort = 7124;
   let ledSerialPort = "COM5";
 
   let dirty = false;
@@ -76,6 +77,7 @@
       ledColorInactive = payload.ledColorInactive || "#ffff00";
       ledSensitivity = payload.ledSensitivity || 20;
       ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
+      ledUmgrWebsocketPort = payload.ledUmgrWebsocketPort || 7124;
       ledSerialPort = payload.ledSerialPort || "COM5";
     });
 
@@ -130,6 +132,7 @@
         ledColorInactive,
         ledSensitivity,
         ledWebsocketUrl,
+        ledUmgrWebsocketPort,
         ledSerialPort,
       })
     );
@@ -410,6 +413,7 @@
           >
           <option value="attract">Rainbow Attract Mode</option>
           <!-- <option value="websocket">Websocket</option> -->
+          <option value="umgr-websocket">UMIGURI Websocket</option>
           <option value="serial">Serial</option>
         </select>
       </div>
@@ -490,6 +494,21 @@
           <input
             placeholder="URL"
             bind:value={ledWebsocketUrl}
+            on:change={markDirty}
+          />
+        </div>
+      </div>
+    {/if}
+    {#if ledMode === "umgr-websocket"}
+      <div class="row">
+        <div class="label">UMIGURI Port</div>
+        <div class="input">
+          <input
+            type="number"
+            min="1024"
+            max="65535"
+            step="1"
+            bind:value={ledUmgrWebsocketPort}
             on:change={markDirty}
           />
         </div>

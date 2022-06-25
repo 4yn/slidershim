@@ -82,6 +82,11 @@ impl SliderLights {
   pub fn paint(&mut self, idx: usize, color: &[u8; 3]) {
     self.ground[3 * idx..3 * (idx + 1)].copy_from_slice(color);
   }
+
+  pub fn reset(&mut self) {
+    self.ground.fill(0);
+    self.dirty = true;
+  }
 }
 
 /// Stores data required for a single slider controller. Data and lighting

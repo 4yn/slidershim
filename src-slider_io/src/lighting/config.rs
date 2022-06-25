@@ -64,6 +64,10 @@ pub enum LightsMode {
     faster: bool,
     url: String,
   },
+  UmgrWebsocket {
+    faster: bool,
+    port: u16,
+  },
   Serial {
     faster: bool,
     port: String,
@@ -122,6 +126,10 @@ impl LightsMode {
       "websocket" => LightsMode::Websocket {
         faster: v["ledFaster"].as_bool()?,
         url: v["ledWebsocketUrl"].as_str()?.to_string(),
+      },
+      "umgr-websocket" => LightsMode::UmgrWebsocket {
+        faster: v["ledFaster"].as_bool()?,
+        port: u16::try_from(v["ledUmgrWebsocketPort"].as_i64()?).ok()?,
       },
       "serial" => LightsMode::Serial {
         faster: v["ledFaster"].as_bool()?,

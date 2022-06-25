@@ -5,7 +5,7 @@ use std::sync::{atomic::Ordering, Arc};
 use crate::{
   config::Config,
   device::{brokenithm::BrokenithmJob, config::DeviceMode, diva::DivaSliderJob, hid::HidJob},
-  lighting::{config::LightsMode, lighting::LightsJob},
+  lighting::{config::LightsMode, lighting::LightsJob, umgr_websocket::UmgrWebsocketJob},
   output::{config::OutputMode, output::OutputJob},
   shared::{
     utils::LoopTimer,
@@ -23,6 +23,7 @@ pub struct Context {
   device_async_haltable_worker: Option<AsyncHaltableWorker>,
   output_worker: Option<AsyncWorker>,
   lights_worker: Option<AsyncWorker>,
+  lights_haltable_worker: Option<AsyncHaltableWorker>,
   timers: Vec<(&'static str, Arc<AtomicF64>)>,
 }
 
@@ -90,16 +91,26 @@ impl Context {
         ))
       }
     };
-    let lights_worker = match &config.lights_mode {
-      LightsMode::None => None,
+    let (lights_worker, lights_haltable_worker) = match &config.lights_mode {
+      LightsMode::None => (None, None),
+      LightsMode::UmgrWebsocket { faster, port } => (
+        None,
+        Some(AsyncHaltableWorker::new(
+          "lights",
+          UmgrWebsocketJob::new(&state, faster, port),
+        )),
+      ),
       _ => {
         let timer = LoopTimer::new();
         timers.push(("l", timer.fork()));
-        Some(AsyncWorker::new(
-          "lights",
-          LightsJob::new(&state, &config.lights_mode),
-          timer,
-        ))
+        (
+          Some(AsyncWorker::new(
+            "lights",
+            LightsJob::new(&state, &config.lights_mode),
+            timer,
+          )),
+          None,
+        )
       }
     };
 
@@ -111,6 +122,7 @@ impl Context {
       device_async_haltable_worker,
       output_worker,
       lights_worker,
+      lights_haltable_worker,
       timers,
     }
   }
