@@ -13,6 +13,7 @@ pub enum PollingRate {
 pub enum KeyboardLayout {
   Tasoller,
   Yuancon,
+  Umiguri,
   TasollerHalf,
   EightK,
   SixK,
@@ -91,6 +92,11 @@ impl OutputMode {
       },
       "kb-32-yuancon" => OutputMode::Keyboard {
         layout: KeyboardLayout::Yuancon,
+        polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+        sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+      },
+      "kb-32-umiguri" => OutputMode::Keyboard {
+        layout: KeyboardLayout::Umiguri,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
       },
