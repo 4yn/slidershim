@@ -12,6 +12,9 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.3.0
+  - Add UMIGURI LED controller server support
+  - Add UMIGURI default keyboard layout
 - v0.2.8
   - Add slider only layout (no buttons) for Project Diva gamepad output
   - Add options button to Project Diva gamepad output

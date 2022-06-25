@@ -1,202 +1,344 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      font: 18px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+        "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      color: #444;
+
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.2;
+    }
+
+    @media (prefers-color-scheme: dark) {
       body {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-        font: 18px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
-          "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-        color: #444;
-
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-      }
-      h1,
-      h2,
-      h3 {
-        line-height: 1.2;
-      }
-      @media (prefers-color-scheme: dark) {
-        body {
-          color: #ccc;
-          background: black;
-        }
-        a:link {
-          color: #5bf;
-        }
-        a:visited {
-          color: #ccf;
-        }
+        color: #ccc;
+        background: black;
       }
 
-      .layout {
-        display: grid;
-
-        width: 36rem;
-        height: 13rem;
-        margin-bottom: 1rem;
-
-        gap: 0.5rem;
-
-        grid: 1.5rem 8.5rem 2rem / 32rem 3.5rem;
-        grid-template-areas:
-          "t a"
-          "b a"
-          "e a";
+      a:link {
+        color: #5bf;
       }
 
-      .name {
-        display: flex;
-        flex: row nowrap;
-        align-items: center;
-        justify-content: flex-start;
-
-        grid-area: t;
+      a:visited {
+        color: #ccf;
       }
+    }
 
-      .ground {
-        grid-area: b;
-        display: grid;
-        width: 100%;
-        height: 100%;
+    .layout {
+      display: grid;
 
-        gap: 0.25rem;
+      width: 36rem;
+      height: 13rem;
+      margin-bottom: 1rem;
 
-        font-size: 1.5rem;
-        font-family: monospace;
-      }
+      gap: 0.5rem;
 
-      .ground div {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+      grid: 1.5rem 8.5rem 2rem / 32rem 3.5rem;
+      grid-template-areas:
+        "t a"
+        "b a"
+        "e a";
+    }
 
-        background-color: #ff04;
-      }
+    .name {
+      display: flex;
+      flex: row nowrap;
+      align-items: center;
+      justify-content: flex-start;
 
-      .ground.ground-32 {
-        grid: repeat(2, 1fr) / repeat(16, 1fr);
-      }
+      grid-area: t;
+    }
 
-      .ground.ground-16 {
-        grid: repeat(1, 1fr) / repeat(16, 1fr);
-      }
+    .ground {
+      grid-area: b;
+      display: grid;
+      width: 100%;
+      height: 100%;
 
-      .ground.ground-8 {
-        grid: repeat(1, 1fr) / repeat(8, 1fr);
-      }
+      gap: 0.25rem;
 
-      .ground.ground-6 {
-        grid: repeat(1, 1fr) / 3fr 2fr 3fr 3fr 2fr 3fr;
-      }
+      font-size: 1.5rem;
+      font-family: monospace;
+    }
 
-      .ground.ground-4 {
-        grid: repeat(1, 1fr) / repeat(4, 1fr);
-      }
+    .ground div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-      .ground.ground-1 {
-        grid: repeat(1, 1fr) / repeat(1, 1fr);
-      }
+      background-color: #ff04;
+    }
 
-      .ground.ground-voltex {
-        grid: repeat(2, 1fr) / repeat(8, 1fr);
-        grid-template-areas:
-          "ll lr a  b  c  d  rl rr"
-          "ll lr fl fl fr fr rl rr";
-      }
+    .ground.ground-32 {
+      grid: repeat(2, 1fr) / repeat(16, 1fr);
+    }
 
-      .ground.ground-diva {
-        grid: repeat(2, 1fr) / repeat(4, 1fr);
-        grid-template-areas:
-          "sl sl sl sl"
-          "a b c d";
-      }
+    .ground.ground-16 {
+      grid: repeat(1, 1fr) / repeat(16, 1fr);
+    }
 
-      .air {
-        grid-area: a;
+    .ground.ground-8 {
+      grid: repeat(1, 1fr) / repeat(8, 1fr);
+    }
 
-        display: grid;
-        width: 100%;
-        height: 100%;
+    .ground.ground-6 {
+      grid: repeat(1, 1fr) / 3fr 2fr 3fr 3fr 2fr 3fr;
+    }
 
-        grid: repeat(6, 1fr) / repeat(1, 1fr);
-        gap: 0.25rem;
+    .ground.ground-4 {
+      grid: repeat(1, 1fr) / repeat(4, 1fr);
+    }
 
-        font-family: monospace;
-      }
+    .ground.ground-1 {
+      grid: repeat(1, 1fr) / repeat(1, 1fr);
+    }
 
-      .air div {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .ground.ground-voltex {
+      grid: repeat(2, 1fr) / repeat(8, 1fr);
+      grid-template-areas:
+        "ll lr a  b  c  d  rl rr"
+        "ll lr fl fl fr fr rl rr";
+    }
 
-        background-color: #0ff4;
-      }
+    .ground.ground-diva {
+      grid: repeat(2, 1fr) / repeat(4, 1fr);
+      grid-template-areas:
+        "sl sl sl sl"
+        "a b c d";
+    }
 
-      .air.air-single {
-        grid: repeat(1, 1fr) / repeat(1, 1fr);
-      }
+    .air {
+      grid-area: a;
 
-      .air.air-voltex {
-        grid-template-areas:
-          "rr"
-          "rl"
-          "rl"
-          "lr"
-          "lr"
-          "ll";
-      }
+      display: grid;
+      width: 100%;
+      height: 100%;
 
-      .extra {
-        grid-area: e;
+      grid: repeat(6, 1fr) / repeat(1, 1fr);
+      gap: 0.25rem;
 
-        display: grid;
-        width: 100%;
-        height: 100%;
+      font-family: monospace;
+    }
 
-        grid: repeat(1, 1fr) / repeat(3, 1fr);
-        gap: 0.25rem;
+    .air div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-        font-family: monospace;
-      }
+      background-color: #0ff4;
+    }
 
-      .extra div {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .air.air-single {
+      grid: repeat(1, 1fr) / repeat(1, 1fr);
+    }
 
-        background-color: #f004;
-      }
-    </style>
-    <title>Slidershim Layouts</title>
-  </head>
+    .air.air-voltex {
+      grid-template-areas:
+        "rr"
+        "rl"
+        "rl"
+        "lr"
+        "lr"
+        "ll";
+    }
+
+    .extra {
+      grid-area: e;
+
+      display: grid;
+      width: 100%;
+      height: 100%;
+
+      grid: repeat(1, 1fr) / repeat(3, 1fr);
+      gap: 0.25rem;
+
+      font-family: monospace;
+    }
+
+    .extra div {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background-color: #f004;
+    }
+  </style>
+  <title>Slidershim Layouts</title>
+</head>
+
+<body>
+  <div class="layout">
+    <div class="name">Keyboard 32-zone, Tasoller Layout</div>
+    <div class="ground ground-32">
+      <div>1</div>
+      <div>Q</div>
+      <div>2</div>
+      <div>W</div>
+      <div>3</div>
+      <div>E</div>
+      <div>4</div>
+      <div>R</div>
+      <div>5</div>
+      <div>T</div>
+      <div>6</div>
+      <div>Y</div>
+      <div>7</div>
+      <div>U</div>
+      <div>8</div>
+      <div>I</div>
+      <div>A</div>
+      <div>Z</div>
+      <div>S</div>
+      <div>X</div>
+      <div>D</div>
+      <div>C</div>
+      <div>F</div>
+      <div>V</div>
+      <div>G</div>
+      <div>B</div>
+      <div>H</div>
+      <div>N</div>
+      <div>J</div>
+      <div>M</div>
+      <div>K</div>
+      <div>,</div>
+    </div>
+    <div class="air">
+      <div>]</div>
+      <div>[</div>
+      <div>;</div>
+      <div>.</div>
+      <div>'</div>
+      <div>/</div>
+    </div>
+    <div class="extra">
+      <div>[enter]</div>
+      <div>[space]</div>
+      <div>[esc]</div>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="name">Keyboard 32-zone, Yuancon Layout</div>
+    <div class="ground ground-32">
+      <div>5</div>
+      <div>3</div>
+      <div>1</div>
+      <div>Y</div>
+      <div>W</div>
+      <div>U</div>
+      <div>S</div>
+      <div>Q</div>
+      <div>O</div>
+      <div>M</div>
+      <div>K</div>
+      <div>I</div>
+      <div>G</div>
+      <div>E</div>
+      <div>C</div>
+      <div>A</div>
+      <div>6</div>
+      <div>4</div>
+      <div>2</div>
+      <div>Z</div>
+      <div>X</div>
+      <div>V</div>
+      <div>T</div>
+      <div>R</div>
+      <div>P</div>
+      <div>N</div>
+      <div>L</div>
+      <div>J</div>
+      <div>H</div>
+      <div>F</div>
+      <div>D</div>
+      <div>B</div>
+    </div>
+    <div class="air">
+      <div>;</div>
+      <div>\</div>
+      <div>]</div>
+      <div>[</div>
+      <div>=</div>
+      <div>-</div>
+    </div>
+    <div class="extra">
+      <div>[enter]</div>
+      <div>[space]</div>
+      <div>[esc]</div>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="name">Keyboard 32-zone, UMIGURI Layout</div>
+    <div class="ground ground-32">
+      <div>1</div>
+      <div>Q</div>
+      <div>2</div>
+      <div>W</div>
+      <div>3</div>
+      <div>E</div>
+      <div>4</div>
+      <div>R</div>
+      <div>5</div>
+      <div>T</div>
+      <div>6</div>
+      <div>Y</div>
+      <div>7</div>
+      <div>U</div>
+      <div>8</div>
+      <div>I</div>
+      <div>A</div>
+      <div>Z</div>
+      <div>S</div>
+      <div>X</div>
+      <div>D</div>
+      <div>C</div>
+      <div>F</div>
+      <div>V</div>
+      <div>G</div>
+      <div>B</div>
+      <div>H</div>
+      <div>N</div>
+      <div>J</div>
+      <div>M</div>
+      <div>K</div>
+      <div>,</div>
+    </div>
+    <div class="air">
+      <div>.</div>
+      <div>,</div>
+      <div>P</div>
+      <div>L</div>
+      <div>O</div>
+      <div>0</div>
+    </div>
+    <div class="extra">
+      <div>[enter]</div>
+      <div>[space]</div>
+      <div>[esc]</div>
+    </div>
+  </div>
+
   <body>
     <div class="layout">
-      <div class="name">Keyboard 32-zone, Tasoller Layout</div>
-      <div class="ground ground-32">
-        <div>1</div>
-        <div>Q</div>
-        <div>2</div>
-        <div>W</div>
-        <div>3</div>
-        <div>E</div>
-        <div>4</div>
-        <div>R</div>
-        <div>5</div>
-        <div>T</div>
-        <div>6</div>
-        <div>Y</div>
-        <div>7</div>
-        <div>U</div>
-        <div>8</div>
-        <div>I</div>
+      <div class="name">Keyboard 16-zone, Linear</div>
+      <div class="ground ground-16">
         <div>A</div>
         <div>Z</div>
         <div>S</div>
@@ -228,91 +370,6 @@
         <div>[esc]</div>
       </div>
     </div>
-    <div class="layout">
-      <div class="name">Keyboard 32-zone, Yuancon Layout</div>
-      <div class="ground ground-32">
-        <div>5</div>
-        <div>3</div>
-        <div>1</div>
-        <div>Y</div>
-        <div>W</div>
-        <div>U</div>
-        <div>S</div>
-        <div>Q</div>
-        <div>O</div>
-        <div>M</div>
-        <div>K</div>
-        <div>I</div>
-        <div>G</div>
-        <div>E</div>
-        <div>C</div>
-        <div>A</div>
-        <div>6</div>
-        <div>4</div>
-        <div>2</div>
-        <div>Z</div>
-        <div>X</div>
-        <div>V</div>
-        <div>T</div>
-        <div>R</div>
-        <div>P</div>
-        <div>N</div>
-        <div>L</div>
-        <div>J</div>
-        <div>H</div>
-        <div>F</div>
-        <div>D</div>
-        <div>B</div>
-      </div>
-      <div class="air">
-        <div>;</div>
-        <div>\</div>
-        <div>]</div>
-        <div>[</div>
-        <div>=</div>
-        <div>-</div>
-      </div>
-      <div class="extra">
-        <div>[enter]</div>
-        <div>[space]</div>
-        <div>[esc]</div>
-      </div>
-    </div>
-    <body>
-      <div class="layout">
-        <div class="name">Keyboard 16-zone, Linear</div>
-        <div class="ground ground-16">
-          <div>A</div>
-          <div>Z</div>
-          <div>S</div>
-          <div>X</div>
-          <div>D</div>
-          <div>C</div>
-          <div>F</div>
-          <div>V</div>
-          <div>G</div>
-          <div>B</div>
-          <div>H</div>
-          <div>N</div>
-          <div>J</div>
-          <div>M</div>
-          <div>K</div>
-          <div>,</div>
-        </div>
-        <div class="air">
-          <div>]</div>
-          <div>[</div>
-          <div>;</div>
-          <div>.</div>
-          <div>'</div>
-          <div>/</div>
-        </div>
-        <div class="extra">
-          <div>[enter]</div>
-          <div>[space]</div>
-          <div>[esc]</div>
-        </div>
-      </div>
     <div class="layout">
       <div class="name">Keyboard 8-zone, Linear</div>
       <div class="ground ground-8">
@@ -465,4 +522,5 @@
       </div>
     </div>
   </body>
+
 </html>
