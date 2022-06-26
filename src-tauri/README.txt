@@ -2,13 +2,15 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.3.0 UMIGURI UPDATE
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.3.1 UMIGURI UPDATE
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.3.1
+  - Fix wrong key in UMIGURI keyboard layout
 - v0.3.0
   - Add UMIGURI LED controller server support
   - Add UMIGURI default keyboard layout

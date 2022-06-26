@@ -12,6 +12,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.3.1
+  - Fix wrong key in UMIGURI keyboard layout
 - v0.3.0
   - Add UMIGURI LED controller server support
   - Add UMIGURI default keyboard layout
