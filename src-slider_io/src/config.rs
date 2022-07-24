@@ -43,6 +43,8 @@ impl Config {
       "ledFaster": false,
       "ledColorActive": "#ff00ff",
       "ledColorInactive": "#ffff00",
+      "ledColorAirActive": "#0086ed",
+      "ledColorAirInactive": "#000000",
       "ledSensitivity": 20,
       "ledWebsocketUrl": "localhost:3001",
       "ledSerialPort": "COM5"

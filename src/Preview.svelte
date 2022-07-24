@@ -8,9 +8,11 @@
 
   let ledDatas = Array(16).fill("#ff0");
   let ledDividerDatas = Array(15).fill("#ff0");
+  let airLedLeftDatas = Array(3).fill(0);
+  let airLedRightDatas = Array(3).fill(0);
 
   $: {
-    if (data.length === 134) {
+    if (data.length === 152) {
       // console.log(data);
       for (let i = 0; i < 16; i++) {
         topDatas[i] = data[i * 2 + 1];
@@ -33,15 +35,42 @@
           ledDividerDatas[(i - 1) / 2] = rgbstr;
         }
       }
+      for (let i = 0; i < 3; i++) {
+        let rgbstr = `rgb(${data[134 + i * 3]}, ${data[135 + i * 3]}, ${
+          data[136 + i * 3]
+        })`;
+        airLedLeftDatas[i] = rgbstr;
+      }
+      for (let i = 0; i < 3; i++) {
+        let rgbstr = `rgb(${data[143 + i * 3]}, ${data[144 + i * 3]}, ${
+          data[145 + i * 3]
+        })`;
+        airLedRightDatas[i] = rgbstr;
+      }
     }
   }
 </script>
 
 <main class="preview">
   <div class="air">
-    {#each airDatas as airData, idx (idx)}
-      <div class={`air-data air-data-${airData}`} />
-    {/each}
+    <div class="air-led">
+      <div class="air-led-left">
+        {#each airLedLeftDatas as airLedData, idx (idx)}
+          <div class="air-led-data" style={`background-color: ${airLedData}`} />
+        {/each}
+      </div>
+      <div class="air-led-space" />
+      <div class="air-led-right">
+        {#each airLedRightDatas as airLedData, idx (idx)}
+          <div class="air-led-data" style={`background-color: ${airLedData}`} />
+        {/each}
+      </div>
+    </div>
+    <div class="air-btn">
+      {#each airDatas as airData, idx (idx)}
+        <div class={`air-data air-data-${airData}`} />
+      {/each}
+    </div>
   </div>
   <div class="ground">
     <div class="ground-led">

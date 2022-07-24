@@ -108,6 +108,12 @@ async fn handle_umgr_leds(ws_stream: WebSocketStream<Upgraded>, state: SliderSta
                     );
                   }
 
+                  for i in 0..3 {
+                    let pos = 94 + i * 3;
+                    lights_handle
+                      .paint_air(2 - i, &[payload[pos], payload[pos + 1], payload[pos + 2]]);
+                  }
+
                   if latest_lights.elapsed() > delay {
                     lights_handle.dirty = true;
                     latest_lights = Instant::now();

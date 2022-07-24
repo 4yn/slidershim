@@ -61,6 +61,10 @@ pub struct SliderLights {
   /// right. Alternates between 16 touch pad pixels and 15 divider pixels.
   pub ground: [u8; 3 * 31],
 
+  // RGB light values for left and right air sensors, bottom to top
+  pub air_left: [u8; 3 * 3],
+  pub air_right: [u8; 3 * 3],
+
   /// Internal dirty flag used to indicate that new lighting data is available.
   pub dirty: bool,
 
@@ -73,6 +77,8 @@ impl SliderLights {
   pub fn new() -> Self {
     Self {
       ground: [0; 3 * 31],
+      air_left: [0; 3 * 3],
+      air_right: [0; 3 * 3],
       dirty: false,
       start: Instant::now(),
     }
@@ -83,8 +89,23 @@ impl SliderLights {
     self.ground[3 * idx..3 * (idx + 1)].copy_from_slice(color);
   }
 
+  pub fn paint_air(&mut self, idx: usize, color: &[u8; 3]) {
+    self.air_left[3 * idx..3 * (idx + 1)].copy_from_slice(color);
+    self.air_right[3 * idx..3 * (idx + 1)].copy_from_slice(color);
+  }
+
+  pub fn paint_air_left(&mut self, idx: usize, color: &[u8; 3]) {
+    self.air_left[3 * idx..3 * (idx + 1)].copy_from_slice(color);
+  }
+
+  pub fn paint_air_right(&mut self, idx: usize, color: &[u8; 3]) {
+    self.air_right[3 * idx..3 * (idx + 1)].copy_from_slice(color);
+  }
+
   pub fn reset(&mut self) {
     self.ground.fill(0);
+    self.air_left.fill(0);
+    self.air_right.fill(0);
     self.dirty = true;
   }
 }
@@ -122,6 +143,8 @@ impl SliderState {
     {
       let lights_handle = self.lights.lock();
       buf.extend(lights_handle.ground);
+      buf.extend(lights_handle.air_left);
+      buf.extend(lights_handle.air_right);
     };
 
     buf

@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use log::{error, info};
-use palette::{FromColor, Hsv, Srgb};
+use palette::{encoding::Srgb as SrgbEncoding, rgb::Rgb, FromColor, Hsv, Srgb};
 use serialport::{ClearBuffer, SerialPort};
 use std::{
   ops::DerefMut,
@@ -14,6 +14,22 @@ use crate::{
 };
 
 use super::config::{LightsMode, ReactiveLayout};
+
+fn get_rainbow(phase: f64, desaturate: bool) -> Rgb<SrgbEncoding, u8> {
+  let phase = ((phase % 1.0) + 1.0) % 1.0;
+  let color = Srgb::from_color(Hsv::new(
+    phase * 360.0,
+    match desaturate {
+      false => 1.0,
+      true => 0.2,
+      _ => unreachable!(),
+    },
+    1.0,
+  ))
+  .into_format::<u8>();
+
+  return color;
+}
 
 pub struct LightsJob {
   state: SliderState,
@@ -75,6 +91,16 @@ impl LightsJob {
                 },
               );
             }
+
+            for idx in 0..3 {
+              lights.paint_air(
+                idx,
+                match flat_input[32 + idx * 2] || flat_input[33 + idx * 2] {
+                  true => &color.air_active,
+                  false => &color.air_inactive,
+                },
+              )
+            }
           }
           ReactiveLayout::Six => {
             let banks: Vec<bool> = [0..6, 6..10, 10..16, 16..22, 22..26, 26..32]
@@ -105,6 +131,16 @@ impl LightsJob {
                   },
                 )
               }
+            }
+
+            for idx in 0..3 {
+              lights.paint_air(
+                idx,
+                match flat_input[32 + idx * 2] || flat_input[33 + idx * 2] {
+                  true => &color.air_active,
+                  false => &color.air_inactive,
+                },
+              )
             }
           }
           ReactiveLayout::Voltex => {
@@ -207,22 +243,31 @@ impl LightsJob {
               .elapsed()
               .div_duration_f64(Duration::from_secs(4))
               % 1.0;
+
             for idx in 0..31 {
-              let slice_theta = (&theta + (idx as f64) / 32.0) % 1.0;
-              let color = Srgb::from_color(Hsv::new(
-                slice_theta * 360.0,
-                match idx % 2 {
-                  0 => match banks[idx / 2] {
-                    true => 0.2,
-                    false => 1.0,
-                  },
-                  1 => 1.0,
-                  _ => unreachable!(),
-                },
-                1.0,
-              ))
-              .into_format::<u8>();
+              let slice_theta = theta + (idx as f64) / 32.0;
+              let color = get_rainbow(slice_theta, ((idx % 2) == 0) && banks[idx / 2]);
               lights.paint(idx, &[color.red, color.green, color.blue]);
+            }
+
+            // left
+            for idx in 0..3 {
+              let slice_theta = theta - ((idx + 1) as f64) / 32.0;
+              let color = get_rainbow(
+                slice_theta,
+                flat_input[32 + idx * 2] || flat_input[33 + idx * 2],
+              );
+              lights.paint_air_left(idx, &[color.red, color.green, color.blue]);
+            }
+
+            // right
+            for idx in 0..3 {
+              let slice_theta = theta + (idx as f64) / 32.0;
+              let color = get_rainbow(
+                slice_theta,
+                flat_input[32 + idx * 2] || flat_input[33 + idx * 2],
+              );
+              lights.paint_air_right(idx, &[color.red, color.green, color.blue]);
             }
           }
         }
@@ -233,10 +278,25 @@ impl LightsJob {
           .elapsed()
           .div_duration_f64(Duration::from_secs(4))
           % 1.0;
+
         for idx in 0..31 {
-          let slice_theta = (&theta + (idx as f64) / 32.0) % 1.0;
-          let color = Srgb::from_color(Hsv::new(slice_theta * 360.0, 1.0, 1.0)).into_format::<u8>();
+          let slice_theta = theta + (idx as f64) / 32.0;
+          let color = get_rainbow(slice_theta, false);
           lights.paint(idx, &[color.red, color.green, color.blue]);
+        }
+
+        // left
+        for idx in 0..3 {
+          let slice_theta = theta - ((idx + 1) as f64) / 32.0;
+          let color = get_rainbow(slice_theta, false);
+          lights.paint_air_left(idx, &[color.red, color.green, color.blue]);
+        }
+
+        // right
+        for idx in 0..3 {
+          let slice_theta = theta + (idx as f64) / 32.0;
+          let color = get_rainbow(slice_theta, false);
+          lights.paint_air_right(idx, &[color.red, color.green, color.blue]);
         }
       }
       LightsMode::Serial { .. } => {

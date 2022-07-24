@@ -183,19 +183,52 @@ button.primary {
 
 .air {
   height: 2rem;
+  position: relative;
+
+  border-radius: 0.5rem 0.5rem 0 0;
+  overflow: clip;
+
+  background: #000;
+}
+
+.air-btn, .air-led {
+  height: 2rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.air-led {
+  flex-flow: row nowrap;
+}
+
+.air-led-left, .air-led-right {
   display: flex;
   flex-flow: column-reverse nowrap;
   align-items: stretch;
   justify-content: flex-start;
-
-  border-radius: 0.5rem 0.5rem 0 0;
-  overflow: clip;
+  flex: 1;
 }
-.air-data {
+.air-led-data {
   flex: 1 0;
 }
-.air-data-0 {
-  background: #000;
+
+.air-led-space {
+  flex: 14;
+}
+
+.air-btn {
+  background: #0008;
+  flex-flow: column-reverse nowrap;
+}
+
+.air-data {
+  flex: 1 0;
 }
 .air-data-1 {
   background: #0aa;

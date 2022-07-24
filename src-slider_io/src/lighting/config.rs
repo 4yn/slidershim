@@ -13,6 +13,8 @@ pub enum ReactiveLayout {
 pub struct ColorScheme {
   pub active: [u8; 3],
   pub inactive: [u8; 3],
+  pub air_active: [u8; 3],
+  pub air_inactive: [u8; 3],
 }
 
 impl ColorScheme {
@@ -28,6 +30,16 @@ impl ColorScheme {
         u8::from_str_radix(&v["ledColorInactive"].as_str()?[3..5], 16).ok()?,
         u8::from_str_radix(&v["ledColorInactive"].as_str()?[5..7], 16).ok()?,
       ],
+      air_active: [
+        u8::from_str_radix(&v["ledColorAirActive"].as_str()?[1..3], 16).ok()?,
+        u8::from_str_radix(&v["ledColorAirActive"].as_str()?[3..5], 16).ok()?,
+        u8::from_str_radix(&v["ledColorAirActive"].as_str()?[5..7], 16).ok()?,
+      ],
+      air_inactive: [
+        u8::from_str_radix(&v["ledColorAirInactive"].as_str()?[1..3], 16).ok()?,
+        u8::from_str_radix(&v["ledColorAirInactive"].as_str()?[3..5], 16).ok()?,
+        u8::from_str_radix(&v["ledColorAirInactive"].as_str()?[5..7], 16).ok()?,
+      ],
     })
   }
 
@@ -35,6 +47,8 @@ impl ColorScheme {
     Self {
       active: [255, 0, 255],
       inactive: [255, 255, 0],
+      air_active: [0, 134, 237],
+      air_inactive: [0, 0, 0],
     }
   }
 
@@ -43,6 +57,8 @@ impl ColorScheme {
       .or(Some(Self {
         active: [255, 0, 255],
         inactive: [255, 255, 0],
+        air_active: [0, 134, 237],
+        air_inactive: [0, 0, 0],
       }))
       .unwrap()
   }

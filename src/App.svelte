@@ -21,6 +21,8 @@
   let ledFaster = false;
   let ledColorActive = "#ff00ff";
   let ledColorInactive = "#ffff00";
+  let ledColorAirActive = "#0086ed";
+  let ledColorAirInactive = "#000000";
   let ledSensitivity = 20;
   let ledWebsocketUrl = "http://localhost:3001";
   let ledUmgrWebsocketPort = 7124;
@@ -77,6 +79,8 @@
       ledFaster = payload.ledFaster || false;
       ledColorActive = payload.ledColorActive || "#ff00ff";
       ledColorInactive = payload.ledColorInactive || "#ffff00";
+      ledColorAirActive = payload.ledColorAirActive || "#0086ed";
+      ledColorAirInactive = payload.ledColorAirInactive || "#000000";
       ledSensitivity = payload.ledSensitivity || 20;
       ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
       ledUmgrWebsocketPort = payload.ledUmgrWebsocketPort || 7124;
@@ -133,6 +137,8 @@
         ledFaster,
         ledColorActive,
         ledColorInactive,
+        ledColorAirActive,
+        ledColorAirInactive,
         ledSensitivity,
         ledWebsocketUrl,
         ledUmgrWebsocketPort,
@@ -470,23 +476,53 @@
     {/if}
     {#if ledMode.slice(0, 8) === "reactive" && ["16", "8", "6", "4"].includes(ledMode.slice(9))}
       <div class="row">
-        <div class="label">Active Color</div>
+        <div class="label">Slider Color</div>
         <div class="input">
-          <input
-            type="color"
-            bind:value={ledColorActive}
-            on:change={markDirty}
-          />
+          <span>
+            <input
+              type="color"
+              id="color-active"
+              style="width: 3rem;"
+              bind:value={ledColorActive}
+              on:change={markDirty}
+            />
+            <label for="color-active">Active</label>
+          </span>
+          <span>
+            <input
+              type="color"
+              id="color-base"
+              style="width: 3rem;"
+              bind:value={ledColorInactive}
+              on:change={markDirty}
+            />
+            <label for="color-base">Inactive</label>
+          </span>
         </div>
       </div>
       <div class="row">
-        <div class="label">Base Color</div>
+        <div class="label">Air Color</div>
         <div class="input">
-          <input
-            type="color"
-            bind:value={ledColorInactive}
-            on:change={markDirty}
-          />
+          <span>
+            <input
+              type="color"
+              id="color-active"
+              style="width: 3rem;"
+              bind:value={ledColorAirActive}
+              on:change={markDirty}
+            />
+            <label for="color-active">Active</label>
+          </span>
+          <span>
+            <input
+              type="color"
+              id="color-base"
+              style="width: 3rem;"
+              bind:value={ledColorAirInactive}
+              on:change={markDirty}
+            />
+            <label for="color-base">Inactive</label>
+          </span>
         </div>
       </div>
     {/if}
