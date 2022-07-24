@@ -12,6 +12,9 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.4.0
+  - Add DirectInput keyboard emulation using oblitum/Interception
+  - Add slide LED support for some controllers
 - v0.3.1
   - Fix wrong key in UMIGURI keyboard layout
 - v0.3.0
@@ -162,7 +165,7 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 
 ## Technical Information
 
-- Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [vigem](https://github.com/ViGEm/ViGEmClient)[-client](https://github.com/CasualX/vigem-client), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs), [serialport](https://crates.io/crates/serialport), [dtolnay/cxx](https://github.com/dtolnay/cxx) and [wjwwood/serial](https://github.com/wjwwood/serial)
+- Built with Rust, [tauri](https://github.com/tauri-apps/tauri) + [Svelte](https://github.com/sveltejs/svelte), [rusb](https://github.com/a1ien/rusb), [vigem](https://github.com/ViGEm/ViGEmClient)[-client](https://github.com/CasualX/vigem-client), [hyper](https://github.com/hyperium/hyper/), [tokio-](https://github.com/snapview/tokio-tungstenite)[tungstenite](https://github.com/snapview/tungstenite-rs), [serialport](https://crates.io/crates/serialport), [dtolnay/cxx](https://github.com/dtolnay/cxx), [wjwwood/serial](https://github.com/wjwwood/serial), [oblitum/Interception](https://github.com/oblitum/Interception) and [bozbez/interception-rs](https://github.com/bozbez/interception-rs)
 - USB device and serial polling is done on a dedicated thread while everything else is done on a async runtime.
 
 ### Building from Source
@@ -182,13 +185,14 @@ Voltex layout disables air tower, Neardayo layout enables air tower.
 - [`src-tauri`](./src-tauri): Tauri adapter between frontend and backend
 - [`src-slider_io`](./src-slider_io): Backend logic for handling usb, brokenithm, output emulation and lighting.
 - [`src-wwserial`](./src-wwserial): FFI to [wjwwood/serial](https://github.com/wjwwood/serial) using [dtolnay/cxx](https://github.com/dtolnay/cxx). For some reason [serialport](https://crates.io/crates/serialport) does not work well with hardware devices, so we use this as an alternative.
+- [`src-interception`](./src-interception): Vendored [bozbez/interception-rs](https://github.com/bozbez/interception-rs) that statically links against [oblitum/Interception](https://github.com/oblitum/Interception) for DirectInput keyboard emulation.
 - [`res`](./res): Miscellaneous tools such as Brokenithm QR parser and keyboard layout visualisation.
 
 ## Planned Features
 
 - Major:
   - ✅ DONE: Support AC slider serial protocol
-  - Output and LED websocket adapters when UMIGURI comes out
+  - ✅ DONE: Output and LED websocket adapters when UMIGURI comes out
 - QOL:
   - Documentation
   - Comprehensive logging and error handling
