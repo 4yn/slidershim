@@ -31,7 +31,7 @@ serialport = "4.0.1"
 wwserial = {path = "../src-wwserial" }
 vigem-client = { version = "0.1.2", features = ["unstable"] }
 winapi = "0.3.9"
-interception = {path = "../src-interception-rs" }
+interception = {path = "../src-interception" }
 ipconfig = "0.3.0"
 
 # webserver

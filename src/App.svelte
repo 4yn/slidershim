@@ -390,27 +390,33 @@
       </div>
     {/if}
     {#if outputMode.slice(0, 2) === "kb"}
-    <div class="row">
-      <div class="label" title="Larger means harder to trigger">
-        Use DirectInput emulation
+      <div class="row">
+        <div class="label" />
+        <div class="input">
+          <span>
+            <input
+              type="checkbox"
+              id="direct-input"
+              style="width: unset;"
+              bind:checked={keyboardDirectInput}
+              on:change={markDirty}
+            />
+            <label for="disable-air">Use DirectInput</label>
+          </span>
+        </div>
       </div>
-      <div class="input">
-        <input
-          type="checkbox"
-          bind:checked={keyboardDirectInput}
-          on:change={markDirty}
-        />
-      </div>
-    </div>
-    <div class="row">
-      <div class="label" />
-      <div class="input comment">
-        DirectInput emulation requires <Link
-          href="https://github.com/oblitum/Interception/releases/tag/v1.0.1">Interception</Link
-        > to be installed
-      </div>
-    </div>
-  {/if}
+      {#if keyboardDirectInput}
+        <div class="row">
+          <div class="label" />
+          <div class="input comment">
+            DirectInput emulation requires <Link
+              href="https://github.com/oblitum/Interception/releases/tag/v1.0.1"
+              >Interception</Link
+            >
+          </div>
+        </div>
+      {/if}
+    {/if}
     {#if outputMode === "websocket"}
       <div class="row">
         <div class="label">Output URL</div>
@@ -544,7 +550,7 @@
     {#if ledMode === "serial"}
       <div class="row">
         <div class="label" />
-        <div class="input">
+        <div class="input comment">
           Serial LED may require <Link
             href="https://sourceforge.net/projects/com0com/files/com0com/2.2.2.0/com0com-2.2.2.0-x64-fre-signed.zip/download"
             >com0com</Link

@@ -50,6 +50,9 @@
       "all": false,
       "window": {
         "startDragging": true
+      },
+      "shell": {
+        "open": true
       }
     },
     "windows": [
