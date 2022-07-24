@@ -21,22 +21,18 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "resources": [
-        "./README.txt"
-      ],
+      "resources": ["./README.txt"],
       "externalBin": [],
       "copyright": "© 4yn 2022",
       "category": "DeveloperTool",
       "shortDescription": "slidershim",
       "longDescription": "slidershim",
       "deb": {
-        "depends": [],
-        "useBootstrapper": false
+        "depends": []
       },
       "macOS": {
         "frameworks": [],
         "minimumSystemVersion": "",
-        "useBootstrapper": false,
         "exceptionDomain": "",
         "signingIdentity": null,
         "entitlements": null

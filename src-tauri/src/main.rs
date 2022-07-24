@@ -193,8 +193,8 @@ fn main() {
     .expect("error while running tauri application")
     .run(|app_handle, event| match event {
       // After app starts
-      RunEvent::CloseRequested { label, api, .. } if label.as_str() == "main" => {
-        api.prevent_close();
+      RunEvent::ExitRequested { api, .. } => {
+        api.prevent_exit();
         hide_window(app_handle);
       }
       _ => {}
