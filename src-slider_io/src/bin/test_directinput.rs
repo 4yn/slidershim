@@ -34,6 +34,7 @@ async fn main() {
   .unwrap();
   println!("{:?}", config);
 
+  #[allow(unused_variables)]
   let ctx = Context::new(config);
 
   println!("Press enter to quit");

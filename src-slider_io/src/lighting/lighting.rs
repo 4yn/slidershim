@@ -22,7 +22,6 @@ fn get_rainbow(phase: f64, desaturate: bool) -> Rgb<SrgbEncoding, u8> {
     match desaturate {
       false => 1.0,
       true => 0.2,
-      _ => unreachable!(),
     },
     1.0,
   ))

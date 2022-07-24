@@ -227,13 +227,16 @@ impl HidJob {
         |buf, lights| {
           buf.len = 62;
 
-          let air_color = lights.get_air_middle();
           let lights_nibbles: Vec<u8> = lights
             .ground
             .chunks(3)
             .rev()
             .flat_map(|x| x.iter().map(|y| *y >> 4))
-            .chain([air_color[0] >> 4, air_color[1] >> 4, air_color[2] >> 4])
+            .chain([
+              lights.air_left[3] >> 4,
+              lights.air_left[4] >> 4,
+              lights.air_left[5] >> 4,
+            ])
             .collect();
 
           for (buf_chunk, state_chunk) in buf
