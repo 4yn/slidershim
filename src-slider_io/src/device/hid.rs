@@ -153,7 +153,20 @@ impl HidJob {
             buf_chunk[1] = state_chunk[0];
             buf_chunk[2] = state_chunk[2];
           }
-          buf.data[96..240].fill(0);
+
+          for (buf_chunks, state_chunk) in buf.data[96..240].chunks_mut(24).zip(
+            lights
+              .air_left
+              .chunks(3)
+              .rev()
+              .chain(lights.air_right.chunks(3)),
+          ) {
+            for idx in 0..8 {
+              buf_chunks[0 + idx * 3] = state_chunk[1];
+              buf_chunks[1 + idx * 3] = state_chunk[0];
+              buf_chunks[2 + idx * 3] = state_chunk[2];
+            }
+          }
         },
       ),
       HardwareSpec::Yuancon => Self::new(
@@ -213,12 +226,14 @@ impl HidJob {
         WriteType::Interrupt,
         |buf, lights| {
           buf.len = 62;
+
+          let air_color = lights.get_air_middle();
           let lights_nibbles: Vec<u8> = lights
             .ground
             .chunks(3)
             .rev()
             .flat_map(|x| x.iter().map(|y| *y >> 4))
-            .chain([0, 0, 0])
+            .chain([air_color[0] >> 4, air_color[1] >> 4, air_color[2] >> 4])
             .collect();
 
           for (buf_chunk, state_chunk) in buf

@@ -102,6 +102,14 @@ impl SliderLights {
     self.air_right[3 * idx..3 * (idx + 1)].copy_from_slice(color);
   }
 
+  pub fn get_air_middle(&self) -> [u8; 3] {
+    return [
+      ((self.air_left[3] as u16 + self.air_right[3] as u16) / 2) as u8,
+      ((self.air_left[4] as u16 + self.air_right[4] as u16) / 2) as u8,
+      ((self.air_left[5] as u16 + self.air_right[5] as u16) / 2) as u8,
+    ];
+  }
+
   pub fn reset(&mut self) {
     self.ground.fill(0);
     self.air_left.fill(0);
