@@ -37,6 +37,7 @@ impl Config {
       "divaBrightness": 63,
       "brokenithmPort": 1606,
       "keyboardSensitivity": 20,
+      "keyboardDirectInput": false,
       "outputPolling": "100",
       "outputWebsocketUrl": "localhost:3000",
       "ledFaster": false,

@@ -41,6 +41,7 @@ pub enum OutputMode {
     layout: KeyboardLayout,
     polling: PollingRate,
     sensitivity: u8,
+    direct_input: bool,
   },
   Gamepad {
     layout: GamepadLayout,
@@ -89,46 +90,55 @@ impl OutputMode {
         layout: KeyboardLayout::Tasoller,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-32-yuancon" => OutputMode::Keyboard {
         layout: KeyboardLayout::Yuancon,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-32-umiguri" => OutputMode::Keyboard {
         layout: KeyboardLayout::Umiguri,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-16" => OutputMode::Keyboard {
         layout: KeyboardLayout::TasollerHalf,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-8" => OutputMode::Keyboard {
         layout: KeyboardLayout::EightK,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-6" => OutputMode::Keyboard {
         layout: KeyboardLayout::SixK,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-4" => OutputMode::Keyboard {
         layout: KeyboardLayout::FourK,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-voltex" => OutputMode::Keyboard {
         layout: KeyboardLayout::Voltex,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "kb-neardayo" => OutputMode::Keyboard {
         layout: KeyboardLayout::Neardayo,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
       },
       "gamepad-voltex" => OutputMode::Gamepad {
         layout: GamepadLayout::Voltex,

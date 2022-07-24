@@ -1498,6 +1498,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "interception"
+version = "0.1.2"
+dependencies = [
+ "bitflags",
+ "interception-sys",
+ "num_enum",
+ "serde",
+]
+
+[[package]]
+name = "interception-sys"
+version = "0.1.3"
+
+[[package]]
 name = "ipconfig"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2954,6 +2968,7 @@ dependencies = [
  "futures-util",
  "hyper",
  "image 0.23.14",
+ "interception",
  "ipconfig",
  "log",
  "palette",

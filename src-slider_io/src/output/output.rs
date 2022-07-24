@@ -42,9 +42,10 @@ impl AsyncJob for OutputJob {
         layout,
         polling,
         sensitivity,
+        direct_input,
       } => {
         self.sensitivity = sensitivity;
-        self.handler = Some(Box::new(KeyboardOutput::new(layout.clone())));
+        self.handler = Some(Box::new(KeyboardOutput::new(layout.clone(), direct_input)));
         self.timer = interval(Duration::from_micros(polling.to_t_u64()));
 
         true

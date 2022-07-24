@@ -15,6 +15,7 @@
   let divaBrightness = 63;
   let brokenithmPort = 1606;
   let keyboardSensitivity = 20;
+  let keyboardDirectInput = false;
   let outputPolling = "100";
   let outputWebsocketUrl = "http://localhost:3000";
   let ledFaster = false;
@@ -69,6 +70,7 @@
       divaBrightness = payload.divaBrightness || 63;
       brokenithmPort = payload.brokenithmPort || 1606;
       keyboardSensitivity = payload.keyboardSensitivity || 20;
+      keyboardDirectInput = payload.keyboardDirectInput || false;
       outputPolling = payload.outputPolling || "100";
       outputWebsocketUrl =
         payload.outputWebsocketUrl || "http://localhost:3000/";
@@ -125,6 +127,7 @@
         divaBrightness,
         brokenithmPort,
         keyboardSensitivity,
+        keyboardDirectInput,
         outputPolling,
         outputWebsocketUrl,
         ledFaster,
@@ -386,6 +389,28 @@
         </div>
       </div>
     {/if}
+    {#if outputMode.slice(0, 2) === "kb"}
+    <div class="row">
+      <div class="label" title="Larger means harder to trigger">
+        Use DirectInput emulation
+      </div>
+      <div class="input">
+        <input
+          type="checkbox"
+          bind:checked={keyboardDirectInput}
+          on:change={markDirty}
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="label" />
+      <div class="input comment">
+        DirectInput emulation requires <Link
+          href="https://github.com/oblitum/Interception/releases/tag/v1.0.1">Interception</Link
+        > to be installed
+      </div>
+    </div>
+  {/if}
     {#if outputMode === "websocket"}
       <div class="row">
         <div class="label">Output URL</div>

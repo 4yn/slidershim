@@ -1,13 +1,14 @@
+use interception::{Interception, KeyState, ScanCode, Stroke};
+use log::{error, info};
 use std::mem;
 use winapi::{
   ctypes::c_int,
-  um::winuser::{SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP},
+  um::winuser::{
+    MapVirtualKeyA, SendInput, INPUT, INPUT_KEYBOARD, KEYBDINPUT, KEYEVENTF_KEYUP, MAPVK_VK_TO_VSC,
+  },
 };
 
-use super::{
-  config::KeyboardLayout,
-  output::OutputHandler
-};
+use super::{config::KeyboardLayout, output::OutputHandler};
 
 #[rustfmt::skip]
 const TASOLLER_KB_MAP: [usize; 41] = [
@@ -126,18 +127,25 @@ const VOLTEX_KB_MAP_NEARDAYO: [usize; 41] = [
 ];
 
 pub struct KeyboardOutput {
-  ground_to_idx: [usize; 41],
-  idx_to_keycode: [u16; 41],
-  // keycode_to_idx: [usize; 256],
+  input_to_idx: [usize; 41],
+  key_idx_to_keycode: [u16; 41],
+  key_idx_to_scancode: [Option<ScanCode>; 41],
   next_keys: [bool; 41],
   last_keys: [bool; 41],
 
+  direct_input: bool,
+  interception_handle: Option<Interception>,
+
   kb_buf: [INPUT; 41],
+  kb_direct_buf: [Stroke; 41],
   n_kb_buf: u32,
 }
 
+// interception isn't send, but lazy to wrap
+unsafe impl Send for KeyboardOutput {}
+
 impl KeyboardOutput {
-  pub fn new(layout: KeyboardLayout) -> Self {
+  pub fn new(layout: KeyboardLayout, direct_input: bool) -> Self {
     let kb_map = match layout {
       KeyboardLayout::Tasoller => &TASOLLER_KB_MAP,
       KeyboardLayout::Yuancon => &YUANCON_KB_MAP,
@@ -150,19 +158,42 @@ impl KeyboardOutput {
       KeyboardLayout::Neardayo => &VOLTEX_KB_MAP_NEARDAYO,
     };
 
-    let mut ground_to_idx = [0 as usize; 41];
-    let mut idx_to_keycode = [0 as u16; 41];
+    let mut input_to_key_idx = [0 as usize; 41];
+    let mut key_idx_to_keycode = [0 as u16; 41];
+    let mut key_idx_to_scancode = [None as Option<ScanCode>; 41];
     let mut keycode_to_idx = [0xffff as usize; 256];
     let mut keycode_count: usize = 0;
 
     for (ground, keycode) in kb_map.iter().enumerate() {
       if keycode_to_idx[*keycode] == 0xffff {
         keycode_to_idx[*keycode] = keycode_count;
-        idx_to_keycode[keycode_count] = *keycode as u16;
+        key_idx_to_keycode[keycode_count] = *keycode as u16;
+        key_idx_to_scancode[keycode_count] =
+          ScanCode::try_from(unsafe { MapVirtualKeyA((*keycode) as u32, MAPVK_VK_TO_VSC) as u16 })
+            .ok();
+        // info!(
+        //   "mapped {:?} to {:?}",
+        //   key_idx_to_keycode[keycode_count], key_idx_to_scancode[keycode_count]
+        // );
         keycode_count += 1;
       }
-      ground_to_idx[ground] = keycode_to_idx[*keycode]
+      input_to_key_idx[ground] = keycode_to_idx[*keycode]
     }
+
+    let interception_handle = match direct_input {
+      true => {
+        let inner_handle = Interception::new();
+
+        if inner_handle.is_some() {
+          info!("Keyboard emulation with interception loaded");
+        } else {
+          error!("Keyboard emulation cannot load interception, falling back to SendKeys()");
+        }
+        inner_handle
+      }
+      false => None,
+    };
+    let direct_input = interception_handle.is_some();
 
     let mut kb_buf = [INPUT {
       type_: INPUT_KEYBOARD,
@@ -178,13 +209,24 @@ impl KeyboardOutput {
       inner.dwExtraInfo = 0;
     }
 
+    let kb_direct_buf = [Stroke::Keyboard {
+      code: ScanCode::Esc,
+      state: KeyState::UP,
+      information: 0,
+    }; 41];
+
     Self {
-      ground_to_idx,
-      idx_to_keycode,
-      // keycode_to_idx,
+      input_to_idx: input_to_key_idx,
+      key_idx_to_keycode,
+      key_idx_to_scancode,
       next_keys: [false; 41],
       last_keys: [false; 41],
+
+      direct_input,
+      interception_handle,
+
       kb_buf,
+      kb_direct_buf,
       n_kb_buf: 0,
     }
   }
@@ -198,24 +240,52 @@ impl KeyboardOutput {
       .zip(self.last_keys.iter_mut())
       .enumerate()
     {
-      let keycode = self.idx_to_keycode[i];
-      if keycode == 0 {
+      let keycode = self.key_idx_to_keycode[i];
+      let scancode = self.key_idx_to_scancode[i];
+
+      if (!self.direct_input && keycode == 0) || (self.direct_input && scancode.is_none()) {
         continue;
       }
-      match (*n, *l) {
-        (true, false) => {
+      match (self.direct_input, *n, *l) {
+        (false, true, false) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
           inner.wVk = keycode;
           inner.dwFlags = 0;
           self.n_kb_buf += 1;
-          // println!("{} down", keycode);
         }
-        (false, true) => {
+        (false, false, true) => {
           let inner: &mut KEYBDINPUT = unsafe { self.kb_buf[self.n_kb_buf as usize].u.ki_mut() };
           inner.wVk = keycode;
           inner.dwFlags = KEYEVENTF_KEYUP;
           self.n_kb_buf += 1;
-          // println!("{} up", keycode);
+        }
+        (true, true, false) => {
+          // info!("keydown {:?}", scancode);
+          let inner: &mut Stroke = &mut self.kb_direct_buf[self.n_kb_buf as usize];
+          if let Stroke::Keyboard {
+            code,
+            state,
+            information: _,
+          } = inner
+          {
+            *code = scancode.unwrap();
+            *state = KeyState::DOWN;
+            self.n_kb_buf += 1;
+          }
+        }
+        (true, false, true) => {
+          // info!("keyup {:?}", scancode);
+          let inner: &mut Stroke = &mut self.kb_direct_buf[self.n_kb_buf as usize];
+          if let Stroke::Keyboard {
+            code,
+            state,
+            information: _,
+          } = inner
+          {
+            *code = scancode.unwrap();
+            *state = KeyState::UP;
+            self.n_kb_buf += 1;
+          }
         }
         _ => {}
       }
@@ -223,12 +293,19 @@ impl KeyboardOutput {
     }
 
     if self.n_kb_buf != 0 {
-      unsafe {
-        SendInput(
-          self.n_kb_buf,
-          self.kb_buf.as_mut_ptr(),
-          mem::size_of::<INPUT>() as c_int,
-        );
+      match self.direct_input {
+        false => unsafe {
+          SendInput(
+            self.n_kb_buf,
+            self.kb_buf.as_mut_ptr(),
+            mem::size_of::<INPUT>() as c_int,
+          );
+        },
+        true => {
+          if let Some(handle) = self.interception_handle.as_mut() {
+            handle.send(1, &self.kb_direct_buf[0..self.n_kb_buf as usize]);
+          }
+        }
       }
     }
   }
@@ -239,7 +316,7 @@ impl OutputHandler for KeyboardOutput {
     self.next_keys.fill(false);
     for (idx, x) in flat_input.iter().enumerate() {
       if *x {
-        self.next_keys[self.ground_to_idx[idx]] = true;
+        self.next_keys[self.input_to_idx[idx]] = true;
       }
     }
     self.send();

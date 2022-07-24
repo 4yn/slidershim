@@ -38,6 +38,7 @@ fn main() {
   env_logger::Builder::new()
     .filter_level(log::LevelFilter::Debug)
     .init();
+  info!("Starting slidershim");
 
   #[cfg(not(debug_assertions))]
   {
@@ -45,7 +46,9 @@ fn main() {
     simple_logging::log_to_file(log_file_path.as_path(), log::LevelFilter::Debug).unwrap();
   }
 
+  info!("Loading config");
   let config = Arc::new(Mutex::new(Some(slider_io::Config::load())));
+  info!("Loading manager");
   let manager = Arc::new(Mutex::new(slider_io::Manager::new()));
   {
     let config_handle = config.lock();
@@ -55,6 +58,7 @@ fn main() {
     manager_handle.update_config(config_handle_ref.clone());
   }
 
+  info!("Running tauri");
   tauri::Builder::default()
     .system_tray(
       // System tray content
