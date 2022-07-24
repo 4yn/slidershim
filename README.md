@@ -4,7 +4,7 @@
 
 Software adapter for various Chunithm slider controllers with a built-in Brokenithm web controller. Has support for keyboard/gamepad output and LED lighting. Requires Windows 8 or later.
 
-[Download link](https://github.com/4yn/slidershim/releases/latest) | [Demo Video (Brokestalgia)](https://youtu.be/1PEtBP3cOew)
+[Download link](https://github.com/4yn/slidershim/releases/latest) | [Demo Video (Brokestalgia)](https://youtu.be/1PEtBP3cOew) | [UMIGURI setup instructions](https://user-images.githubusercontent.com/8877057/175786037-c0c3238b-5032-4d69-833c-5fb147d85734.mp4)
 
 > Starting 0.2.0, there are reports that windows defender may block this software. You may need to disable windows defender the first time you run slidershim. If you are not comfortable with this, you can [download an older version here](https://github.com/4yn/slidershim/releases/tag/v0.1.4) that is known to be OK with windows defender.
 
