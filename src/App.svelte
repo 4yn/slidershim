@@ -407,7 +407,7 @@
               bind:checked={keyboardDirectInput}
               on:change={markDirty}
             />
-            <label for="disable-air">Use DirectInput</label>
+            <label for="direct-input">Use DirectInput</label>
           </span>
         </div>
       </div>
