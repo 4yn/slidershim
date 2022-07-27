@@ -2,13 +2,16 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.4.0
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.4.1
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.4.1
+  - Fix misplaced checkbox label (clicking on "use DirectInput" would check "disable air" instead)
+  - Make Yuancon USB reports more flexible when reading data
 - v0.4.0
   - Add DirectInput keyboard emulation using oblitum/Interception
   - Add slide LED support for some controllers

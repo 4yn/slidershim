@@ -12,8 +12,11 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.4.1
+  - Fix misplaced checkbox label (clicking on "use DirectInput" would check "disable air" instead)
+  - Make Yuancon USB reports more flexible when reading data
 - v0.4.0
-  - Add DirectInput keyboard emulation using oblitum/Interception
+  - Add DirectInput keyboard emulation using [oblitum/Interception](https://github.com/oblitum/Interception)
   - Add slide LED support for some controllers
 - v0.3.1
   - Fix wrong key in UMIGURI keyboard layout
