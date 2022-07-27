@@ -177,7 +177,7 @@ impl HidJob {
         0x02,
         *disable_air,
         |buf, input| {
-          if buf.len != 34 {
+          if buf.len != 34 && buf.len != 35 {
             return;
           }
 
