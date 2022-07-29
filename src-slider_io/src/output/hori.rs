@@ -91,7 +91,7 @@ impl OutputHandler for HoriOutput {
       .fold(0, |axis, (idx, state)| {
         axis
           | match state {
-            true => 0b11 << ((15 - idx) * 2),
+            true => 0b11 << ((idx ^ 3) * 2),
             false => 0,
           }
       })
