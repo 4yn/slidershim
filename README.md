@@ -12,6 +12,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.4.2
+  - Fix HORI Project Diva gamepad slider output order
 - v0.4.1
   - Fix misplaced checkbox label (clicking on "use DirectInput" would check "disable air" instead)
   - Make Yuancon USB reports more flexible when reading data
