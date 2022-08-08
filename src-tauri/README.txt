@@ -2,13 +2,15 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.4.2
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.4.3
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.4.3
+  - Make Yubideck USB reports more flexible when reading data
 - v0.4.2
   - Fix HORI Project Diva gamepad slider output order
 - v0.4.1

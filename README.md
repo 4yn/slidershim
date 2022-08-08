@@ -12,6 +12,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.4.3
+  - Make Yubideck USB reports more flexible when reading data
 - v0.4.2
   - Fix HORI Project Diva gamepad slider output order
 - v0.4.1
@@ -20,6 +22,11 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 - v0.4.0
   - Add DirectInput keyboard emulation using [oblitum/Interception](https://github.com/oblitum/Interception)
   - Add slide LED support for some controllers
+
+<details>
+
+<summary>Older changelog</summary>
+
 - v0.3.1
   - Fix wrong key in UMIGURI keyboard layout
 - v0.3.0
@@ -56,6 +63,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
   - Added 16 key keyboard layout
 - v0.1.4
   - Initial public release
+
+</details>
 
 ## Setup Instructions
 
