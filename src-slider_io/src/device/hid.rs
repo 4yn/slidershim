@@ -211,11 +211,12 @@ impl HidJob {
         0x02, // Need to confirm
         *disable_air,
         |buf, input| {
-          if buf.len != 45 {
+          if buf.len != 45 && buf.len != 46 {
             return;
           }
 
           input.ground.copy_from_slice(&buf.data[2..34]);
+          input.flip_vert();
           for i in 0..6 {
             input.air[i ^ 1] = (buf.data[0] >> i) & 1;
           }
