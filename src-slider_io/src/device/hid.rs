@@ -18,7 +18,7 @@ use crate::{
 use super::config::HardwareSpec;
 
 type HidReadCallback = fn(&Buffer, &mut SliderInput) -> ();
-type HidLedCallback = fn(&mut Buffer, &SliderLights) -> ();
+type HidLedCallback = fn(&mut Buffer, &mut Buffer, &SliderLights) -> ();
 
 enum WriteType {
   Bulk,
@@ -41,6 +41,7 @@ pub struct HidJob {
   led_write_type: WriteType,
   led_callback: HidLedCallback,
   led_buf: Buffer,
+  led_buf_two: Buffer,
 
   handle: Option<DeviceHandle<GlobalContext>>,
 }
@@ -70,6 +71,7 @@ impl HidJob {
       led_write_type: led_type,
       led_callback,
       led_buf: Buffer::new(),
+      led_buf_two: Buffer::new(),
       handle: None,
     }
   }
@@ -102,7 +104,7 @@ impl HidJob {
           input.extra[0..2].copy_from_slice(&bits[26..28]);
         },
         WriteType::Bulk,
-        |buf, lights| {
+        |buf, _, lights| {
           buf.len = 240;
           buf.data[0] = 'B' as u8;
           buf.data[1] = 'L' as u8;
@@ -139,7 +141,7 @@ impl HidJob {
           input.extra[0..2].copy_from_slice(&bits[6..8]);
         },
         WriteType::Bulk,
-        |buf, lights| {
+        |buf, _, lights| {
           buf.len = 240;
           buf.data[0] = 'B' as u8;
           buf.data[1] = 'L' as u8;
@@ -190,7 +192,7 @@ impl HidJob {
           }
         },
         WriteType::Interrupt,
-        |buf, lights| {
+        |buf, _, lights| {
           buf.len = 31 * 2;
           for (buf_chunk, state_chunk) in buf
             .data
@@ -225,7 +227,7 @@ impl HidJob {
           }
         },
         WriteType::Interrupt,
-        |buf, lights| {
+        |buf, _, lights| {
           buf.len = 62;
 
           let lights_nibbles: Vec<u8> = lights
@@ -250,6 +252,56 @@ impl HidJob {
             buf_chunk[1] = (state_chunk[2]) | (state_chunk[3] << 4);
             buf_chunk[2] = (state_chunk[4]) | (state_chunk[5] << 4);
           }
+        },
+      ),
+      HardwareSpec::YubideckThree => Self::new(
+        state.clone(),
+        0x1973,
+        0x2001,
+        0x81, // Need to confirm
+        0x02, // Need to confirm
+        *disable_air,
+        |buf, input| {
+          if buf.len != 45 && buf.len != 46 {
+            return;
+          }
+
+          input.ground.copy_from_slice(&buf.data[2..34]);
+          input.flip_vert();
+          for i in 0..6 {
+            input.air[i ^ 1] = (buf.data[0] >> i) & 1;
+          }
+          for i in 0..3 {
+            input.extra[2 - i] = (buf.data[1] >> i) & 1;
+          }
+        },
+        WriteType::Interrupt,
+        |buf, buf_two, lights| {
+          buf.len = 61;
+          buf.data[0] = 0;
+          buf_two.len = 61;
+          buf_two.data[0] = 1;
+
+          for (buf_chunk, state_chunk) in buf.data[1..61]
+            .chunks_mut(3)
+            .zip(lights.ground.chunks(3).skip(11).take(20).rev())
+          {
+            buf_chunk[0] = state_chunk[0];
+            buf_chunk[1] = state_chunk[1];
+            buf_chunk[2] = state_chunk[2];
+          }
+
+          for (buf_chunk, state_chunk) in buf_two.data[1..34]
+            .chunks_mut(3)
+            .zip(lights.ground.chunks(3).take(11).rev())
+          {
+            buf_chunk[0] = state_chunk[0];
+            buf_chunk[1] = state_chunk[1];
+            buf_chunk[2] = state_chunk[2];
+          }
+
+          buf_two.data[34..37].copy_from_slice(&lights.air_left[3..6]);
+          buf_two.data[37..40].copy_from_slice(&lights.air_right[3..6]);
         },
       ),
     }
@@ -327,7 +379,11 @@ impl ThreadJob for HidJob {
       {
         let mut lights_handle = self.state.lights.lock();
         if lights_handle.dirty {
-          (self.led_callback)(&mut self.led_buf, lights_handle.deref());
+          (self.led_callback)(
+            &mut self.led_buf,
+            &mut self.led_buf_two,
+            lights_handle.deref(),
+          );
           lights_handle.dirty = false;
         }
       }
@@ -347,6 +403,26 @@ impl ThreadJob for HidJob {
         if res == self.led_buf.len + 1 {
           // work = true;
           self.led_buf.len = 0;
+        }
+      }
+
+      if self.led_buf_two.len != 0 {
+        let res = (match self.led_write_type {
+          WriteType::Bulk => {
+            handle.write_bulk(self.led_endpoint, self.led_buf_two.slice(), TIMEOUT)
+          }
+          WriteType::Interrupt => {
+            handle.write_interrupt(self.led_endpoint, &self.led_buf_two.slice(), TIMEOUT)
+          }
+        })
+        .map_err(|e| {
+          // debug!("Device write error {}", e);
+          e
+        })
+        .unwrap_or(0);
+        if res == self.led_buf_two.len + 1 {
+          // work = true;
+          self.led_buf_two.len = 0;
         }
       }
     }

@@ -2996,7 +2996,7 @@ dependencies = [
 
 [[package]]
 name = "slidershim"
-version = "0.4.3"
+version = "0.5.0"
 dependencies = [
  "env_logger",
  "log",
