@@ -33,6 +33,7 @@ vigem-client = { version = "0.1.2", features = ["unstable"] }
 winapi = "0.3.9"
 interception = {path = "../src-interception" }
 ipconfig = "0.3.0"
+lzfx = {path = "../src-lzfx" }
 
 # webserver
 hyper = { version="0.14.16", features= ["server", "http1", "http2", "tcp", "stream", "runtime"] }

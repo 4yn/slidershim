@@ -1751,6 +1751,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "lzfx"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-build",
+]
+
+[[package]]
 name = "mac"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2977,6 +2985,7 @@ dependencies = [
  "interception",
  "ipconfig",
  "log",
+ "lzfx",
  "palette",
  "parking_lot 0.12.1",
  "phf 0.10.1",

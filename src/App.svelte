@@ -198,6 +198,7 @@
           <option value="yuancon">Yuancon Laverita, HID Firmware</option>
           <option value="yubideck">大四 / Yubideck, HID Firmware 1.0</option>
           <option value="yubideck-three">大四 / Yubideck, HID Firmware 3.0</option>
+          <option value="hori">HORI Pad (Redboard / Chu Pico)</option>
           <option value="diva">Slider over Serial</option>
           <option value="brokenithm">Brokenithm</option>
           <option value="brokenithm-led">Brokenithm + Led</option>

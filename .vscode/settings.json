@@ -3,6 +3,8 @@
   "cmake.sourceDirectory": "${workspaceFolder}/src-serial",
   "cmake.buildDirectory": "${workspaceFolder}/src-serial/build",
   "files.associations": {
+    "*.sage": "python",
+    "*.svx": "mdx",
     "xstring": "cpp",
     "algorithm": "cpp",
     "atomic": "cpp",
@@ -75,6 +77,8 @@
     "xlocbuf": "cpp",
     "xlocmes": "cpp",
     "xlocmon": "cpp",
-    "xloctime": "cpp"
+    "xloctime": "cpp",
+    "lib.rs.h": "c",
+    "lzfx.h": "c"
   }
 }
