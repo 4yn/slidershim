@@ -223,7 +223,7 @@ var ws = null;
 var wsTimeout = 0;
 var wsConnected = false;
 const wsConnect = () => {
-  ws = new WebSocket("ws://" + location.host + "/ws");
+  ws = new WebSocket((location.protocol == "https:" ? "wss://" : "ws://") + location.host + "/ws");
   ws.binaryType = "arraybuffer";
   ws.onopen = () => {
     ws.send("alive?");
