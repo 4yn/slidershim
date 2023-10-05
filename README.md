@@ -12,6 +12,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.5.1
+  - Support SSL/wss if brokenithm used with tunnelling. Thanks @kokarare1212
 - v0.5.0
   - Support for Yubideck 3.0 firmware
 - v0.4.3
