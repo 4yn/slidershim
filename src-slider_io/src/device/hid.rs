@@ -331,13 +331,14 @@ impl HidJob {
           }
         },
       ),
-      HardwareSpec::HoriPad => Self::new(
+      HardwareSpec::HoriPico => Self::new(
         state.clone(),
         0x0f0d,
         0x0092,
         *disable_air,
         0x84,
         |buf, input| {
+          // info!("log hid {:?} {:?}", buf.len, buf.data);
           if buf.len != 9 {
             return;
           }
@@ -356,10 +357,10 @@ impl HidJob {
           input.extra[2] = 0;
         },
         vec![
-          LedSpec::new(WriteType::Interrupt, 0x04),
-          LedSpec::new(WriteType::Interrupt, 0x05),
-          LedSpec::new(WriteType::Interrupt, 0x06),
-          LedSpec::new(WriteType::Interrupt, 0x0b),
+          LedSpec::new(WriteType::Interrupt, 0x01),
+          LedSpec::new(WriteType::Interrupt, 0x01),
+          LedSpec::new(WriteType::Interrupt, 0x01),
+          LedSpec::new(WriteType::Interrupt, 0x01),
         ],
         |led_specs, lights| {
           if let [led_spec_ga, led_spec_gb, led_spec_air, led_spec_comp] = led_specs.as_mut_slice()
@@ -389,12 +390,121 @@ impl HidJob {
             // info!("compress {:?}", light_brg_buf_compress);
 
             if light_brg_buf_compress.len() < 63 {
-              buf_comp.data[0..light_brg_buf_compress.len()]
+              buf_comp.data[0] = 0x0b;
+              buf_comp.data[1..(light_brg_buf_compress.len() + 1)]
                 .copy_from_slice(light_brg_buf_compress.as_slice());
+              buf_comp.len = light_brg_buf_compress.len() + 1;
+              info!(
+                "Sending compressed led data {:?} {:?}",
+                buf_comp.len, buf_comp.data
+              );
             } else {
-              buf_ga.data[0..48].copy_from_slice(&light_brg_buf[0..48]);
-              buf_gb.data[0..45].copy_from_slice(&light_brg_buf[48..(48 + 45)]);
-              buf_air.data[0..18].copy_from_slice(&light_brg_buf[(48 + 45)..(48 + 45 + 18)]);
+              buf_ga.data[0] = 0x04;
+              buf_ga.data[1..(48 + 1)].copy_from_slice(&light_brg_buf[0..48]);
+              buf_ga.len = 48 + 1;
+              buf_gb.data[0] = 0x05;
+              buf_gb.data[1..(45 + 1)].copy_from_slice(&light_brg_buf[48..(48 + 45)]);
+              buf_gb.len = 45 + 1;
+              buf_air.data[0] = 0x06;
+              buf_air.data[1..(18 + 1)].copy_from_slice(&light_brg_buf[(48 + 45)..(48 + 45 + 18)]);
+              buf_air.len = 18 + 1;
+
+              info!("Sending uncompressed led data");
+              info!("{:?} {:?}", buf_ga.len, buf_ga.data);
+              info!("{:?} {:?}", buf_gb.len, buf_gb.data);
+              info!("{:?} {:?}", buf_air.len, buf_air.data);
+            }
+          }
+        },
+      ),
+      HardwareSpec::HoriRed => Self::new(
+        state.clone(),
+        0x0f0d,
+        0x0092,
+        *disable_air,
+        0x81,
+        |buf, input| {
+          // info!("log hid {:?} {:?}", buf.len, buf.data);
+          if buf.len != 9 {
+            return;
+          }
+
+          let bits: Vec<u8> = buf.data[0..7]
+            .iter()
+            .flat_map(|x| (0..8).map(move |i| ((x ^ 128) >> i) & 1))
+            .collect();
+          for i in 0..32 {
+            input.ground[i] = bits[7 * 8 - 1 - i] * 255;
+          }
+
+          input.air[0] = bits[3];
+          input.air[1] = bits[0];
+          input.air[2] = bits[1];
+          input.air[3] = bits[2];
+          input.air[4] = bits[4];
+          input.air[5] = bits[5];
+
+          input.extra[0] = 0;
+          input.extra[1] = 0;
+          input.extra[2] = 0;
+        },
+        vec![
+          LedSpec::new(WriteType::Interrupt, 0x02),
+          LedSpec::new(WriteType::Interrupt, 0x02),
+          LedSpec::new(WriteType::Interrupt, 0x02),
+          LedSpec::new(WriteType::Interrupt, 0x02),
+        ],
+        |led_specs, lights| {
+          if let [led_spec_ga, led_spec_gb, led_spec_air, led_spec_comp] = led_specs.as_mut_slice()
+          {
+            let buf_ga = &mut led_spec_ga.led_buf;
+            let buf_gb = &mut led_spec_gb.led_buf;
+            let buf_air = &mut led_spec_air.led_buf;
+            let buf_comp = &mut led_spec_comp.led_buf;
+
+            let light_rgb_buf: Vec<u8> = lights
+              .ground
+              .iter()
+              .chain(lights.air_left.iter())
+              .chain(lights.air_right.iter())
+              .map(|x| *x)
+              .collect();
+            let light_brg_buf: Vec<u8> = light_rgb_buf
+              .chunks(3)
+              .map(|x| [x[2], x[0], x[1]])
+              .flatten()
+              .collect();
+
+            let mut light_brg_buf_compress: Vec<u8> = vec![];
+            light_brg_buf_compress.reserve(512);
+            compress(&light_brg_buf, &mut light_brg_buf_compress);
+            // info!("raw      {:?}", light_brg_buf);
+            // info!("compress {:?}", light_brg_buf_compress);
+
+            if light_brg_buf_compress.len() < 63 {
+              buf_comp.data[0] = 0x0b;
+              buf_comp.data[1..(light_brg_buf_compress.len() + 1)]
+                .copy_from_slice(light_brg_buf_compress.as_slice());
+              buf_comp.len = light_brg_buf_compress.len() + 1;
+              info!(
+                "Sending compressed led data {:?} {:?}",
+                buf_comp.len, buf_comp.data
+              );
+            } else {
+              buf_ga.data[0] = 0x04;
+              buf_ga.data[1..(48 + 1)].copy_from_slice(&light_brg_buf[0..48]);
+              buf_ga.len = 48 + 1;
+              buf_gb.data[0] = 0x05;
+              buf_gb.data[1..(45 + 1)].copy_from_slice(&light_brg_buf[48..(48 + 45)]);
+              buf_gb.len = 45 + 1;
+              buf_air.data[0] = 0x06;
+              buf_air.data[1..(18 + 1)].copy_from_slice(&light_brg_buf[(48 + 45)..(48 + 45 + 18)]);
+              buf_air.len = 18 + 1;
+
+              info!("Sending uncompressed led data");
+              info!("{:?} {:?}", buf_ga.len, buf_ga.data);
+              info!("{:?} {:?}", buf_gb.len, buf_gb.data);
+              info!("{:?} {:?}", buf_air.len, buf_air.data);
             }
           }
         },
@@ -490,7 +600,7 @@ impl ThreadJob for HidJob {
             }
           })
           .map_err(|e| {
-            // debug!("Device write error {}", e);
+            error!("Device write error {}", e);
             e
           })
           .unwrap_or(0);

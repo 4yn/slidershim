@@ -7,7 +7,8 @@ pub enum HardwareSpec {
   Yuancon,
   Yubideck,
   YubideckThree,
-  HoriPad,
+  HoriPico,
+  HoriRed,
 }
 
 #[derive(Debug, Clone)]
@@ -59,8 +60,12 @@ impl DeviceMode {
         spec: HardwareSpec::YubideckThree,
         disable_air: v["disableAirStrings"].as_bool()?,
       },
-      "hori" => DeviceMode::Hardware {
-        spec: HardwareSpec::HoriPad,
+      "hori-pico" => DeviceMode::Hardware {
+        spec: HardwareSpec::HoriPico,
+        disable_air: v["disableAirStrings"].as_bool()?,
+      },
+      "hori-red" => DeviceMode::Hardware {
+        spec: HardwareSpec::HoriRed,
         disable_air: v["disableAirStrings"].as_bool()?,
       },
       "diva" => DeviceMode::DivaSlider {
