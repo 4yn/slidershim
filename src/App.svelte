@@ -319,7 +319,8 @@
           <option value="gamepad-neardayo"
             >XBOX 360 Gamepad, Neardayo Layout</option
           >
-          <option value="gamepad-hori">DS4, HORI DIVA FT ASC Layout</option>
+		  <option value="gamepad-hori">DS4, HORI DIVA FT ASC Layout</option>
+		  <option value="kb-pdfta">Keyboard 16-zone, DIVA FT Custom Layout</option>
           <option value="gamepad-hori-wide"
             >DS4, HORI DIVA FT ASC Slider Only Layout</option
           >

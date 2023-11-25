@@ -42,6 +42,26 @@ const UMIGURI_KB_MAP: [usize; 41] = [
     0x50, 0xbc, 0xbe, // P, VK_OEM_COMMA, VK_OEM_PERIOD,
     0x0d, 0x20, 0x1b  // VK_RETURN, VK_SPACE, VK_ESCAPE
 ];
+#[rustfmt::skip]
+const PDFTA_KB_MAP: [usize; 41] = [
+    0x5a /* Z */, 0x50 /* P */, 
+    0x5a /* Z */, 0x50 /* P */, 
+    0x5a /* Z */, 0x4F /* O */, 
+    0x5a /* Z */, 0x4F /* O */, 
+    0x58 /* X */, 0x49 /* I */, 
+    0x58 /* X */, 0x49 /* I */, 
+    0x58 /* X */, 0x55 /* U */, 
+    0x58 /* X */, 0x55 /* U */,
+    0x43 /* C */, 0x52 /* R */, 
+    0x43 /* C */, 0x52 /* R */, 
+    0x43 /* C */, 0x45 /* E */, 
+    0x43 /* C */, 0x45 /* E */,
+    0x56 /* V */, 0x57 /* W */, 
+    0x56 /* V */, 0x57 /* W */, 
+    0x56 /* V */, 0x51 /* Q */, 
+    0x56 /* V */, 0x51 /* Q */,
+    0x1b, 0x1b, 0x1b, 0x1b, 0x1b, 0x1b, 0x1b, 0x1b, 0x1b  // VK_ESCAPE
+];
 
 #[rustfmt::skip]
 const TASOLLER_HALF_KB_MAP: [usize; 41] = [
@@ -150,6 +170,7 @@ impl KeyboardOutput {
       KeyboardLayout::Tasoller => &TASOLLER_KB_MAP,
       KeyboardLayout::Yuancon => &YUANCON_KB_MAP,
       KeyboardLayout::Umiguri => &UMIGURI_KB_MAP,
+      KeyboardLayout::PDFTA => &PDFTA_KB_MAP,
       KeyboardLayout::TasollerHalf => &TASOLLER_HALF_KB_MAP,
       KeyboardLayout::EightK => &EIGHT_K_MAP,
       KeyboardLayout::SixK => &SIX_K_MAP,

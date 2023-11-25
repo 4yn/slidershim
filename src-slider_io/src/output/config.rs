@@ -14,6 +14,7 @@ pub enum KeyboardLayout {
   Tasoller,
   Yuancon,
   Umiguri,
+  PDFTA,
   TasollerHalf,
   EightK,
   SixK,
@@ -136,6 +137,12 @@ impl OutputMode {
       },
       "kb-neardayo" => OutputMode::Keyboard {
         layout: KeyboardLayout::Neardayo,
+        polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
+        sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
+        direct_input: v["keyboardDirectInput"].as_bool()?,
+      },
+      "kb-pdfta" => OutputMode::Keyboard {
+        layout: KeyboardLayout::PDFTA,
         polling: PollingRate::from_str(v["outputPolling"].as_str()?)?,
         sensitivity: u8::try_from(v["keyboardSensitivity"].as_i64()?).ok()?,
         direct_input: v["keyboardDirectInput"].as_bool()?,
