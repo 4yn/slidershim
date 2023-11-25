@@ -27,6 +27,7 @@
   let ledWebsocketUrl = "http://localhost:3001";
   let ledUmgrWebsocketPort = 7124;
   let ledSerialPort = "COM5";
+  let hideByDefault = false;
 
   let dirty = false;
 
@@ -41,6 +42,7 @@
   let tick = 0;
   let previewData = Array(131).fill(0);
   let timerData = "";
+  let initStart = true;
 
   function updatePolling(enabled) {
     if (!!polling) {
@@ -85,6 +87,11 @@
       ledWebsocketUrl = payload.ledWebsocketUrl || "http://localhost:3001";
       ledUmgrWebsocketPort = payload.ledUmgrWebsocketPort || 7124;
       ledSerialPort = payload.ledSerialPort || "COM5";
+	  hideByDefault = payload.hideByDefault || false;
+	  if (hideByDefault && initStart) {
+	    hide();
+	  }
+	  initStart = false;
     });
 
     await listen("showState", (event) => {
@@ -143,6 +150,7 @@
         ledWebsocketUrl,
         ledUmgrWebsocketPort,
         ledSerialPort,
+		hideByDefault,
       })
     );
     dirty = false;
@@ -319,7 +327,8 @@
           <option value="gamepad-neardayo"
             >XBOX 360 Gamepad, Neardayo Layout</option
           >
-          <option value="gamepad-hori">DS4, HORI DIVA FT ASC Layout</option>
+		  <option value="gamepad-hori">DS4, HORI DIVA FT ASC Layout</option>
+		  <option value="kb-pdfta">Keyboard 16-zone, DIVA FT Custom Layout</option>
           <option value="gamepad-hori-wide"
             >DS4, HORI DIVA FT ASC Slider Only Layout</option
           >
@@ -611,6 +620,21 @@
         </div>
       </div>
     {/if}
+	<div class="row">
+        <div class="label" />
+        <div class="input">
+          <span>
+            <input
+              type="checkbox"
+              id="direct-input"
+              style="width: unset;"
+              bind:checked={hideByDefault}
+              on:change={markDirty}
+            />
+            <label for="direct-input">Hide Window on Launch</label>
+          </span>
+        </div>
+      </div>
   </div>
   <div class="buttons-row">
     <button
