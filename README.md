@@ -12,6 +12,8 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.6.0
+  - Support Laverita v3. Thanks @sr1canskhsia
 - v0.5.1
   - Support SSL/wss if brokenithm used with tunnelling. Thanks @kokarare1212
 - v0.5.0

@@ -2,13 +2,15 @@
  ___| (_) __| | ___ _ __ ___| |__ (_)_ __ ___  
 / __| | |/ _` |/ _ \ '__/ __| '_ \| | '_ ` _ \ 
 \__ \ | | (_| |  __/ |  \__ \ | | | | | | | | |
-|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.5.1
+|___/_|_|\__,_|\___|_|  |___/_| |_|_|_| |_| |_| v0.6.1
 =============================================== 
 
 https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.6.0
+  - Support Laverita v3. Thanks @sr1canskhsia
 - v0.5.1
   - Support SSL/wss if brokenithm used with tunnelling. Thanks @kokarare1212
 - v0.5.0
