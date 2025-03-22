@@ -5,6 +5,7 @@ pub enum HardwareSpec {
   TasollerOne,
   TasollerTwo,
   Yuancon,
+  YuanconThree,
   Yubideck,
   YubideckThree,
 }
@@ -48,6 +49,10 @@ impl DeviceMode {
       },
       "yuancon" => DeviceMode::Hardware {
         spec: HardwareSpec::Yuancon,
+        disable_air: v["disableAirStrings"].as_bool()?,
+      },
+      "yuancon-three" => DeviceMode::Hardware {
+        spec: HardwareSpec::YuanconThree,
         disable_air: v["disableAirStrings"].as_bool()?,
       },
       "yubideck" => DeviceMode::Hardware {

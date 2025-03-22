@@ -205,6 +205,53 @@ impl HidJob {
           }
         },
       ),
+      HardwareSpec::YuanconThree => Self::new(
+        state.clone(),
+        0x0518,
+        0x2022,
+        0x83,
+        0x03,
+        *disable_air,
+        |buf, input| {
+          if buf.len != 46 { // real length is 46 but last 12 bytes are unused
+            return;
+          }
+
+          input.ground.copy_from_slice(&buf.data[2..34]);
+          input.flip_vert();
+
+          let bits: Vec<u8> = (0..8).map(|x| (buf.data[0] >> x) & 1).collect();
+          for i in 0..6 {
+            input.air[i ^ 1] = bits[i];
+          }
+          input.extra[0..2].copy_from_slice(&bits[6..8]);
+        },
+        WriteType::Interrupt,
+        |buf, buf_two, lights| {
+          buf.len = 61;
+          buf.data[0] = 0;
+          buf_two.len = 61;
+          buf_two.data[0] = 1;
+
+          for (buf_chunk, state_chunk) in buf.data[1..61]
+              .chunks_mut(3)
+              .zip(lights.ground.chunks(3).skip(11).take(20).rev())
+          {
+            buf_chunk[0] = state_chunk[0];
+            buf_chunk[1] = state_chunk[1];
+            buf_chunk[2] = state_chunk[2];
+          }
+
+          for (buf_chunk, state_chunk) in buf_two.data[1..34]
+              .chunks_mut(3)
+              .zip(lights.ground.chunks(3).take(11).rev())
+          {
+            buf_chunk[0] = state_chunk[0];
+            buf_chunk[1] = state_chunk[1];
+            buf_chunk[2] = state_chunk[2];
+          }
+        },
+      ),
       HardwareSpec::Yubideck => Self::new(
         state.clone(),
         0x1973,
@@ -323,8 +370,15 @@ impl HidJob {
     }
     info!("Device setting configuration");
     handle.set_active_configuration(1)?;
+
+    // A bit janky but Laverita v3 seems to require interface 3
     info!("Device claiming interface");
-    handle.claim_interface(0)?;
+    if self.vid == 0x0518 && self.pid == 0x2022 {
+      handle.claim_interface(3)?;
+    } else {
+      handle.claim_interface(0)?;
+    }
+
     self.handle = Some(handle);
     Ok(())
   }
