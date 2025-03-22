@@ -196,6 +196,7 @@
           <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
           <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
           <option value="yuancon">Yuancon Laverita, HID Firmware</option>
+          <option value="yuancon-three">Yuancon Laverita v3, HID Firmware</option>
           <option value="yubideck">大四 / Yubideck, HID Firmware 1.0</option>
           <option value="yubideck-three">大四 / Yubideck, HID Firmware 3.0</option>
           <option value="diva">Slider over Serial</option>
