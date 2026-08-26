@@ -9,6 +9,8 @@ https://github.com/4yn/slidershim
 
 # Changelog
 
+- v0.6.1
+  - Fix timer speed toggle for reactive layout and umgr WS
 - v0.6.0
   - Support Laverita v3. Thanks @sr1canskhsia
 - v0.5.1

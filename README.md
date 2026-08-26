@@ -12,12 +12,19 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 
 ## Changelog
 
+- v0.6.1
+  - Fix timer speed toggle for reactive layout and umgr WS
 - v0.6.0
   - Support Laverita v3. Thanks @sr1canskhsia
 - v0.5.1
   - Support SSL/wss if brokenithm used with tunnelling. Thanks @kokarare1212
 - v0.5.0
   - Support for Yubideck 3.0 firmware
+
+<details>
+
+<summary>Older changelog</summary>
+
 - v0.4.3
   - Make Yubideck USB reports more flexible when reading data
 - v0.4.2
@@ -28,11 +35,6 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 - v0.4.0
   - Add DirectInput keyboard emulation using [oblitum/Interception](https://github.com/oblitum/Interception)
   - Add slide LED support for some controllers
-
-<details>
-
-<summary>Older changelog</summary>
-
 - v0.3.1
   - Fix wrong key in UMIGURI keyboard layout
 - v0.3.0
@@ -87,6 +89,7 @@ Software adapter for various Chunithm slider controllers with a built-in Brokeni
 - Less resources are used when the configuration window is hidden.
 - Un-hide the configuration window from the system tray.
 - For gamepad output, you will need to install [ViGEmBus](https://github.com/ViGEm/ViGEmBus/releases/latest) for it to work.
+- For keyboard output, keyboard emulation is achieved via SendKeys or DirectInput. SendKeys will work out of the box but some games may not detect it. For other games, DirectInput may work but you will need to install the [Interception](https://github.com/oblitum/Interception/releases/tag/v1.0.1) driver first.
 - For serial LED input, you may need to install [com0com](https://sourceforge.net/projects/com0com/files/com0com/2.2.2.0/) to bridge slidershim with the LED data stream.
 
 ### Brokenithm Setup
