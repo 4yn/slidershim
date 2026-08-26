@@ -40,19 +40,23 @@ pub struct LightsJob {
 
 impl LightsJob {
   pub fn new(state: &SliderState, mode: &LightsMode) -> Self {
+    let timer_speed = match mode {
+      LightsMode::Attract { faster, .. } => *faster,
+      LightsMode::Reactive { faster, .. } => *faster,
+      LightsMode::Websocket { faster, .. } => *faster,
+      LightsMode::Serial { faster, .. } => *faster,
+      LightsMode::UmgrWebsocket { faster, .. } => *faster,
+      LightsMode::None => false,
+    };
+
     Self {
       state: state.clone(),
       mode: mode.clone(),
       serial_port: None,
       started: Instant::now(),
-      timer: match match mode {
-        LightsMode::Attract { faster, .. } => *faster,
-        LightsMode::Websocket { faster, .. } => *faster,
-        LightsMode::Serial { faster, .. } => *faster,
-        _ => false,
-      } {
-        false => interval(Duration::from_micros(66666)),
-        true => interval(Duration::from_micros(33333)),
+      timer: match timer_speed {
+        false => interval(Duration::from_micros(33333)),
+        true => interval(Duration::from_micros(16666)),
       },
     }
   }
