@@ -195,6 +195,7 @@
           <option value="none">None</option>
           <option value="tasoller-one">GAMO2 Tasoller, 1.0 HID Firmware</option>
           <option value="tasoller-two">GAMO2 Tasoller, 2.0 HID Firmware</option>
+          <option value="tasoller-plus">GAMO2 Tasoller+ WinUSB</option>
           <option value="yuancon">Yuancon Laverita, HID Firmware</option>
           <option value="yuancon-three">Yuancon Laverita v3, HID Firmware</option>
           <option value="yubideck">大四 / Yubideck, HID Firmware 1.0</option>

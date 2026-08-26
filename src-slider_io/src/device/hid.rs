@@ -171,6 +171,58 @@ impl HidJob {
           }
         },
       ),
+      HardwareSpec::TasollerPlus => Self::new(
+        state.clone(),
+        0x0E8F,
+        0x1231,
+        0x84,
+        0x03,
+        *disable_air,
+        |buf, input| {
+          if buf.len != 36 {
+            return;
+          }
+
+          input.ground.copy_from_slice(&buf.data[4..36]);
+          input.flip_all();
+
+          let bits: Vec<u8> = (0..8).map(|x| (buf.data[3] >> x) & 1).collect();
+          input.air.copy_from_slice(&bits[0..6]);
+          input.air.reverse();
+
+          input.extra[0] = bits[7];
+          input.extra[1] = bits[6];
+        },
+        WriteType::Bulk,
+        |buf, _, lights| {
+          buf.len = 114;
+          buf.data[0] = 'D' as u8;
+          buf.data[1] = 'L' as u8;
+          buf.data[2] = 0x02;
+
+          for (buf_chunk, state_chunk) in buf.data[3..96]
+            .chunks_mut(3)
+            .take(31)
+            .zip(lights.ground.chunks(3).rev())
+          {
+            buf_chunk.copy_from_slice(state_chunk);
+          }
+
+          for (buf_chunk, state_chunk) in buf.data[96..105]
+            .chunks_mut(3)
+            .zip(lights.air_left.chunks(3))
+          {
+            buf_chunk.copy_from_slice(state_chunk);
+          }
+
+          for (buf_chunk, state_chunk) in buf.data[105..114]
+            .chunks_mut(3)
+            .zip(lights.air_right.chunks(3))
+          {
+            buf_chunk.copy_from_slice(state_chunk);
+          }
+        },
+      ),
       HardwareSpec::Yuancon => Self::new(
         state.clone(),
         0x1973,
@@ -234,8 +286,8 @@ impl HidJob {
           buf_two.data[0] = 1;
 
           for (buf_chunk, state_chunk) in buf.data[1..61]
-              .chunks_mut(3)
-              .zip(lights.ground.chunks(3).skip(11).take(20).rev())
+            .chunks_mut(3)
+            .zip(lights.ground.chunks(3).skip(11).take(20).rev())
           {
             buf_chunk[0] = state_chunk[0];
             buf_chunk[1] = state_chunk[1];
@@ -243,8 +295,8 @@ impl HidJob {
           }
 
           for (buf_chunk, state_chunk) in buf_two.data[1..34]
-              .chunks_mut(3)
-              .zip(lights.ground.chunks(3).take(11).rev())
+            .chunks_mut(3)
+            .zip(lights.ground.chunks(3).take(11).rev())
           {
             buf_chunk[0] = state_chunk[0];
             buf_chunk[1] = state_chunk[1];

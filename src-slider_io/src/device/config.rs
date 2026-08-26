@@ -4,6 +4,7 @@ use serde_json::Value;
 pub enum HardwareSpec {
   TasollerOne,
   TasollerTwo,
+  TasollerPlus,
   Yuancon,
   YuanconThree,
   Yubideck,
@@ -45,6 +46,10 @@ impl DeviceMode {
       },
       "tasoller-two" => DeviceMode::Hardware {
         spec: HardwareSpec::TasollerTwo,
+        disable_air: v["disableAirStrings"].as_bool()?,
+      },
+      "tasoller-plus" => DeviceMode::Hardware {
+        spec: HardwareSpec::TasollerPlus,
         disable_air: v["disableAirStrings"].as_bool()?,
       },
       "yuancon" => DeviceMode::Hardware {
